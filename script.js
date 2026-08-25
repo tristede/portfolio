@@ -66,7 +66,7 @@
     grid.innerHTML = list.map(cardHTML).join('');
   });
 
-  var cards = document.querySelectorAll('.card');
+  var cards = document.querySelectorAll('.card, .nav-card');
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(e){ if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
