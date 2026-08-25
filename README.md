@@ -7,16 +7,17 @@ Adobe Portfolio : palette bleu nuit, police manuscrite.
 
 ## Structure des pages
 
-- **`index.html`** — l'accueil : titre, bio, les 3 boutons, un projet favori
-  mis en avant, la sélection "Projets mis en avant" (3 projets), à propos, contact.
+- **`index.html`** — l'accueil : titre, bio, 2 boutons, un projet favori mis en
+  avant, la sélection "Projets mis en avant" (3 projets), à propos, parcours, contact.
   **Les grilles complètes de projets ne sont plus sur cette page.**
 - **`projets-perso.html`** — les 8 projets perso, accessible via le bouton
-  "Projets perso" de l'accueil (ou le lien "Perso" du header).
-- **`projets-academiques.html`** — les 6 projets académiques.
-- **`stage.html`** — les 6 réalisations du stage "En Esprit".
-- **`style.css`** — tout le design, partagé par les 4 pages.
+  "Projets perso" de l'accueil.
+- **`projets-academiques.html`** — les 6 projets académiques, avec **le stage
+  "En Esprit" en sous-section juste en dessous** (6 réalisations) — pas de page
+  ni de bouton séparé pour le stage.
+- **`style.css`** — tout le design, partagé par les 3 pages.
 - **`script.js`** — les données des 20 projets + le rendu des grilles + les icônes,
-  partagé par les 4 pages. Chaque page ne fait que déclarer `data-group="perso"`
+  partagé par les 3 pages. Chaque page ne fait que déclarer `data-group="perso"`
   (ou `academique`, `stage`, `featured`) sur son conteneur — le script filtre
   automatiquement.
 
@@ -84,7 +85,7 @@ Dis-le-moi et j'irai plus loin en câblant le rendu des vraies images directemen
 Le plus simple, sans rien installer :
 
 1. Va sur [app.netlify.com/drop](https://app.netlify.com/drop)
-2. Glisse le dossier `portfolio-adam` entier dans la page (les 6 fichiers doivent
+2. Glisse le dossier `portfolio-adam` entier dans la page (les fichiers doivent
    rester ensemble, dans le même dossier)
 3. Netlify te donne une URL en quelques secondes (ex: `adam-karroum.netlify.app`)
 4. Tu pourras ensuite brancher ton propre nom de domaine si tu en as un

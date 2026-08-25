@@ -149,6 +149,7 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
   display:grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
   max-width: 900px; margin: 0 auto;
 }
+.nav-cards-2{ grid-template-columns: repeat(2, 1fr); max-width: 640px; }
 .nav-card{
   background: rgba(22,28,92,0.4);
   background-image: linear-gradient(rgba(140,160,255,0.08), rgba(140,160,255,0.02));
@@ -175,6 +176,7 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
 .section-head h1,
 .section-head h2{ font-size: clamp(28px, 3.2vw, 38px); margin-bottom: 10px; }
 .section-head p{ color: var(--text-dim); font-size: 15.5px; }
+.section-head.sub h2{ font-size: clamp(22px, 2.4vw, 28px); }
 .back-link{ margin-bottom: 28px; }
 
 .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 20px; }
