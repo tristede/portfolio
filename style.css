@@ -151,7 +151,7 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
 .hero .role{ font-size: 18px; color: var(--text-dim); font-weight:500; margin-bottom: 26px; }
 .hero .bio{
   font-family: var(--font-script); font-weight:400;
-  max-width: 52ch; margin: 0 auto 30px; color: var(--text); font-size: clamp(21px, 2.6vw, 27px); line-height:1.4;
+  max-width: 52ch; margin: 0 auto 30px; color: var(--text); font-size: clamp(15px, 1.8vw, 19px); line-height:1.5;
 }
 .social-row{ display:flex; gap: 14px; justify-content:center; margin-bottom: 44px; }
 .social-row a{
@@ -166,7 +166,7 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
   display:grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
   max-width: 900px; margin: 0 auto;
 }
-.nav-cards-2{ grid-template-columns: repeat(2, 1fr); max-width: 420px; gap: 16px; }
+.nav-cards-2{ grid-template-columns: repeat(2, 1fr); max-width: 680px; gap: 20px; }
 /* dark HUD-panel CTA — compact square-ish card, thin edge, faint ambient glow */
 .nav-card{
   position: relative; isolation: isolate;
@@ -174,7 +174,7 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
   border: 1px solid rgba(140,160,255,0.22);
   border-radius: var(--radius-md);
   box-shadow: 0 16px 32px -20px rgba(0,0,10,0.85);
-  padding: 18px; text-align:left;
+  padding: 26px 28px; text-align:left;
   /* always visible — --py is a live scroll-driven parallax offset, updated in JS */
   transform: rotate(var(--tilt, 0deg)) translateY(var(--py, 0px));
   transition: transform .2s ease-out, border-color .25s ease;
@@ -190,18 +190,18 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
   transition: opacity .3s ease;
 }
 .nav-card .nc-icon{
-  width: 30px; height: 30px; border-radius: 8px;
+  width: 38px; height: 38px; border-radius: 9px;
   background: var(--accent-soft); color: var(--accent-sky);
   display:flex; align-items:center; justify-content:center;
 }
-.nav-card .nc-icon svg{ width: 16px; height: 16px; }
+.nav-card .nc-icon svg{ width: 20px; height: 20px; }
 .nav-card:hover{ transform: rotate(0deg) scale(1.04) translateY(var(--py, 0px)); border-color: rgba(140,160,255,0.45); }
 .nav-card:hover::before{ opacity: 0.75; }
 .nav-card .nc-title{
-  font-family: var(--font-display); font-weight:700; font-size: 13.5px;
+  font-family: var(--font-display); font-weight:700; font-size: 15.5px;
   text-transform: uppercase; letter-spacing: 0.05em; color: #fff;
 }
-.nav-card .nc-sub{ font-size: 12.5px; color: var(--text-dim); }
+.nav-card .nc-sub{ font-size: 13.5px; color: var(--text-dim); }
 
 /* ---------- Sections ---------- */
 section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); position:relative; z-index:1; }
