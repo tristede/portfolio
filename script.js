@@ -1,6 +1,7 @@
 (function(){
   var yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
+  var reduceMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
   var icons = {
     video: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2.5" y="6" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M16.5 10.2l5-2.7v9l-5-2.7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
@@ -76,19 +77,25 @@
     cards.forEach(function(c){ c.classList.add('in'); });
   }
 
-  // nav-cards sit near the top of the page, often already inside the viewport
-  // on load — an IntersectionObserver would fire instantly there, reading as
-  // "no animation". Tie their reveal to an actual scroll instead, with a
-  // fallback timer so they never stay invisible if the user never scrolls.
+  // nav-cards stay visible from the start, but sway gently with scroll —
+  // each card moves at a slightly different rate/direction for a subtle
+  // parallax "alive" feel while the page scrolls.
   var navCards = document.querySelectorAll('.nav-card');
-  if (navCards.length) {
-    var navRevealed = false;
-    var revealNavCards = function(){
-      if (navRevealed) return;
-      navRevealed = true;
-      navCards.forEach(function(c){ c.classList.add('in'); });
+  if (navCards.length && !reduceMotionQuery.matches) {
+    var navSpeeds = [0.09, -0.09];
+    var ticking = false;
+    var updateNavParallax = function(){
+      var y = window.scrollY;
+      navCards.forEach(function(c, i){
+        var speed = navSpeeds[i % navSpeeds.length];
+        var offset = Math.max(-16, Math.min(16, y * speed));
+        c.style.setProperty('--py', offset.toFixed(1) + 'px');
+      });
+      ticking = false;
     };
-    window.addEventListener('scroll', revealNavCards, { passive: true, once: true });
-    setTimeout(revealNavCards, 2500);
+    window.addEventListener('scroll', function(){
+      if (!ticking) { requestAnimationFrame(updateNavParallax); ticking = true; }
+    }, { passive: true });
+    updateNavParallax();
   }
 })();
