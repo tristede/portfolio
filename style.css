@@ -263,6 +263,28 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
 .skill-card .name{ font-weight:700; font-size: 14.5px; margin-bottom: 3px; }
 .skill-card .detail{ font-size: 13px; color: var(--text-dim); line-height:1.5; }
 
+/* ---------- Parcours (timeline verticale) ---------- */
+.timeline{ position:relative; max-width: 640px; padding-left: 32px; }
+.timeline::before{
+  content:""; position:absolute; left: 5px; top: 6px; bottom: 6px; width: 2px;
+  background: var(--line-strong);
+}
+.timeline-item{ position:relative; padding-bottom: 40px; }
+.timeline-item:last-child{ padding-bottom: 0; }
+.timeline-item::before{
+  content:""; position:absolute; left: -32px; top: 3px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--accent-sky);
+}
+.timeline-item.current::before{ background: var(--accent-sky); }
+.timeline-year{
+  font-family: var(--font-display); font-weight:700; font-size: 12.5px;
+  color: var(--accent-sky); letter-spacing: 0.04em; text-transform: uppercase;
+  display:block; margin-bottom: 6px;
+}
+.timeline-content h3{ font-family: var(--font-display); font-size: 17px; font-weight:700; margin-bottom: 4px; }
+.timeline-content p{ font-size: 14px; color: var(--text-dim); line-height:1.5; margin:0; }
+
 /* ---------- Footer / contact ---------- */
 footer{ border-top: 1px solid var(--line); padding: 92px 0 40px; position:relative; z-index:1; }
 .contact-band{ text-align:center; margin-bottom: 56px; }

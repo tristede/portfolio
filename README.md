@@ -48,9 +48,6 @@ répercutée sur les 4 pages automatiquement.
 - [ ] **Email de contact** : remplacer `PLACEHOLDER@email.com` (présent dans le header
       de chaque page et dans le footer) — utilise un email perso plutôt que ton adresse
       étudiante ISFSC si possible.
-- [ ] **École / formation** : mentionnée nulle part pour l'instant depuis qu'il n'y a
-      plus de section Parcours sur l'accueil — dis-moi si tu veux que je la rajoute
-      quelque part.
 - [ ] **Liens des projets** : les cartes n'ont pas de lien cliquable vers le détail du
       projet (Drive, Behance, YouTube...) — dis-moi si tu veux que j'ajoute ça, projet
       par projet.
