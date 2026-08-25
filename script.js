@@ -123,14 +123,14 @@
     this.toReadable = toReadable;
     this.queue = [];
     // scale the stagger to the text length so the whole wave — regardless
-    // of how long the string is — comfortably finishes well under 1s
-    // (33ms ticks; worst-case ~24 frames ≈ 790ms including jitter).
-    var perCharDelay = 12 / Math.max(1, length);
+    // of how long the string is — lands at a comfortable middle pace
+    // (33ms ticks; worst-case ~24 frames ≈ 800ms including jitter).
+    var perCharDelay = 16 / Math.max(1, length);
     for (var i = 0; i < length; i++){
       var from = oldChars[i] || '';
       var to = newChars[i] || '';
       var start = i * perCharDelay + Math.random() * 2;
-      var end = start + 2 + Math.random() * 2;
+      var end = start + 3 + Math.random() * 3;
       this.queue.push({ from: from, to: to, start: start, end: end, char: '' });
     }
     clearInterval(this.timer);
