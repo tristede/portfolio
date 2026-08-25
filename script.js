@@ -98,4 +98,119 @@
     }, { passive: true });
     updateNavParallax();
   }
+
+  // ---- scramble-to-decrypt hover (Schoolbell handwriting -> readable) ----
+  var SCRAMBLE_CHARS = '!<>-_\\/[]{}—=+*^?#$%&@';
+
+  function TextScramble(el){
+    this.el = el;
+    this.frame = 0;
+    this.timer = null;
+    this.queue = [];
+    this.resolve = null;
+    this.update = this.update.bind(this);
+  }
+  // toReadable=true plays the decrypt wave (cursive -> readable), false plays
+  // the re-encrypt wave (readable -> cursive) — same mechanics, opposite goal,
+  // so the two directions actually look like mirrored animations instead of
+  // an identical scramble that just snaps the font at the very end.
+  TextScramble.prototype.setText = function(newText, toReadable){
+    var oldChars = Array.from(this.el.textContent);
+    var newChars = Array.from(newText);
+    var length = Math.max(oldChars.length, newChars.length);
+    var self = this;
+    var promise = new Promise(function(res){ self.resolve = res; });
+    this.toReadable = toReadable;
+    this.queue = [];
+    // scale the stagger to the text length so the whole wave — regardless
+    // of how long the string is — comfortably finishes well under 1s
+    // (33ms ticks; worst-case ~24 frames ≈ 790ms including jitter).
+    var perCharDelay = 12 / Math.max(1, length);
+    for (var i = 0; i < length; i++){
+      var from = oldChars[i] || '';
+      var to = newChars[i] || '';
+      var start = i * perCharDelay + Math.random() * 2;
+      var end = start + 2 + Math.random() * 2;
+      this.queue.push({ from: from, to: to, start: start, end: end, char: '' });
+    }
+    clearInterval(this.timer);
+    this.frame = 0;
+    this.timer = setInterval(this.update, 33);
+    this.update();
+    return promise;
+  };
+  function wrapReadable(ch){
+    return '<span class="plain-readable">' + ch + '</span>';
+  }
+  // a line break is structural, not a visible character — it always renders
+  // as <br> and is never scrambled, so hard breaks (e.g. before "Autodidacte")
+  // survive the decrypt/re-encrypt animation instead of collapsing flat.
+  TextScramble.prototype.update = function(){
+    var output = '';
+    var complete = 0;
+    var toReadable = this.toReadable;
+    for (var i = 0; i < this.queue.length; i++){
+      var q = this.queue[i];
+      if (q.to === '\n'){
+        output += '<br>';
+        complete++;
+        continue;
+      }
+      if (this.frame >= q.end){
+        complete++;
+        // settled: the "readable" side of this transition needs an explicit
+        // font (the container's own font-family is always the cursive one).
+        output += toReadable ? wrapReadable(q.to) : (q.to || ' ');
+      } else if (this.frame >= q.start){
+        if (!q.char || Math.random() < 0.45){
+          q.char = (q.to === ' ' || q.to === '') ? ' ' : SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+        }
+        output += '<span class="dud">' + q.char + '</span>';
+      } else {
+        // not reached yet: still showing the *previous* state, which is
+        // readable when we're mid re-encrypt, cursive when mid-decrypt.
+        output += toReadable ? (q.from || ' ') : wrapReadable(q.from || ' ');
+      }
+    }
+    this.el.innerHTML = output;
+    if (complete === this.queue.length){
+      clearInterval(this.timer);
+      if (this.resolve){ this.resolve(); this.resolve = null; }
+      return;
+    }
+    this.frame++;
+  };
+
+  function readWithBreaks(el){
+    var out = '';
+    el.childNodes.forEach(function(node){
+      if (node.nodeType === 3) out += node.data;
+      else if (node.nodeName === 'BR') out += '\n';
+    });
+    // collapse any run of whitespace that contains a newline (incl. the
+    // source-formatting indentation around a real <br>) down to one \n,
+    // then collapse any remaining horizontal whitespace to a single space.
+    return out.replace(/[ \t]*\n[ \t\n]*/g, '\n').replace(/[ \t]+/g, ' ').trim();
+  }
+  function renderPlain(el, text){
+    el.innerHTML = text.split('\n').join('<br>');
+  }
+
+  document.querySelectorAll('.scramble').forEach(function(el){
+    var original = readWithBreaks(el);
+    renderPlain(el, original);
+    if (reduceMotionQuery.matches){
+      el.addEventListener('mouseenter', function(){ el.classList.add('decrypted'); });
+      el.addEventListener('mouseleave', function(){ el.classList.remove('decrypted'); });
+      return;
+    }
+    var fx = new TextScramble(el);
+    el.addEventListener('mouseenter', function(){
+      el.classList.add('decrypted');
+      fx.setText(original, true);
+    });
+    el.addEventListener('mouseleave', function(){
+      fx.setText(original, false).then(function(){ el.classList.remove('decrypted'); });
+    });
+  });
 })();

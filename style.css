@@ -81,6 +81,23 @@ h1,h2,h3{ font-family: var(--font-title); font-weight: 400; letter-spacing:0; ma
   }
 }
 
+/* ---------- Scramble-to-decrypt hover (Schoolbell handwriting -> readable) ---------- */
+/* the element itself always keeps its natural cursive font — only the
+   characters that have actually resolved to "readable" get an explicit
+   override, so the wave genuinely reads as part-cursive/part-clear while
+   it's mid-flight instead of the whole line snapping font at once. */
+.scramble{ cursor: default; }
+.scramble .plain-readable{
+  font-family: var(--font) !important;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.scramble .dud{
+  color: var(--accent-sky);
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+  text-shadow: 0 0 8px rgba(127,196,255,0.5);
+}
+
 /* Simple dark-blue gradient placeholder — swap for the real background image
    (see README: set background-image: url('background.jpg') here, background-size: cover) */
 .topo-bg{
