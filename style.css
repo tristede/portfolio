@@ -65,8 +65,20 @@ h1,h2,h3{ font-family: var(--font-title); font-weight: 400; letter-spacing:0; ma
   animation: eyebrow-blink 2.2s ease-in-out infinite;
 }
 @keyframes eyebrow-blink{
-  0%, 100%{ box-shadow: 0 0 0 4px var(--accent-soft); opacity: 1; }
-  50%{ box-shadow: 0 0 0 8px rgba(127,196,255,0.03); opacity: 0.55; }
+  0%, 100%{
+    box-shadow:
+      0 0 4px 1px rgba(180,225,255,0.9),
+      0 0 10px 4px rgba(127,196,255,0.7),
+      0 0 22px 8px rgba(127,196,255,0.4);
+    opacity: 1;
+  }
+  50%{
+    box-shadow:
+      0 0 2px 0px rgba(180,225,255,0.4),
+      0 0 5px 1px rgba(127,196,255,0.25),
+      0 0 10px 3px rgba(127,196,255,0.12);
+    opacity: 0.65;
+  }
 }
 
 /* Simple dark-blue gradient placeholder — swap for the real background image

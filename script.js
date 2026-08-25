@@ -66,7 +66,7 @@
     grid.innerHTML = list.map(cardHTML).join('');
   });
 
-  var cards = document.querySelectorAll('.card, .nav-card');
+  var cards = document.querySelectorAll('.card');
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(e){ if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
@@ -74,5 +74,21 @@
     cards.forEach(function(c){ io.observe(c); });
   } else {
     cards.forEach(function(c){ c.classList.add('in'); });
+  }
+
+  // nav-cards sit near the top of the page, often already inside the viewport
+  // on load — an IntersectionObserver would fire instantly there, reading as
+  // "no animation". Tie their reveal to an actual scroll instead, with a
+  // fallback timer so they never stay invisible if the user never scrolls.
+  var navCards = document.querySelectorAll('.nav-card');
+  if (navCards.length) {
+    var navRevealed = false;
+    var revealNavCards = function(){
+      if (navRevealed) return;
+      navRevealed = true;
+      navCards.forEach(function(c){ c.classList.add('in'); });
+    };
+    window.addEventListener('scroll', revealNavCards, { passive: true, once: true });
+    setTimeout(revealNavCards, 2500);
   }
 })();
