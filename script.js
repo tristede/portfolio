@@ -82,13 +82,13 @@
   // parallax "alive" feel while the page scrolls.
   var navCards = document.querySelectorAll('.nav-card');
   if (navCards.length && !reduceMotionQuery.matches) {
-    var navSpeeds = [0.09, -0.09];
+    var navSpeeds = [0.16, -0.16];
     var ticking = false;
     var updateNavParallax = function(){
       var y = window.scrollY;
       navCards.forEach(function(c, i){
         var speed = navSpeeds[i % navSpeeds.length];
-        var offset = Math.max(-16, Math.min(16, y * speed));
+        var offset = Math.max(-45, Math.min(45, y * speed));
         c.style.setProperty('--py', offset.toFixed(1) + 'px');
       });
       ticking = false;
