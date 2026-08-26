@@ -112,6 +112,35 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
 .sticky-save-inner button{ border-radius: 999px; }
 .hidden{ display:none !important; }
 .small{ font-size:12.5px; color: var(--text-faint); }
+
+/* ---------- Visual (WYSIWYG) editing view ---------- */
+.view-switch{
+  display:inline-flex; padding:3px; border-radius:999px;
+  border:1px solid var(--line); background: rgba(5,8,30,0.5);
+}
+.view-tab{
+  border:none; background:transparent; border-radius:999px;
+  padding:7px 16px; font-size:13.5px;
+}
+.view-tab.is-active{
+  background: linear-gradient(180deg, var(--accent-strong), var(--accent));
+  box-shadow: 0 6px 16px -8px rgba(70,80,255,0.7);
+}
+.visual-bar{
+  display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:12px 16px; margin-bottom:12px;
+  border:1px solid var(--panel-border); border-radius:12px; background: var(--panel);
+}
+.visual-bar-left{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.visual-bar button{ padding:7px 14px; font-size:13px; }
+.visual-hint{ text-align:right; }
+.visual-frame-wrap{
+  border:1px solid var(--panel-border); border-radius:16px; overflow:hidden;
+  background: var(--bg); height: calc(100vh - 250px); min-height: 480px;
+}
+#visual-frame{ width:100%; height:100%; border:none; display:block; }
+/* full-bleed: the visual view needs more room than the 880px form column */
+body.visual-mode .wrap{ max-width: 1400px; }
 </style>
 </head>
 <body>
@@ -134,11 +163,31 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
         <p class="small" style="margin:0;">Connecté à <strong id="repo-label"></strong></p>
       </div>
       <div class="actions">
+        <div class="view-switch">
+          <button class="view-tab is-active" id="view-form-btn" type="button">Formulaire</button>
+          <button class="view-tab" id="view-visual-btn" type="button">Vue visuelle</button>
+        </div>
         <a href="https://tristede.github.io/portfolio/" target="_blank" rel="noopener"><button class="ghost" type="button">Voir le site ↗</button></a>
         <button class="ghost" id="reload-btn" type="button">Recharger depuis GitHub</button>
         <button class="ghost" id="logout-btn" type="button">Se déconnecter</button>
       </div>
     </div>
+
+    <div id="visual-view" class="hidden">
+      <div class="visual-bar">
+        <div class="visual-bar-left">
+          <button class="ghost" id="visual-home-btn" type="button">⌂ Accueil</button>
+          <button class="ghost" id="visual-back-btn" type="button" disabled>← Retour</button>
+          <span class="small" id="visual-location">Accueil</span>
+        </div>
+        <span class="small visual-hint">Clique sur un texte pour l'éditer · clique une vignette pour ouvrir le projet</span>
+      </div>
+      <div class="visual-frame-wrap">
+        <iframe id="visual-frame" title="Aperçu éditable du site"></iframe>
+      </div>
+    </div>
+
+    <div id="form-view">
 
     <div class="panel">
       <h2>Textes du site</h2>
@@ -388,9 +437,11 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       </div>
     </div>
 
+    </div><!-- /#form-view -->
+
     <div class="sticky-save">
       <div class="sticky-save-inner">
-        <span class="small" id="save-hint">Les modifications ci-dessus restent locales tant que tu n'as pas cliqué ici.</span>
+        <span class="small" id="save-hint">Les modifications restent locales tant que tu n'as pas cliqué ici.</span>
         <button class="primary" id="save-btn" type="button">Enregistrer sur GitHub</button>
       </div>
     </div>
@@ -1076,6 +1127,244 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
         setStatus($('save-status'), err.message || 'Échec de l\'enregistrement.', 'err');
       })
       .then(function(){ btn.disabled = false; });
+  });
+
+  // =====================================================================
+  // Visual (WYSIWYG) editing view
+  //
+  // Renders the REAL site pages inside an iframe — same stylesheet, same
+  // script.js — but fed with the in-memory (unsaved) state via the
+  // window.__SITE_DATA__ hook script.js already supports. Editable texts are
+  // then made contenteditable from here, so nothing editor-specific ever
+  // ships in the public site code.
+  // =====================================================================
+  var visualNav = { page: 'index.html', projectId: null };
+  var pageCache = {};
+
+  function fetchPage(file){
+    if (pageCache[file]) return Promise.resolve(pageCache[file]);
+    return fetch(file, { cache: 'no-store' }).then(function(r){ return r.text(); }).then(function(html){
+      pageCache[file] = html;
+      return html;
+    });
+  }
+
+  // <br> is a real line break in the data model; everything else is text.
+  function readEditableText(el){
+    var out = '';
+    el.childNodes.forEach(function(node){
+      if (node.nodeType === 3) out += node.data;
+      else if (node.nodeName === 'BR') out += '\n';
+      else out += node.textContent;
+    });
+    return out.replace(/[ \t]*\n[ \t\n]*/g, '\n').replace(/[ \t]+/g, ' ').trim();
+  }
+
+  function buildFrameDoc(html, data, projectId){
+    var inject =
+      '<script>window.__SITE_DATA__ = ' + JSON.stringify(data).replace(/<\//g, '<\\/') + ';<\/script>' +
+      '<style>' +
+        '[data-edit]{ outline:1px dashed rgba(127,196,255,0.45); outline-offset:3px; border-radius:3px; cursor:text; transition: background .15s ease, outline-color .15s ease; }' +
+        '[data-edit]:hover{ background: rgba(127,196,255,0.10); outline-color: rgba(127,196,255,0.9); }' +
+        '[data-edit]:focus{ background: rgba(127,196,255,0.14); outline:2px solid var(--accent-sky); }' +
+        '.card{ cursor:pointer; }' +
+        '.card:hover{ outline:2px solid var(--accent-sky); outline-offset:2px; }' +
+      '</style>';
+    // the project detail page reads its id from the query string, which an
+    // srcdoc frame doesn't have — so hand it over explicitly instead.
+    if (projectId){
+      inject += '<script>window.__PROJECT_ID__ = ' + JSON.stringify(projectId) + ';<\/script>';
+    }
+    return html.replace('<script src="script.js"><\/script>', inject + '<script src="script.js"><\/script>');
+  }
+
+  function bindEditable(el, getFn, setFn, multiline){
+    if (!el) return;
+    el.setAttribute('data-edit', '1');
+    el.setAttribute('contenteditable', 'plaintext-only');
+    el.setAttribute('spellcheck', 'false');
+    el.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' && !multiline){ e.preventDefault(); el.blur(); }
+      if (e.key === 'Escape'){ el.textContent = getFn(); el.blur(); }
+    });
+    el.addEventListener('blur', function(){
+      var value = multiline ? readEditableText(el) : el.textContent.trim();
+      if (value === getFn()) return;
+      setFn(value);
+      markDirty();
+    });
+  }
+
+  function markDirty(){
+    setStatus($('save-status'), 'Modifié — clique « Enregistrer sur GitHub » pour publier.', '');
+    fillFormsFromState();
+  }
+
+  function wireHomeEditing(doc){
+    var s = state.site;
+
+    bindEditable(doc.getElementById('js-role-main'),
+      function(){ return s.roleMain || ''; }, function(v){ s.roleMain = v; });
+    bindEditable(doc.getElementById('js-role-accent'),
+      function(){ return s.roleAccent || ''; }, function(v){ s.roleAccent = v; });
+    bindEditable(doc.getElementById('js-bio'),
+      function(){ return s.bio || ''; }, function(v){ s.bio = v; }, true);
+
+    doc.querySelectorAll('[data-about-index]').forEach(function(el){
+      var i = +el.getAttribute('data-about-index');
+      bindEditable(el,
+        function(){ return (s.aboutParagraphs && s.aboutParagraphs[i]) || ''; },
+        function(v){
+          if (!Array.isArray(s.aboutParagraphs)) s.aboutParagraphs = [];
+          s.aboutParagraphs[i] = v;
+        }, true);
+    });
+
+    doc.querySelectorAll('.contact-email').forEach(function(el){
+      bindEditable(el,
+        function(){ return s.contactEmail || ''; },
+        function(v){ s.contactEmail = v; el.setAttribute('href', 'mailto:' + v); });
+    });
+
+    (s.timeline || []).forEach(function(t, i){
+      var item = doc.querySelectorAll('#js-timeline .timeline-item')[i];
+      if (!item) return;
+      bindEditable(item.querySelector('.timeline-year'),
+        function(){ return t.year || ''; }, function(v){ t.year = v; });
+      bindEditable(item.querySelector('h3'),
+        function(){ return t.title || ''; }, function(v){ t.title = v; });
+      bindEditable(item.querySelector('p'),
+        function(){ return t.desc || ''; }, function(v){ t.desc = v; }, true);
+    });
+
+    // favourite project block: same fields as its card, bound to that project
+    var fav = doc.getElementById('js-favori');
+    if (fav){
+      var favP = state.projects.filter(function(p){ return p.id === s.favoriProjectId; })[0] || state.projects[0];
+      if (favP){
+        bindEditable(fav.querySelector('h2'), function(){ return favP.title || ''; }, function(v){ favP.title = v; });
+        bindEditable(fav.querySelector('.desc'), function(){ return favP.desc || ''; }, function(v){ favP.desc = v; }, true);
+      }
+    }
+  }
+
+  function wireCardEditing(doc){
+    doc.querySelectorAll('.card').forEach(function(card){
+      var href = card.getAttribute('href') || '';
+      var m = href.match(/[?&]id=([^&]+)/);
+      if (!m) return;
+      var id = decodeURIComponent(m[1]);
+      var p = state.projects.filter(function(x){ return x.id === id; })[0];
+      if (!p) return;
+      bindEditable(card.querySelector('h3'), function(){ return p.title || ''; }, function(v){ p.title = v; });
+      bindEditable(card.querySelector('.desc'), function(){ return p.desc || ''; }, function(v){ p.desc = v; }, true);
+    });
+  }
+
+  function wireDetailEditing(doc, projectId){
+    var p = state.projects.filter(function(x){ return x.id === projectId; })[0];
+    if (!p) return;
+    bindEditable(doc.querySelector('.detail-title'), function(){ return p.title || ''; }, function(v){ p.title = v; });
+    var mainDesc = doc.querySelector('.detail-wrap > .detail-desc');
+    bindEditable(mainDesc,
+      function(){ return p.longDesc || p.desc || ''; },
+      function(v){ p.longDesc = v; }, true);
+
+    doc.querySelectorAll('.subproject').forEach(function(node, i){
+      var sp = (p.subProjects || [])[i];
+      if (!sp) return;
+      bindEditable(node.querySelector('h3'), function(){ return sp.title || ''; }, function(v){ sp.title = v; });
+      bindEditable(node.querySelector('.detail-desc'), function(){ return sp.desc || ''; }, function(v){ sp.desc = v; }, true);
+    });
+  }
+
+  // links inside the frame must never navigate the frame away from our
+  // injected document — project links re-render in place, the rest is inert.
+  function interceptLinks(doc){
+    doc.addEventListener('click', function(e){
+      var a = e.target.closest ? e.target.closest('a') : null;
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      if (href.indexOf('projet.html') === 0){
+        e.preventDefault();
+        var m = href.match(/[?&]id=([^&]+)/);
+        if (m) openVisual('projet.html', decodeURIComponent(m[1]));
+        return;
+      }
+      if (href.indexOf('projets-perso.html') === 0){ e.preventDefault(); openVisual('projets-perso.html'); return; }
+      if (href.indexOf('projets-academiques.html') === 0){ e.preventDefault(); openVisual('projets-academiques.html'); return; }
+      if (href.indexOf('index.html') === 0){ e.preventDefault(); openVisual('index.html'); return; }
+      if (href.charAt(0) === '#') return; // in-page anchors are fine
+      e.preventDefault(); // external links / CV / admin: inert while editing
+    }, true);
+  }
+
+  var PAGE_LABEL = {
+    'index.html': 'Accueil',
+    'projets-perso.html': 'Projets perso',
+    'projets-academiques.html': 'Projets académiques'
+  };
+
+  function openVisual(page, projectId){
+    visualNav = { page: page, projectId: projectId || null };
+    var frame = $('visual-frame');
+    var label = page === 'projet.html'
+      ? 'Projet — ' + ((state.projects.filter(function(p){ return p.id === projectId; })[0] || {}).title || projectId)
+      : (PAGE_LABEL[page] || page);
+    $('visual-location').textContent = label;
+    $('visual-back-btn').disabled = (page === 'index.html');
+
+    fetchPage(page).then(function(html){
+      frame.srcdoc = buildFrameDoc(html, { site: state.site, projects: state.projects }, projectId);
+      frame.onload = function(){
+        var doc = frame.contentDocument;
+        // script.js renders from a resolved promise, so the content may not
+        // exist yet at load time — wait for it rather than guessing a delay.
+        var tries = 0;
+        (function waitForRender(){
+          var ready = page === 'projet.html'
+            ? doc.querySelector('.detail-title, .detail-wrap')
+            : doc.querySelector('#js-bio, .card, .grid');
+          if (!ready && tries++ < 60){ setTimeout(waitForRender, 50); return; }
+          interceptLinks(doc);
+          if (page === 'projet.html') wireDetailEditing(doc, projectId);
+          else {
+            if (page === 'index.html') wireHomeEditing(doc);
+            wireCardEditing(doc);
+          }
+        })();
+      };
+    }).catch(function(err){
+      $('visual-location').textContent = 'Erreur : ' + err.message;
+    });
+  }
+
+  function showView(which){
+    var visual = which === 'visual';
+    $('form-view').classList.toggle('hidden', visual);
+    $('visual-view').classList.toggle('hidden', !visual);
+    $('view-form-btn').classList.toggle('is-active', !visual);
+    $('view-visual-btn').classList.toggle('is-active', visual);
+    document.body.classList.toggle('visual-mode', visual);
+    if (visual) openVisual(visualNav.page, visualNav.projectId);
+  }
+
+  $('view-form-btn').addEventListener('click', function(){ showView('form'); });
+  $('view-visual-btn').addEventListener('click', function(){
+    collectStateFromForms(); // carry over anything typed in the form view
+    showView('visual');
+  });
+  $('visual-home-btn').addEventListener('click', function(){ openVisual('index.html'); });
+  $('visual-back-btn').addEventListener('click', function(){
+    if (visualNav.page === 'projet.html'){
+      var p = state.projects.filter(function(x){ return x.id === visualNav.projectId; })[0];
+      var back = p && p.ctx === 'perso' ? 'projets-perso.html'
+               : p && (p.ctx === 'academique' || p.ctx === 'stage') ? 'projets-academiques.html'
+               : 'index.html';
+      openVisual(back);
+    } else {
+      openVisual('index.html');
+    }
   });
 
   // auto-connect if a token from a previous OAuth login is still stored

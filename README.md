@@ -49,6 +49,24 @@ d'édition. Il te permet de :
   réseaux sociaux, événementiel, écrit —, tags, description, et s'il est "mis
   en avant" sur l'accueil).
 
+### Deux vues : Formulaire et Vue visuelle
+
+En haut du panneau, un sélecteur bascule entre :
+
+- **Formulaire** — la vue classique, champ par champ. C'est la seule qui donne
+  accès à *tous* les réglages (médium, tags, images, vidéo/audio, sous-projets,
+  miniature, ordre du parcours…).
+- **Vue visuelle** — le site réel s'affiche tel quel, et **les textes s'éditent
+  directement dessus** : clique un texte encadré en pointillés, tape, clique
+  ailleurs. Clique une vignette de projet pour **entrer dans sa page détail**
+  et y éditer le titre, la description longue et les titres/descriptions des
+  sous-projets, exactement comme en naviguant sur le site public. Les boutons
+  ⌂ Accueil et ← Retour servent à circuler.
+
+Les deux vues éditent la même chose : ce que tu changes dans l'une apparaît
+immédiatement dans l'autre. Dans les deux cas, rien n'est publié tant que tu
+n'as pas cliqué **« Enregistrer sur GitHub »**.
+
 Comme le site est hébergé sur GitHub Pages (donc statique, sans serveur), le
 panneau enregistre tes modifications directement sur GitHub via un **token
 d'accès personnel** — pas ton mot de passe de compte, GitHub ne permet plus

@@ -183,7 +183,9 @@
   function renderProjectDetail(site, projects){
     var container = document.getElementById('js-project-detail');
     if (!container) return;
-    var id = new URLSearchParams(window.location.search).get('id');
+    // normally the id comes from the query string; a preview frame with no
+    // URL of its own (the admin's visual editor) passes it in directly.
+    var id = window.__PROJECT_ID__ || new URLSearchParams(window.location.search).get('id');
     var p = projects.filter(function(x){ return x.id === id; })[0];
 
     if (!p){
