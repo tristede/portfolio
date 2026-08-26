@@ -613,13 +613,81 @@ body.visual-mode .wrap{ max-width: 1400px; }
   }
 
   function uploadProjectImage(file, idHint, index){
-    return fileToWebpBase64(file, 1920).then(function(b64){
-      var filename = 'images/' + slugify(idHint) + '-' + Date.now() + '-' + index + '.webp';
-      return ghRequest('/contents/' + filename, {
-        method: 'PUT',
-        body: JSON.stringify({ message: 'Ajoute l\'image ' + filename, content: b64, branch: BRANCH })
-      }).then(function(){ return filename; });
-    });
+    return uploadImagesBatch([file], idHint).then(function(paths){ return paths[0]; });
+  }
+
+  // Uploading N images through the Contents API means N sequential commits,
+  // which crawls once you pick a dozen files. The Git Data API instead lets us
+  // push every image as a blob (in parallel) and land them in ONE commit.
+  function uploadImagesBatch(files, idHint, onProgress){
+    var stamp = Date.now();
+    var slug = slugify(idHint || 'projet');
+    var done = 0;
+    var total = files.length;
+    function report(step){ if (onProgress) onProgress(done, total, step); }
+
+    // 1. convert + upload each file as a blob, a few at a time
+    var entries = new Array(total);
+    var next = 0;
+    function worker(){
+      if (next >= total) return Promise.resolve();
+      var i = next++;
+      return fileToWebpBase64(files[i], 1920)
+        .then(function(b64){
+          return ghRequest('/git/blobs', {
+            method: 'POST',
+            body: JSON.stringify({ content: b64, encoding: 'base64' })
+          });
+        })
+        .then(function(blob){
+          entries[i] = {
+            path: 'images/' + slug + '-' + stamp + '-' + i + '.webp',
+            mode: '100644', type: 'blob', sha: blob.sha
+          };
+          done++; report('upload');
+          return worker();
+        });
+    }
+    var lanes = [];
+    for (var k = 0; k < Math.min(4, total); k++) lanes.push(worker());
+
+    return Promise.all(lanes)
+      .then(function(){
+        report('commit');
+        // 2. current branch tip
+        return ghRequest('/git/ref/heads/' + BRANCH);
+      })
+      .then(function(ref){
+        var headSha = ref.object.sha;
+        return ghRequest('/git/commits/' + headSha).then(function(commit){
+          // 3. a tree holding all the new blobs, based on the current one
+          return ghRequest('/git/trees', {
+            method: 'POST',
+            body: JSON.stringify({ base_tree: commit.tree.sha, tree: entries })
+          }).then(function(tree){
+            // 4. one commit for the whole batch
+            return ghRequest('/git/commits', {
+              method: 'POST',
+              body: JSON.stringify({
+                message: 'Ajoute ' + total + ' image' + (total > 1 ? 's' : '') + ' (' + slug + ')',
+                tree: tree.sha, parents: [headSha]
+              })
+            });
+          });
+        });
+      })
+      .then(function(commit){
+        // 5. move the branch to it
+        return ghRequest('/git/refs/heads/' + BRANCH, {
+          method: 'PATCH',
+          body: JSON.stringify({ sha: commit.sha })
+        });
+      })
+      .then(function(){
+        // data.json now sits on a newer commit; its blob sha is unchanged, so
+        // the pending save still applies cleanly.
+        return entries.map(function(e){ return e.path; });
+      });
   }
 
   function slugify(str){
@@ -1211,30 +1279,22 @@ body.visual-mode .wrap{ max-width: 1400px; }
       if (!files.length) return;
       var statusEl = $(statusId);
       var idHint = idHintFn() || 'projet';
-      var uploaded = [];
-      var i = 0;
-      function next(){
-        if (i >= files.length){
-          if (uploaded.length) onUploaded(uploaded);
-          if (uploaded.length === files.length){
-            setStatus(statusEl, 'Envoyé (' + uploaded.length + ' image' + (uploaded.length > 1 ? 's' : '') + ')', 'ok');
-          }
-          e.target.value = '';
-          return;
-        }
-        var f = files[i];
-        setStatus(statusEl, 'Conversion et envoi de « ' + f.name + ' »… (' + (i + 1) + '/' + files.length + ')', '');
-        uploadProjectImage(f, idHint, i).then(function(path){
-          uploaded.push(path);
-          i++;
-          next();
-        }).catch(function(err){
-          setStatus(statusEl, 'Erreur sur « ' + f.name + ' » : ' + err.message, 'err');
-          i++;
-          next();
-        });
-      }
-      next();
+      var input = e.target;
+      input.disabled = true;
+
+      uploadImagesBatch(files, idHint, function(done, total, step){
+        setStatus(statusEl, step === 'commit'
+          ? 'Enregistrement des ' + total + ' images…'
+          : 'Conversion et envoi… (' + done + '/' + total + ')', '');
+      }).then(function(paths){
+        onUploaded(paths);
+        setStatus(statusEl, 'Envoyé (' + paths.length + ' image' + (paths.length > 1 ? 's' : '') + ')', 'ok');
+      }).catch(function(err){
+        setStatus(statusEl, 'Échec de l\'envoi : ' + err.message, 'err');
+      }).then(function(){
+        input.disabled = false;
+        input.value = '';
+      });
     });
   }
 
@@ -1928,26 +1988,22 @@ body.visual-mode .wrap{ max-width: 1400px; }
     e.target.value = '';
     if (!files.length || !target) return;
 
-    $('visual-location').textContent = 'Envoi de ' + files.length + ' image' + (files.length > 1 ? 's' : '') + '…';
-    var uploaded = [];
-    var i = 0;
-    (function next(){
-      if (i >= files.length){
-        if (!uploaded.length){ openVisual(visualNav.page, visualNav.projectId); return; }
-        if (target.thumbOnly){
-          target.owner.thumb = uploaded[0];
-        } else {
-          var arr = ensureAssets(target.owner);
-          uploaded.forEach(function(u){ arr.push({ type: 'image', url: u, hidden: false }); });
-        }
-        applyAndRefresh();
-        return;
+    uploadImagesBatch(files, target.hint || 'projet', function(done, total, step){
+      $('visual-location').textContent = step === 'commit'
+        ? 'Enregistrement des ' + total + ' images…'
+        : 'Envoi des images… (' + done + '/' + total + ')';
+    }).then(function(paths){
+      if (target.thumbOnly){
+        target.owner.thumb = paths[0];
+      } else {
+        var arr = ensureAssets(target.owner);
+        paths.forEach(function(u){ arr.push({ type: 'image', url: u, hidden: false }); });
       }
-      uploadProjectImage(files[i], target.hint || 'projet', i)
-        .then(function(path){ uploaded.push(path); })
-        .catch(function(err){ alert('Erreur sur « ' + files[i].name + ' » : ' + err.message); })
-        .then(function(){ i++; next(); });
-    })();
+      applyAndRefresh();
+    }).catch(function(err){
+      alert('Échec de l\'envoi : ' + err.message);
+      openVisual(visualNav.page, visualNav.projectId);
+    });
   });
 
   $('view-form-btn').addEventListener('click', function(){ showView('form'); });
