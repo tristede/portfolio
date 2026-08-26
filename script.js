@@ -23,12 +23,22 @@
     return 'projets-academiques.html';
   }
 
+  // the thumbnail image: an explicitly chosen one wins, otherwise the first
+  // image of the project, otherwise nothing (the generated CSS pattern shows).
+  function thumbSrc(p){
+    if (p.thumb) return p.thumb;
+    if (p.images && p.images.length) return p.images[0];
+    return '';
+  }
+
   function cardHTML(p, i){
+    var thumb = thumbSrc(p);
     return (
       '<a class="card" href="projet.html?id=' + encodeURIComponent(p.id) + '" style="transition-delay:' + ((i % 8) * 40) + 'ms">' +
-        '<div class="thumb">' +
+        '<div class="thumb' + (thumb ? ' has-img' : '') + '">' +
+          (thumb ? '<img class="thumb-img" src="' + thumb + '" alt="' + p.title + '" loading="lazy">' : '') +
           '<span class="year">' + p.year + '</span>' +
-          '<span class="icon">' + (icons[p.medium] || '') + '</span>' +
+          (thumb ? '' : '<span class="icon">' + (icons[p.medium] || '') + '</span>') +
           '<span class="medium-label">' + (mediumLabel[p.medium] || p.medium) + '</span>' +
         '</div>' +
         '<div class="card-body">' +
@@ -71,10 +81,12 @@
     if (!container) return;
     var p = projects.filter(function(x){ return x.id === site.favoriProjectId; })[0] || projects[0];
     if (!p) return;
+    var thumb = thumbSrc(p);
     container.innerHTML =
-      '<div class="thumb">' +
+      '<div class="thumb' + (thumb ? ' has-img' : '') + '">' +
+        (thumb ? '<img class="thumb-img" src="' + thumb + '" alt="' + p.title + '" loading="lazy">' : '') +
         '<span class="year">' + p.year + '</span>' +
-        '<span class="icon">' + (icons[p.medium] || '') + '</span>' +
+        (thumb ? '' : '<span class="icon">' + (icons[p.medium] || '') + '</span>') +
       '</div>' +
       '<div class="body">' +
         '<span class="kicker" style="color:var(--text-faint);font-size:13px;font-weight:600;letter-spacing:0.04em;">Projet favori</span>' +

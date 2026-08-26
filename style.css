@@ -247,17 +247,25 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
   border-bottom: 1px solid var(--card-border);
 }
 .card .thumb::before{
-  content:""; position:absolute; inset:0;
+  content:""; position:absolute; inset:0; z-index:1;
   background: linear-gradient(180deg, rgba(8,11,48,0.1), rgba(8,11,48,0.78));
 }
-.card .thumb .icon{ position:relative; z-index:1; width:32px; height:32px; color: var(--accent-sky); opacity:0.9; }
+.card .thumb .icon{ position:relative; z-index:2; width:32px; height:32px; color: var(--accent-sky); opacity:0.9; }
+/* a real thumbnail image sits under the same dark gradient the generated
+   pattern gets, so the year/medium chips stay readable on any photo */
+.thumb-img{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;
+}
+.thumb.has-img::before{
+  background: linear-gradient(180deg, rgba(8,11,48,0.05), rgba(8,11,48,0.62));
+}
 .card .thumb .medium-label{
-  position:absolute; bottom:10px; left:12px; z-index:1;
+  position:absolute; bottom:10px; left:12px; z-index:2;
   font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; font-weight:600;
   color: rgba(255,255,255,0.68);
 }
 .card .year{
-  position:absolute; top:10px; right:12px; z-index:1;
+  position:absolute; top:10px; right:12px; z-index:2;
   font-size: 11px; font-weight:600; color: rgba(255,255,255,0.85);
   background: rgba(8,11,48,0.7); padding: 3px 8px; border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.18);
@@ -329,12 +337,12 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
   display:flex; align-items:center; justify-content:center;
 }
 .favori-card .thumb::before{
-  content:""; position:absolute; inset:0;
+  content:""; position:absolute; inset:0; z-index:1;
   background: linear-gradient(180deg, rgba(8,11,48,0.1), rgba(8,11,48,0.78));
 }
-.favori-card .thumb .icon{ position:relative; z-index:1; width:48px; height:48px; color: var(--accent-sky); opacity:0.9; }
+.favori-card .thumb .icon{ position:relative; z-index:2; width:48px; height:48px; color: var(--accent-sky); opacity:0.9; }
 .favori-card .thumb .year{
-  position:absolute; top:14px; right:14px; z-index:1;
+  position:absolute; top:14px; right:14px; z-index:2;
   font-size: 11px; font-weight:600; color: rgba(255,255,255,0.85);
   background: rgba(8,11,48,0.7); padding: 3px 8px; border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.18);

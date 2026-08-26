@@ -309,6 +309,11 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
         <div class="status" id="pf-images-upload-status"></div>
         <textarea id="pf-images" placeholder="images/mon-projet-1.webp&#10;images/mon-projet-2.webp"></textarea>
         <p class="small" style="margin:2px 0 0;">Choisis des fichiers ci-dessus : ils sont convertis en WebP et envoyés directement sur GitHub — leur chemin s'ajoute automatiquement ci-dessous. Tu peux aussi coller des URL à la main (une par ligne).</p>
+
+        <label for="pf-thumb">Miniature (image affichée sur la vignette, avant de cliquer)</label>
+        <select id="pf-thumb"></select>
+        <div id="pf-thumb-preview" style="margin-top:10px;"></div>
+
         <div class="row">
           <div>
             <label for="pf-video">Lien vidéo (YouTube, Vimeo, ou fichier .mp4)</label>
@@ -661,6 +666,30 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
     renderSubProjectList();
   }
 
+  // the thumbnail dropdown is populated from whatever is currently listed in
+  // the images textarea, so it stays in sync after an upload or a manual edit.
+  function refreshThumbOptions(preferred){
+    var sel = $('pf-thumb');
+    var current = preferred !== undefined ? preferred : sel.value;
+    var imgs = $('pf-images').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+    sel.innerHTML = '<option value="">Première image (par défaut)</option>' +
+      imgs.map(function(src){ return '<option value="' + escapeHtml(src) + '">' + escapeHtml(src) + '</option>'; }).join('');
+    sel.value = (current && imgs.indexOf(current) !== -1) ? current : '';
+    renderThumbPreview();
+  }
+
+  function renderThumbPreview(){
+    var chosen = $('pf-thumb').value;
+    if (!chosen){
+      var imgs = $('pf-images').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+      chosen = imgs[0] || '';
+    }
+    var box = $('pf-thumb-preview');
+    box.innerHTML = chosen
+      ? '<img src="' + escapeHtml(chosen) + '" alt="Aperçu de la miniature" style="width:190px; aspect-ratio:16/10; object-fit:cover; border-radius:8px; border:1px solid var(--line);">'
+      : '<p class="small" style="margin:0;">Aucune image — la vignette affichera le motif généré et l\'icône du médium.</p>';
+  }
+
   function openProjectForm(index){
     editingIndex = index;
     var box = $('project-form-box');
@@ -672,6 +701,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       $('pf-tags').value = ''; $('pf-desc').value = ''; $('pf-featured').checked = false;
       $('pf-longdesc').value = ''; $('pf-images').value = ''; $('pf-video').value = ''; $('pf-audio').value = ''; $('pf-link').value = '';
       currentSubProjects = [];
+      refreshThumbOptions('');
     } else {
       var p = state.projects[index];
       $('project-form-title').textContent = 'Modifier le projet';
@@ -685,6 +715,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       $('pf-audio').value = p.audioUrl || '';
       $('pf-link').value = p.link || '';
       currentSubProjects = JSON.parse(JSON.stringify(p.subProjects || []));
+      refreshThumbOptions(p.thumb || '');
     }
     $('pf-images-upload').value = '';
     setStatus($('pf-images-upload-status'), '', '');
@@ -711,6 +742,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       videoUrl: $('pf-video').value.trim(),
       audioUrl: $('pf-audio').value.trim(),
       link: $('pf-link').value.trim(),
+      thumb: $('pf-thumb').value,
       subProjects: currentSubProjects
     };
     if (editingIndex === -1) state.projects.push(p);
@@ -980,6 +1012,9 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
           if (uploaded.length){
             var existing = $(textareaId).value.trim();
             $(textareaId).value = (existing ? existing + '\n' : '') + uploaded.join('\n');
+            // setting .value by script fires no 'input' event, so the
+            // thumbnail dropdown has to be refreshed explicitly here
+            if (textareaId === 'pf-images') refreshThumbOptions();
           }
           if (uploaded.length === files.length){
             setStatus(statusEl, 'Envoyé ✅ (' + uploaded.length + ' image' + (uploaded.length > 1 ? 's' : '') + ')', 'ok');
@@ -1003,6 +1038,8 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
     });
   }
   wireImageUploadInput('pf-images-upload', 'pf-images', 'pf-images-upload-status', function(){ return $('pf-title').value.trim(); });
+  $('pf-images').addEventListener('input', function(){ refreshThumbOptions(); });
+  $('pf-thumb').addEventListener('change', renderThumbPreview);
   wireImageUploadInput('spf-images-upload', 'spf-images', 'spf-images-upload-status', function(){ return ($('pf-title').value.trim() || 'projet') + '-' + $('spf-title').value.trim(); });
 
   $('add-subproject-btn').addEventListener('click', function(){ openSubProjectForm(-1); });
