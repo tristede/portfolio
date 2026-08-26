@@ -125,7 +125,78 @@
       ],
       "desc": "Création de visuels de pochettes pour des projets rap.",
       "featured": false,
-      "assets": [],
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778502245-0.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778504109-1.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778510294-3.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778512584-4.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778514676-5.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778516929-6.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778518647-7.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778520048-8.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778522077-9.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778524271-10.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778526092-11.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778528038-12.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778529909-13.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/artwork-rap-pochette-d-albums-1787778531715-14.webp",
+          "hidden": false
+        }
+      ],
       "subProjects": []
     },
     {
