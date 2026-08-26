@@ -117,6 +117,57 @@
     return '<video controls src="' + url + '"></video>';
   }
 
+  // SoundCloud links get the official embeddable player; anything else
+  // (direct .mp3/.wav link) falls back to a plain <audio> tag.
+  function audioEmbedHTML(url){
+    if (/soundcloud\.com\//.test(url)){
+      return '<iframe scrolling="no" frameborder="no" allow="autoplay" loading="lazy" ' +
+        'src="https://w.soundcloud.com/player/?url=' + encodeURIComponent(url) + '&color=%237fc4ff&auto_play=false&show_user=true"></iframe>';
+    }
+    return '<audio controls src="' + url + '"></audio>';
+  }
+
+  // shared by the main project and each of its sub-projects: gallery of
+  // images, then video embed, then audio embed — whichever are present.
+  function mediaBlocksHTML(obj){
+    var media = '';
+    if (obj.images && obj.images.length){
+      media += '<div class="detail-gallery">' + obj.images.map(function(src){
+        return '<img src="' + src + '" alt="' + obj.title + '" loading="lazy">';
+      }).join('') + '</div>';
+    }
+    if (obj.videoUrl) media += '<div class="detail-embed">' + videoEmbedHTML(obj.videoUrl) + '</div>';
+    if (obj.audioUrl) media += '<div class="detail-audio">' + audioEmbedHTML(obj.audioUrl) + '</div>';
+    return media;
+  }
+
+  // live preview of an external site the project links to — many sites block
+  // being framed (X-Frame-Options/CSP), which fails silently, so the direct
+  // link is always shown alongside as a guaranteed way to actually see it.
+  function websiteEmbedHTML(link){
+    return '<div class="detail-site-embed">' +
+      '<iframe src="' + link + '" title="Aperçu du site" loading="lazy" referrerpolicy="no-referrer"></iframe>' +
+      '<p class="detail-embed-caption">Aperçu en direct — si rien ne s\'affiche ci-dessus, ce site bloque l\'intégration ; ' +
+        '<a href="' + link + '" target="_blank" rel="noopener">ouvre-le directement ↗</a>.</p>' +
+    '</div>';
+  }
+
+  function subProjectsHTML(list){
+    if (!list || !list.length) return '';
+    return '<div class="detail-subprojects">' +
+      '<h2 class="detail-sub-heading">Sous-projets</h2>' +
+      list.map(function(sp){
+        return '<div class="subproject">' +
+          (sp.medium ? '<span class="tag">' + (mediumLabel[sp.medium] || sp.medium) + '</span>' : '') +
+          '<h3>' + sp.title + '</h3>' +
+          (sp.desc ? '<p class="detail-desc">' + sp.desc + '</p>' : '') +
+          (sp.link ? '<a class="pill-btn" href="' + sp.link + '" target="_blank" rel="noopener">Voir ↗</a>' : '') +
+          mediaBlocksHTML(sp) +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+
   function renderProjectDetail(site, projects){
     var container = document.getElementById('js-project-detail');
     if (!container) return;
@@ -136,15 +187,6 @@
 
     document.title = p.title + ' — Adam';
 
-    var media = '';
-    if (p.images && p.images.length){
-      media += '<div class="detail-gallery">' + p.images.map(function(src){
-        return '<img src="' + src + '" alt="' + p.title + '" loading="lazy">';
-      }).join('') + '</div>';
-    }
-    if (p.videoUrl) media += '<div class="detail-embed">' + videoEmbedHTML(p.videoUrl) + '</div>';
-    if (p.audioUrl) media += '<div class="detail-audio"><audio controls src="' + p.audioUrl + '"></audio></div>';
-
     container.innerHTML =
       '<div class="wrap detail-wrap">' +
         '<a class="pill-btn back-link" href="' + linkForProject(p) + '">← ' + (BACK_LABEL[p.ctx] || 'Retour') + '</a>' +
@@ -157,7 +199,9 @@
         '<div class="card-tags detail-tags">' + p.tags.map(function(t){ return '<span class="tag">#' + t.replace(/\s+/g,'') + '</span>'; }).join('') + '</div>' +
         '<p class="detail-desc">' + (p.longDesc || p.desc) + '</p>' +
         (p.link ? '<a class="btn btn-primary" href="' + p.link + '" target="_blank" rel="noopener">Visiter le site ↗</a>' : '') +
-        media +
+        (p.link ? websiteEmbedHTML(p.link) : '') +
+        mediaBlocksHTML(p) +
+        subProjectsHTML(p.subProjects) +
       '</div>';
   }
 

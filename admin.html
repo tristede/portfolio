@@ -302,20 +302,79 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
 
         <label for="pf-longdesc">Description longue (page détail — si vide, la description courte est réutilisée)</label>
         <textarea id="pf-longdesc"></textarea>
-        <label for="pf-images">Images (une URL par ligne)</label>
-        <textarea id="pf-images" placeholder="images/mon-projet-1.jpg&#10;images/mon-projet-2.jpg"></textarea>
+        <label for="pf-images">Images</label>
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+          <input type="file" id="pf-images-upload" accept="image/*" multiple style="flex:1;">
+        </div>
+        <div class="status" id="pf-images-upload-status"></div>
+        <textarea id="pf-images" placeholder="images/mon-projet-1.webp&#10;images/mon-projet-2.webp"></textarea>
+        <p class="small" style="margin:2px 0 0;">Choisis des fichiers ci-dessus : ils sont convertis en WebP et envoyés directement sur GitHub — leur chemin s'ajoute automatiquement ci-dessous. Tu peux aussi coller des URL à la main (une par ligne).</p>
         <div class="row">
           <div>
             <label for="pf-video">Lien vidéo (YouTube, Vimeo, ou fichier .mp4)</label>
             <input type="text" id="pf-video" placeholder="https://youtube.com/watch?v=...">
           </div>
           <div>
-            <label for="pf-audio">Lien audio (fichier .mp3/.wav)</label>
-            <input type="text" id="pf-audio" placeholder="audio/mon-morceau.mp3">
+            <label for="pf-audio">Lien audio (SoundCloud, ou fichier .mp3/.wav)</label>
+            <input type="text" id="pf-audio" placeholder="https://soundcloud.com/...">
           </div>
         </div>
-        <label for="pf-link">Lien externe (site web à visiter, pour les projets "Site web" par ex.)</label>
+        <label for="pf-link">Lien externe (site web à visiter — affiché aussi en aperçu intégré sur la page détail)</label>
         <input type="url" id="pf-link" placeholder="https://...">
+
+        <div class="form-box">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h2 style="margin:0; font-size:15px;">Sous-projets <span class="small" id="subproject-count"></span></h2>
+            <button class="ghost" id="add-subproject-btn" type="button">+ Ajouter un sous-projet</button>
+          </div>
+          <p class="small" style="margin:0 0 12px;">Ex: "Refonte graphique", "Community management" — des sections à l'intérieur de la page détail de ce projet.</p>
+          <div id="subproject-list"></div>
+
+          <div class="form-box hidden" id="subproject-form-box">
+            <h2 id="subproject-form-title" style="font-size:15px;">Ajouter un sous-projet</h2>
+            <div class="row">
+              <div>
+                <label for="spf-title">Titre</label>
+                <input type="text" id="spf-title">
+              </div>
+              <div>
+                <label for="spf-medium">Médium (optionnel)</label>
+                <select id="spf-medium">
+                  <option value="">—</option>
+                  <option value="graphisme">Graphisme</option>
+                  <option value="video">Vidéo</option>
+                  <option value="audio">Audio</option>
+                  <option value="web">Site web</option>
+                  <option value="social">Réseaux sociaux</option>
+                  <option value="event">Événementiel</option>
+                  <option value="ecrit">Écrit</option>
+                </select>
+              </div>
+            </div>
+            <label for="spf-desc">Description</label>
+            <textarea id="spf-desc"></textarea>
+            <label for="spf-images">Images</label>
+            <input type="file" id="spf-images-upload" accept="image/*" multiple style="margin-bottom:8px;">
+            <div class="status" id="spf-images-upload-status"></div>
+            <textarea id="spf-images" placeholder="images/sous-projet.webp"></textarea>
+            <div class="row">
+              <div>
+                <label for="spf-video">Lien vidéo</label>
+                <input type="text" id="spf-video" placeholder="https://youtube.com/watch?v=...">
+              </div>
+              <div>
+                <label for="spf-audio">Lien audio</label>
+                <input type="text" id="spf-audio" placeholder="https://soundcloud.com/...">
+              </div>
+            </div>
+            <label for="spf-link">Lien externe</label>
+            <input type="url" id="spf-link" placeholder="https://...">
+            <div style="margin-top:14px; display:flex; gap:10px;">
+              <button class="primary" id="spf-save-btn" type="button">Enregistrer ce sous-projet</button>
+              <button class="ghost" id="spf-cancel-btn" type="button">Annuler</button>
+            </div>
+          </div>
+        </div>
 
         <div style="margin-top:16px; display:flex; gap:10px;">
           <button class="primary" id="pf-save-btn" type="button">Enregistrer ce projet</button>
@@ -411,6 +470,39 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
     });
   }
 
+  // ---- image upload: convert to WebP client-side (canvas), then commit the
+  // file straight to the repo via the same Contents API used for data.json —
+  // no server involved, GitHub IS the file host. ----
+  function fileToWebpBase64(file, maxDim){
+    return createImageBitmap(file).then(function(bitmap){
+      var scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+      var w = Math.max(1, Math.round(bitmap.width * scale));
+      var h = Math.max(1, Math.round(bitmap.height * scale));
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+      return new Promise(function(resolve, reject){
+        canvas.toBlob(function(blob){
+          if (!blob){ reject(new Error('Conversion WebP impossible sur ce navigateur.')); return; }
+          var reader = new FileReader();
+          reader.onload = function(){ resolve(reader.result.split(',')[1]); };
+          reader.onerror = function(){ reject(new Error('Lecture du fichier impossible.')); };
+          reader.readAsDataURL(blob);
+        }, 'image/webp', 0.85);
+      });
+    });
+  }
+
+  function uploadProjectImage(file, idHint, index){
+    return fileToWebpBase64(file, 1920).then(function(b64){
+      var filename = 'images/' + slugify(idHint) + '-' + Date.now() + '-' + index + '.webp';
+      return ghRequest('/contents/' + filename, {
+        method: 'PUT',
+        body: JSON.stringify({ message: 'Ajoute l\'image ' + filename, content: b64, branch: BRANCH })
+      }).then(function(){ return filename; });
+    });
+  }
+
   function slugify(str){
     return str.toLowerCase()
       .normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -493,6 +585,82 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
     });
   }
 
+  // ---- sub-projects: sections nested inside a project's detail page (e.g.
+  // "Refonte graphique", "Community management" under one umbrella project).
+  // Held in a working array scoped to whichever project form is currently
+  // open, and written into that project's `subProjects` field on save. ----
+  var currentSubProjects = [];
+  var subEditingIndex = -1;
+
+  function renderSubProjectList(){
+    $('subproject-count').textContent = currentSubProjects.length ? '(' + currentSubProjects.length + ')' : '';
+    var list = $('subproject-list');
+    list.innerHTML = '';
+    currentSubProjects.forEach(function(sp, i){
+      var row = document.createElement('div');
+      row.className = 'project-item';
+      row.innerHTML =
+        '<div>' +
+          '<div class="title">' + escapeHtml(sp.title) + '</div>' +
+          '<div class="meta">' + (MEDIUM_LABEL[sp.medium] || sp.medium || 'Sans médium') + '</div>' +
+        '</div>' +
+        '<div class="btns">' +
+          '<button class="ghost" data-action="edit" data-i="' + i + '" type="button">Modifier</button>' +
+          '<button class="danger" data-action="delete" data-i="' + i + '" type="button">Supprimer</button>' +
+        '</div>';
+      list.appendChild(row);
+    });
+    list.querySelectorAll('button[data-action="edit"]').forEach(function(b){
+      b.addEventListener('click', function(){ openSubProjectForm(+b.dataset.i); });
+    });
+    list.querySelectorAll('button[data-action="delete"]').forEach(function(b){
+      b.addEventListener('click', function(){
+        if (!confirm('Supprimer ce sous-projet ?')) return;
+        currentSubProjects.splice(+b.dataset.i, 1);
+        renderSubProjectList();
+      });
+    });
+  }
+
+  function openSubProjectForm(index){
+    subEditingIndex = index;
+    var box = $('subproject-form-box');
+    box.classList.remove('hidden');
+    if (index === -1){
+      $('subproject-form-title').textContent = 'Ajouter un sous-projet';
+      $('spf-title').value = ''; $('spf-medium').value = ''; $('spf-desc').value = '';
+      $('spf-images').value = ''; $('spf-video').value = ''; $('spf-audio').value = ''; $('spf-link').value = '';
+    } else {
+      var sp = currentSubProjects[index];
+      $('subproject-form-title').textContent = 'Modifier le sous-projet';
+      $('spf-title').value = sp.title; $('spf-medium').value = sp.medium || ''; $('spf-desc').value = sp.desc || '';
+      $('spf-images').value = (sp.images||[]).join('\n');
+      $('spf-video').value = sp.videoUrl || ''; $('spf-audio').value = sp.audioUrl || ''; $('spf-link').value = sp.link || '';
+    }
+    $('spf-images-upload').value = '';
+    setStatus($('spf-images-upload-status'), '', '');
+    box.scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+
+  function saveSubProjectForm(){
+    var title = $('spf-title').value.trim();
+    if (!title){ alert('Le titre du sous-projet est obligatoire.'); return; }
+    var sp = {
+      title: title,
+      medium: $('spf-medium').value,
+      desc: $('spf-desc').value.trim(),
+      images: $('spf-images').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean),
+      videoUrl: $('spf-video').value.trim(),
+      audioUrl: $('spf-audio').value.trim(),
+      link: $('spf-link').value.trim()
+    };
+    if (subEditingIndex === -1) currentSubProjects.push(sp);
+    else currentSubProjects[subEditingIndex] = sp;
+    $('subproject-form-box').classList.add('hidden');
+    subEditingIndex = -1;
+    renderSubProjectList();
+  }
+
   function openProjectForm(index){
     editingIndex = index;
     var box = $('project-form-box');
@@ -503,6 +671,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       $('pf-ctx').value = 'perso'; $('pf-medium').value = 'graphisme';
       $('pf-tags').value = ''; $('pf-desc').value = ''; $('pf-featured').checked = false;
       $('pf-longdesc').value = ''; $('pf-images').value = ''; $('pf-video').value = ''; $('pf-audio').value = ''; $('pf-link').value = '';
+      currentSubProjects = [];
     } else {
       var p = state.projects[index];
       $('project-form-title').textContent = 'Modifier le projet';
@@ -515,7 +684,13 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       $('pf-video').value = p.videoUrl || '';
       $('pf-audio').value = p.audioUrl || '';
       $('pf-link').value = p.link || '';
+      currentSubProjects = JSON.parse(JSON.stringify(p.subProjects || []));
     }
+    $('pf-images-upload').value = '';
+    setStatus($('pf-images-upload-status'), '', '');
+    $('subproject-form-box').classList.add('hidden');
+    subEditingIndex = -1;
+    renderSubProjectList();
     box.scrollIntoView({ behavior:'smooth', block:'center' });
   }
 
@@ -535,7 +710,8 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       images: $('pf-images').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean),
       videoUrl: $('pf-video').value.trim(),
       audioUrl: $('pf-audio').value.trim(),
-      link: $('pf-link').value.trim()
+      link: $('pf-link').value.trim(),
+      subProjects: currentSubProjects
     };
     if (editingIndex === -1) state.projects.push(p);
     else state.projects[editingIndex] = p;
@@ -789,6 +965,51 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
   $('filter-reset-btn').addEventListener('click', function(){
     $('filter-search').value = ''; $('filter-ctx').value = ''; $('filter-medium').value = '';
     renderProjectList();
+  });
+
+  function wireImageUploadInput(inputId, textareaId, statusId, idHintFn){
+    $(inputId).addEventListener('change', function(e){
+      var files = Array.prototype.slice.call(e.target.files || []);
+      if (!files.length) return;
+      var statusEl = $(statusId);
+      var idHint = idHintFn() || 'projet';
+      var uploaded = [];
+      var i = 0;
+      function next(){
+        if (i >= files.length){
+          if (uploaded.length){
+            var existing = $(textareaId).value.trim();
+            $(textareaId).value = (existing ? existing + '\n' : '') + uploaded.join('\n');
+          }
+          if (uploaded.length === files.length){
+            setStatus(statusEl, 'Envoyé ✅ (' + uploaded.length + ' image' + (uploaded.length > 1 ? 's' : '') + ')', 'ok');
+          }
+          e.target.value = '';
+          return;
+        }
+        var f = files[i];
+        setStatus(statusEl, 'Conversion et envoi de « ' + f.name + ' »… (' + (i + 1) + '/' + files.length + ')', '');
+        uploadProjectImage(f, idHint, i).then(function(path){
+          uploaded.push(path);
+          i++;
+          next();
+        }).catch(function(err){
+          setStatus(statusEl, 'Erreur sur « ' + f.name + ' » : ' + err.message, 'err');
+          i++;
+          next();
+        });
+      }
+      next();
+    });
+  }
+  wireImageUploadInput('pf-images-upload', 'pf-images', 'pf-images-upload-status', function(){ return $('pf-title').value.trim(); });
+  wireImageUploadInput('spf-images-upload', 'spf-images', 'spf-images-upload-status', function(){ return ($('pf-title').value.trim() || 'projet') + '-' + $('spf-title').value.trim(); });
+
+  $('add-subproject-btn').addEventListener('click', function(){ openSubProjectForm(-1); });
+  $('spf-save-btn').addEventListener('click', saveSubProjectForm);
+  $('spf-cancel-btn').addEventListener('click', function(){
+    $('subproject-form-box').classList.add('hidden');
+    subEditingIndex = -1;
   });
 
   $('add-project-btn').addEventListener('click', function(){ openProjectForm(-1); });

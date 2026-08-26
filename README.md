@@ -147,18 +147,29 @@ au-delà de "Description courte" sont optionnels et n'apparaissent que sur la
 page détail :
 
 - **Description longue** — remplace la description courte sur la page détail.
-- **Images** — une URL par ligne, affichées en galerie. Dépose tes fichiers
-  dans le dossier `images/` du repo et référence-les en relatif
-  (`images/ilonka-club-1.jpg`) — l'admin ne gère pas encore l'upload direct de
-  fichiers, il faut les ajouter au repo à la main (glisser-déposer sur
-  github.com/tristede/portfolio, ou `git add`).
+- **Images** — **choisis simplement tes fichiers depuis l'admin** : ils sont
+  automatiquement convertis en **WebP** (redimensionnés à 1920px max, qualité
+  85%) puis envoyés directement dans le dossier `images/` du repo GitHub. Leur
+  chemin s'ajoute tout seul dans le champ en dessous. Tu peux aussi coller des
+  URL à la main (une par ligne) si tu préfères.
 - **Lien vidéo** — colle un lien YouTube ou Vimeo (n'importe quel format
   d'URL), ou un lien direct vers un `.mp4` — la page choisit automatiquement
   le bon type d'intégration.
-- **Lien audio** — un lien direct vers un fichier `.mp3`/`.wav` (même logique
-  que les images : à déposer dans le repo, par exemple dans `audio/`).
-- **Lien externe** — pour un projet "Site web", le bouton "Visiter le site"
-  pointe vers cette URL.
+- **Lien audio** — colle un lien **SoundCloud** (lecteur intégré) ou un lien
+  direct vers un fichier `.mp3`/`.wav`.
+- **Lien externe** — le bouton "Visiter le site" pointe vers cette URL, et un
+  **aperçu du site est intégré directement dans la page** (iframe). Note que
+  certains sites refusent d'être intégrés (protection `X-Frame-Options`) : dans
+  ce cas l'aperçu reste vide, et une phrase invite à ouvrir le lien directement.
+
+### Sous-projets
+
+Un projet peut contenir des **sous-projets** — des sections affichées dans sa
+page détail, pour découper un gros projet en volets. Par exemple
+"Union Oasis Forest" → "Refonte graphique", "Community management",
+"Stratégie digitale". Chaque sous-projet a son propre titre, médium,
+description, images (avec le même upload WebP), vidéo, audio et lien. Ça se
+gère depuis le formulaire du projet parent, section "Sous-projets".
 
 Tous les médiums sont supportés (graphisme, vidéo, audio, **site web**,
 réseaux sociaux, événementiel, écrit) — la catégorie ne limite pas les champs
