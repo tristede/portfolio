@@ -196,21 +196,50 @@
     el.innerHTML = text.split('\n').join('<br>');
   }
 
+  // phones/tablets can't hover, so the trigger has to change: play the wave
+  // as each paragraph scrolls into view instead of waiting for a pointer
+  // that will never come, and re-encrypt it on the way out so it can replay
+  // next time the reader scrolls back up to it.
+  var hoverCapable = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
   document.querySelectorAll('.scramble').forEach(function(el){
     var original = readWithBreaks(el);
     renderPlain(el, original);
+
     if (reduceMotionQuery.matches){
-      el.addEventListener('mouseenter', function(){ el.classList.add('decrypted'); });
-      el.addEventListener('mouseleave', function(){ el.classList.remove('decrypted'); });
+      if (hoverCapable){
+        el.addEventListener('mouseenter', function(){ el.classList.add('decrypted'); });
+        el.addEventListener('mouseleave', function(){ el.classList.remove('decrypted'); });
+      } else {
+        var obsStatic = new IntersectionObserver(function(entries){
+          entries.forEach(function(entry){ el.classList.toggle('decrypted', entry.isIntersecting); });
+        }, { threshold: 0.3 });
+        obsStatic.observe(el);
+      }
       return;
     }
+
     var fx = new TextScramble(el);
-    el.addEventListener('mouseenter', function(){
-      el.classList.add('decrypted');
-      fx.setText(original, true);
-    });
-    el.addEventListener('mouseleave', function(){
-      fx.setText(original, false).then(function(){ el.classList.remove('decrypted'); });
-    });
+    if (hoverCapable){
+      el.addEventListener('mouseenter', function(){
+        el.classList.add('decrypted');
+        fx.setText(original, true);
+      });
+      el.addEventListener('mouseleave', function(){
+        fx.setText(original, false).then(function(){ el.classList.remove('decrypted'); });
+      });
+    } else {
+      var obs = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if (entry.isIntersecting){
+            el.classList.add('decrypted');
+            fx.setText(original, true);
+          } else {
+            fx.setText(original, false).then(function(){ el.classList.remove('decrypted'); });
+          }
+        });
+      }, { threshold: 0.3 });
+      obs.observe(el);
+    }
   });
 })();
