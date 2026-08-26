@@ -8,30 +8,263 @@
       "Je navigue entre le graphisme, le montage vidéo, le mixage audio et la gestion de communautés : des disciplines différentes, mais un même réflexe — comprendre à qui l'on parle avant de choisir comment le lui dire."
     ],
     "contactEmail": "PLACEHOLDER@email.com",
-    "linkedin": "https://www.linkedin.com/in/adam-k-3b2352240/",
+    "linkedin": "https://www.linkedin.com/in/adam-d-3b2352240/",
     "instagram": "https://www.instagram.com/_adamdrk",
     "favoriProjectId": "ilonka-club"
   },
   "projects": [
-    { "id": "ilonka-club", "title": "Ilonka Club", "year": 2025, "ctx": "perso", "medium": "graphisme", "tags": ["Graphisme", "Affiche"], "desc": "Identité visuelle et affiche promotionnelle pour un showcase événementiel.", "featured": false },
-    { "id": "union-oasis-forest", "title": "Union Oasis Forest", "year": 2025, "ctx": "perso", "medium": "graphisme", "tags": ["Graphisme", "Identité visuelle"], "desc": "Création d'identité visuelle pour le projet Union Oasis Forest.", "featured": false },
-    { "id": "miniatures-youtube", "title": "Miniatures YouTube", "year": 2023, "ctx": "perso", "medium": "graphisme", "tags": ["Graphisme", "Miniature"], "desc": "Conception de miniatures pensées pour maximiser le taux de clic.", "featured": false },
-    { "id": "montage-video-style-youtube", "title": "Montage vidéo style YouTube", "year": 2025, "ctx": "perso", "medium": "video", "tags": ["Montage vidéo"], "desc": "Montage dynamique dans les codes du format YouTube.", "featured": false },
-    { "id": "ecriture-enregistrement-mixage-chant-rap", "title": "Écriture, enregistrement & mixage chant/rap", "year": 2025, "ctx": "perso", "medium": "audio", "tags": ["Audio", "Composition"], "desc": "De l'écriture à l'enregistrement jusqu'au mixage final.", "featured": false },
-    { "id": "artwork-rap-pochette-albums", "title": "Artwork rap / pochette d'albums", "year": 2025, "ctx": "perso", "medium": "graphisme", "tags": ["Graphisme", "Pochette d'album"], "desc": "Création de visuels de pochettes pour des projets rap.", "featured": false },
-    { "id": "evenementiel-stand-zennit", "title": "Événementiel : Stand Zennit", "year": 2022, "ctx": "perso", "medium": "event", "tags": ["Événementiel"], "desc": "Organisation et animation d'un stand lors d'un événement.", "featured": false },
-    { "id": "community-management-easypermis", "title": "Community management : easypermis.be", "year": 2025, "ctx": "perso", "medium": "social", "tags": ["Community management", "Réseaux sociaux"], "desc": "Gestion de la ligne éditoriale et des publications.", "featured": true },
-    { "id": "reportage-video", "title": "Production d'un reportage vidéo", "year": 2025, "ctx": "academique", "medium": "video", "tags": ["Vidéo", "Reportage"], "desc": "Réalisation d'un reportage vidéo de bout en bout.", "featured": false },
-    { "id": "projet-360-dei-belgique", "title": "Projet 360° : DEI-Belgique", "year": 2025, "ctx": "academique", "medium": "video", "tags": ["Vidéo 360°"], "desc": "Production d'un contenu vidéo immersif à 360°.", "featured": false },
-    { "id": "carte-visite-echo-nexus", "title": "Carte de visite : Echo Nexus", "year": 2025, "ctx": "academique", "medium": "graphisme", "tags": ["Graphisme", "Identité visuelle"], "desc": "Design d'une carte de visite pour le projet Echo Nexus.", "featured": false },
-    { "id": "episode-podcast", "title": "Réalisation d'un épisode de podcast", "year": 2024, "ctx": "academique", "medium": "audio", "tags": ["Audio", "Podcast"], "desc": "Enregistrement, montage et mixage d'un épisode de podcast.", "featured": true },
-    { "id": "projet-evenementiel-cinematek", "title": "Projet évènementiel : Cinematek", "year": 2023, "ctx": "academique", "medium": "event", "tags": ["Événementiel"], "desc": "Conception d'un projet événementiel autour de la Cinematek.", "featured": false },
-    { "id": "articles-presse", "title": "Écriture d'articles de presse", "year": 2025, "ctx": "academique", "medium": "ecrit", "tags": ["Rédaction"], "desc": "Rédaction d'articles dans un cadre journalistique.", "featured": false },
-    { "id": "melo-de-la-semaine", "title": "La mélo de la semaine", "year": 2025, "ctx": "stage", "medium": "audio", "tags": ["Audio", "Contenu récurrent"], "desc": "Format audio récurrent réalisé durant le stage.", "featured": false },
-    { "id": "montage-video-long-format", "title": "Montage vidéo : long format", "year": 2025, "ctx": "stage", "medium": "video", "tags": ["Montage vidéo"], "desc": "Montage d'un contenu vidéo au format long.", "featured": false },
-    { "id": "post-actualite", "title": "Post d'actualité", "year": 2025, "ctx": "stage", "medium": "social", "tags": ["Réseaux sociaux"], "desc": "Création de publications d'actualité pour les réseaux.", "featured": false },
-    { "id": "thumbnails-youtube", "title": "Thumbnails YouTube", "year": 2025, "ctx": "stage", "medium": "graphisme", "tags": ["Graphisme", "Miniature"], "desc": "Conception de miniatures YouTube pour la structure.", "featured": false },
-    { "id": "reel-tiktok", "title": "Reel / TikTok", "year": 2025, "ctx": "stage", "medium": "video", "tags": ["Vidéo", "Format court"], "desc": "Réalisation de formats courts pour Reels et TikTok.", "featured": true },
-    { "id": "logo-vectoriel", "title": "Création d'un logo vectoriel", "year": 2025, "ctx": "stage", "medium": "graphisme", "tags": ["Graphisme", "Logo"], "desc": "Conception d'un logo vectoriel pour un besoin interne.", "featured": false }
+    {
+      "id": "ilonka-club",
+      "title": "Ilonka Club",
+      "year": 2025,
+      "ctx": "perso",
+      "medium": "graphisme",
+      "tags": [
+        "Graphisme",
+        "Affiche"
+      ],
+      "desc": "Identité visuelle et affiche promotionnelle pour un showcase événementiel.",
+      "featured": false
+    },
+    {
+      "id": "union-oasis-forest",
+      "title": "Union Oasis Forest",
+      "year": 2025,
+      "ctx": "perso",
+      "medium": "graphisme",
+      "tags": [
+        "Graphisme",
+        "Identité visuelle"
+      ],
+      "desc": "Création d'identité visuelle pour le projet Union Oasis Forest.",
+      "featured": false
+    },
+    {
+      "id": "miniatures-youtube",
+      "title": "Miniatures YouTube",
+      "year": 2023,
+      "ctx": "perso",
+      "medium": "graphisme",
+      "tags": [
+        "Graphisme",
+        "Miniature"
+      ],
+      "desc": "Conception de miniatures pensées pour maximiser le taux de clic.",
+      "featured": false
+    },
+    {
+      "id": "montage-video-style-youtube",
+      "title": "Montage vidéo style YouTube",
+      "year": 2025,
+      "ctx": "perso",
+      "medium": "video",
+      "tags": [
+        "Montage vidéo"
+      ],
+      "desc": "Montage dynamique dans les codes du format YouTube.",
+      "featured": false
+    },
+    {
+      "id": "ecriture-enregistrement-mixage-chant-rap",
+      "title": "Écriture, enregistrement & mixage chant/rap",
+      "year": 2025,
+      "ctx": "perso",
+      "medium": "audio",
+      "tags": [
+        "Audio",
+        "Composition"
+      ],
+      "desc": "De l'écriture à l'enregistrement jusqu'au mixage final.",
+      "featured": false
+    },
+    {
+      "id": "artwork-rap-pochette-albums",
+      "title": "Artwork rap / pochette d'albums",
+      "year": 2025,
+      "ctx": "perso",
+      "medium": "graphisme",
+      "tags": [
+        "Graphisme",
+        "Pochette d'album"
+      ],
+      "desc": "Création de visuels de pochettes pour des projets rap.",
+      "featured": false
+    },
+    {
+      "id": "evenementiel-stand-zennit",
+      "title": "Événementiel : Stand Zennit",
+      "year": 2022,
+      "ctx": "perso",
+      "medium": "event",
+      "tags": [
+        "Événementiel"
+      ],
+      "desc": "Organisation et animation d'un stand lors d'un événement.",
+      "featured": false
+    },
+    {
+      "id": "community-management-easypermis",
+      "title": "Community management : easypermis.be",
+      "year": 2025,
+      "ctx": "perso",
+      "medium": "social",
+      "tags": [
+        "Community management",
+        "Réseaux sociaux"
+      ],
+      "desc": "Gestion de la ligne éditoriale et des publications.",
+      "featured": true
+    },
+    {
+      "id": "reportage-video",
+      "title": "Production d'un reportage vidéo",
+      "year": 2025,
+      "ctx": "academique",
+      "medium": "video",
+      "tags": [
+        "Vidéo",
+        "Reportage"
+      ],
+      "desc": "Réalisation d'un reportage vidéo de bout en bout.",
+      "featured": false
+    },
+    {
+      "id": "projet-360-dei-belgique",
+      "title": "Projet 360° : DEI-Belgique",
+      "year": 2025,
+      "ctx": "academique",
+      "medium": "video",
+      "tags": [
+        "Vidéo 360°"
+      ],
+      "desc": "Production d'un contenu vidéo immersif à 360°.",
+      "featured": false
+    },
+    {
+      "id": "carte-visite-echo-nexus",
+      "title": "Carte de visite : Echo Nexus",
+      "year": 2025,
+      "ctx": "academique",
+      "medium": "graphisme",
+      "tags": [
+        "Graphisme",
+        "Identité visuelle"
+      ],
+      "desc": "Design d'une carte de visite pour le projet Echo Nexus.",
+      "featured": false
+    },
+    {
+      "id": "episode-podcast",
+      "title": "Réalisation d'un épisode de podcast",
+      "year": 2024,
+      "ctx": "academique",
+      "medium": "audio",
+      "tags": [
+        "Audio",
+        "Podcast"
+      ],
+      "desc": "Enregistrement, montage et mixage d'un épisode de podcast.",
+      "featured": true
+    },
+    {
+      "id": "projet-evenementiel-cinematek",
+      "title": "Projet évènementiel : Cinematek",
+      "year": 2023,
+      "ctx": "academique",
+      "medium": "event",
+      "tags": [
+        "Événementiel"
+      ],
+      "desc": "Conception d'un projet événementiel autour de la Cinematek.",
+      "featured": false
+    },
+    {
+      "id": "articles-presse",
+      "title": "Écriture d'articles de presse",
+      "year": 2025,
+      "ctx": "academique",
+      "medium": "ecrit",
+      "tags": [
+        "Rédaction"
+      ],
+      "desc": "Rédaction d'articles dans un cadre journalistique.",
+      "featured": false
+    },
+    {
+      "id": "melo-de-la-semaine",
+      "title": "La mélo de la semaine",
+      "year": 2025,
+      "ctx": "stage",
+      "medium": "audio",
+      "tags": [
+        "Audio",
+        "Contenu récurrent"
+      ],
+      "desc": "Format audio récurrent réalisé durant le stage.",
+      "featured": false
+    },
+    {
+      "id": "montage-video-long-format",
+      "title": "Montage vidéo : long format",
+      "year": 2025,
+      "ctx": "stage",
+      "medium": "video",
+      "tags": [
+        "Montage vidéo"
+      ],
+      "desc": "Montage d'un contenu vidéo au format long.",
+      "featured": false
+    },
+    {
+      "id": "post-actualite",
+      "title": "Post d'actualité",
+      "year": 2025,
+      "ctx": "stage",
+      "medium": "social",
+      "tags": [
+        "Réseaux sociaux"
+      ],
+      "desc": "Création de publications d'actualité pour les réseaux.",
+      "featured": false
+    },
+    {
+      "id": "thumbnails-youtube",
+      "title": "Thumbnails YouTube",
+      "year": 2025,
+      "ctx": "stage",
+      "medium": "graphisme",
+      "tags": [
+        "Graphisme",
+        "Miniature"
+      ],
+      "desc": "Conception de miniatures YouTube pour la structure.",
+      "featured": false
+    },
+    {
+      "id": "reel-tiktok",
+      "title": "Reel / TikTok",
+      "year": 2025,
+      "ctx": "stage",
+      "medium": "video",
+      "tags": [
+        "Vidéo",
+        "Format court"
+      ],
+      "desc": "Réalisation de formats courts pour Reels et TikTok.",
+      "featured": true
+    },
+    {
+      "id": "logo-vectoriel",
+      "title": "Création d'un logo vectoriel",
+      "year": 2025,
+      "ctx": "stage",
+      "medium": "graphisme",
+      "tags": [
+        "Graphisme",
+        "Logo"
+      ],
+      "desc": "Conception d'un logo vectoriel pour un besoin interne.",
+      "featured": false
+    }
   ]
 }
