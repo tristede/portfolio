@@ -671,7 +671,10 @@ body.visual-mode .wrap{ max-width: 1400px; }
           entries[i] = { path: path, mode: '100644', type: 'blob', sha: blob.sha };
           // GitHub Pages needs ~a minute to serve the new file, so keep the
           // local bytes around and show those in the editor meanwhile.
-          if (!isDoc) freshUploads[path] = 'data:image/webp;base64,' + pendingB64[i];
+          // PDFs render reliably from a blob: URL, images from a data: URL
+          freshUploads[path] = isDoc
+            ? URL.createObjectURL(files[i])
+            : 'data:image/webp;base64,' + pendingB64[i];
           done++; report('upload');
           return worker();
         });
@@ -2010,6 +2013,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
     doc.querySelectorAll('img').forEach(function(img){
       var src = img.getAttribute('src') || '';
       if (freshUploads[src]) img.src = freshUploads[src];
+    });
+    // documents are embedded in an iframe, same substitution
+    doc.querySelectorAll('.detail-doc iframe').forEach(function(f){
+      var src = f.getAttribute('src') || '';
+      if (freshUploads[src]) f.src = freshUploads[src];
     });
   }
 
