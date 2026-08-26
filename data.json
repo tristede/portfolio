@@ -248,8 +248,27 @@
       ],
       "desc": "Production d'un contenu vidéo immersif à 360°.",
       "featured": false,
-      "assets": [],
-      "subProjects": []
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/projet-360-dei-belgique-1787780827832-0.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/projet-360-dei-belgique-1787780479365-0.webp",
+          "hidden": false
+        }
+      ],
+      "subProjects": [
+        {
+          "title": "Multipage stratégique",
+          "medium": "",
+          "desc": "",
+          "assets": [],
+          "link": ""
+        }
+      ]
     },
     {
       "id": "carte-visite-echo-nexus",
