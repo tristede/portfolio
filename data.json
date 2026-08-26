@@ -265,7 +265,13 @@
           "title": "Multipage stratégique",
           "medium": "",
           "desc": "",
-          "assets": [],
+          "assets": [
+            {
+              "type": "image",
+              "url": "images/projet-360-dei-belgique-multipage-strategique-1787781100008-0.webp",
+              "hidden": false
+            }
+          ],
           "link": ""
         }
       ]
