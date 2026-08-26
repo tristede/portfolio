@@ -291,12 +291,32 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
         </div>
         <label for="pf-tags">Tags (séparés par des virgules)</label>
         <input type="text" id="pf-tags" placeholder="Graphisme, Affiche">
-        <label for="pf-desc">Description</label>
+        <label for="pf-desc">Description courte (affichée sur la vignette)</label>
         <textarea id="pf-desc"></textarea>
         <div class="check-row">
           <input type="checkbox" id="pf-featured">
           <label for="pf-featured">Mis en avant sur l'accueil</label>
         </div>
+
+        <p class="small" style="margin:18px 0 4px;">Ce qui suit est optionnel — affiché uniquement sur la page détail du projet (accessible en cliquant sur sa vignette).</p>
+
+        <label for="pf-longdesc">Description longue (page détail — si vide, la description courte est réutilisée)</label>
+        <textarea id="pf-longdesc"></textarea>
+        <label for="pf-images">Images (une URL par ligne)</label>
+        <textarea id="pf-images" placeholder="images/mon-projet-1.jpg&#10;images/mon-projet-2.jpg"></textarea>
+        <div class="row">
+          <div>
+            <label for="pf-video">Lien vidéo (YouTube, Vimeo, ou fichier .mp4)</label>
+            <input type="text" id="pf-video" placeholder="https://youtube.com/watch?v=...">
+          </div>
+          <div>
+            <label for="pf-audio">Lien audio (fichier .mp3/.wav)</label>
+            <input type="text" id="pf-audio" placeholder="audio/mon-morceau.mp3">
+          </div>
+        </div>
+        <label for="pf-link">Lien externe (site web à visiter, pour les projets "Site web" par ex.)</label>
+        <input type="url" id="pf-link" placeholder="https://...">
+
         <div style="margin-top:16px; display:flex; gap:10px;">
           <button class="primary" id="pf-save-btn" type="button">Enregistrer ce projet</button>
           <button class="ghost" id="pf-cancel-btn" type="button">Annuler</button>
@@ -482,6 +502,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       $('pf-title').value = ''; $('pf-year').value = new Date().getFullYear();
       $('pf-ctx').value = 'perso'; $('pf-medium').value = 'graphisme';
       $('pf-tags').value = ''; $('pf-desc').value = ''; $('pf-featured').checked = false;
+      $('pf-longdesc').value = ''; $('pf-images').value = ''; $('pf-video').value = ''; $('pf-audio').value = ''; $('pf-link').value = '';
     } else {
       var p = state.projects[index];
       $('project-form-title').textContent = 'Modifier le projet';
@@ -489,6 +510,11 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       $('pf-ctx').value = p.ctx; $('pf-medium').value = p.medium;
       $('pf-tags').value = (p.tags||[]).join(', '); $('pf-desc').value = p.desc || '';
       $('pf-featured').checked = !!p.featured;
+      $('pf-longdesc').value = p.longDesc || '';
+      $('pf-images').value = (p.images||[]).join('\n');
+      $('pf-video').value = p.videoUrl || '';
+      $('pf-audio').value = p.audioUrl || '';
+      $('pf-link').value = p.link || '';
     }
     box.scrollIntoView({ behavior:'smooth', block:'center' });
   }
@@ -504,7 +530,12 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       medium: $('pf-medium').value,
       tags: $('pf-tags').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean),
       desc: $('pf-desc').value.trim(),
-      featured: $('pf-featured').checked
+      featured: $('pf-featured').checked,
+      longDesc: $('pf-longdesc').value.trim(),
+      images: $('pf-images').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean),
+      videoUrl: $('pf-video').value.trim(),
+      audioUrl: $('pf-audio').value.trim(),
+      link: $('pf-link').value.trim()
     };
     if (editingIndex === -1) state.projects.push(p);
     else state.projects[editingIndex] = p;

@@ -19,6 +19,8 @@ Adobe Portfolio : palette bleu nuit, police manuscrite.
 - **`projets-academiques.html`** — les projets académiques, avec **le stage
   "En Esprit" en sous-section juste en dessous** — pas de page ni de bouton
   séparé pour le stage.
+- **`projet.html`** — la page détail d'un projet (`projet.html?id=...`),
+  ouverte en cliquant sur n'importe quelle vignette — voir plus bas.
 - **`admin.html`** — le panneau d'édition (voir plus bas).
 - **`data.json`** — **tout le contenu du site** : textes (bio, à propos, accroche,
   contact, réseaux sociaux), projet favori, et la liste des projets. C'est ce
@@ -136,19 +138,31 @@ répercutée sur les 4 pages automatiquement.
       seuls titres — à réécrire avec de vrais détails (contexte, outils, résultat),
       également depuis `/admin.html`.
 
-## Ajouter une vraie image à un projet
+## Pages détail de projet (clic sur une vignette)
 
-Dans `data.json`, ajoute une clé `img` à un projet (l'admin ne gère pas encore
-l'upload d'images, donc ça se fait à la main pour l'instant) :
+Chaque vignette (grille de projets, projet favori) mène maintenant à une page
+détail dédiée (`projet.html?id=...`), dans l'esprit d'Adobe Portfolio. Tout se
+configure depuis `/admin.html`, section "Modifier ce projet" — les champs
+au-delà de "Description courte" sont optionnels et n'apparaissent que sur la
+page détail :
 
-```js
-{ title: "Ilonka Club", year: 2025, ctx: "perso", medium: "graphisme",
-  tags: ["Graphisme","Affiche"], desc: "...",
-  img: "images/ilonka-club.jpg" }
-```
+- **Description longue** — remplace la description courte sur la page détail.
+- **Images** — une URL par ligne, affichées en galerie. Dépose tes fichiers
+  dans le dossier `images/` du repo et référence-les en relatif
+  (`images/ilonka-club-1.jpg`) — l'admin ne gère pas encore l'upload direct de
+  fichiers, il faut les ajouter au repo à la main (glisser-déposer sur
+  github.com/tristede/portfolio, ou `git add`).
+- **Lien vidéo** — colle un lien YouTube ou Vimeo (n'importe quel format
+  d'URL), ou un lien direct vers un `.mp4` — la page choisit automatiquement
+  le bon type d'intégration.
+- **Lien audio** — un lien direct vers un fichier `.mp3`/`.wav` (même logique
+  que les images : à déposer dans le repo, par exemple dans `audio/`).
+- **Lien externe** — pour un projet "Site web", le bouton "Visiter le site"
+  pointe vers cette URL.
 
-Dis-le-moi et j'irai plus loin en câblant le rendu des vraies images directement
-(upload de fichiers, `<img>` au lieu du fond CSS généré, etc.).
+Tous les médiums sont supportés (graphisme, vidéo, audio, **site web**,
+réseaux sociaux, événementiel, écrit) — la catégorie ne limite pas les champs
+disponibles, tu peux par exemple ajouter une vidéo à un projet "graphisme".
 
 ## Déployer le site (gratuit, sans serveur)
 

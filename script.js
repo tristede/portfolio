@@ -25,7 +25,7 @@
 
   function cardHTML(p, i){
     return (
-      '<article class="card" style="transition-delay:' + ((i % 8) * 40) + 'ms">' +
+      '<a class="card" href="projet.html?id=' + encodeURIComponent(p.id) + '" style="transition-delay:' + ((i % 8) * 40) + 'ms">' +
         '<div class="thumb">' +
           '<span class="year">' + p.year + '</span>' +
           '<span class="icon">' + (icons[p.medium] || '') + '</span>' +
@@ -37,7 +37,7 @@
           '<p class="desc">' + p.desc + '</p>' +
           '<div class="card-tags">' + p.tags.map(function(t){ return '<span class="tag">#' + t.replace(/\s+/g,'') + '</span>'; }).join('') + '</div>' +
         '</div>' +
-      '</article>'
+      '</a>'
     );
   }
 
@@ -81,7 +81,7 @@
         '<h2>' + p.title + '</h2>' +
         '<p class="desc">' + p.desc + '</p>' +
         '<div class="card-tags">' + p.tags.map(function(t){ return '<span class="tag">#' + t.replace(/\s+/g,'') + '</span>'; }).join('') + '</div>' +
-        '<a class="pill-btn" href="' + linkForProject(p) + '" style="width:fit-content;">Voir le projet →</a>' +
+        '<a class="pill-btn" href="projet.html?id=' + encodeURIComponent(p.id) + '" style="width:fit-content;">Voir le projet →</a>' +
       '</div>';
   }
 
@@ -97,6 +97,68 @@
         '</div>' +
       '</div>';
     }).join('');
+  }
+
+  var BACK_LABEL = { perso: 'Retour — Projets perso', academique: 'Retour — Projets académiques', stage: 'Retour — Stage' };
+
+  // parses a YouTube/Vimeo URL into an embeddable iframe; anything else
+  // (direct .mp4/.webm link) falls back to a plain <video> tag.
+  function videoEmbedHTML(url){
+    var yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{6,})/);
+    if (yt){
+      return '<iframe src="https://www.youtube.com/embed/' + yt[1] + '" title="Vidéo du projet" ' +
+        'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>';
+    }
+    var vimeo = url.match(/vimeo\.com\/(\d+)/);
+    if (vimeo){
+      return '<iframe src="https://player.vimeo.com/video/' + vimeo[1] + '" title="Vidéo du projet" ' +
+        'allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>';
+    }
+    return '<video controls src="' + url + '"></video>';
+  }
+
+  function renderProjectDetail(site, projects){
+    var container = document.getElementById('js-project-detail');
+    if (!container) return;
+    var id = new URLSearchParams(window.location.search).get('id');
+    var p = projects.filter(function(x){ return x.id === id; })[0];
+
+    if (!p){
+      document.title = 'Projet introuvable — Adam';
+      container.innerHTML =
+        '<div class="wrap" style="padding:80px 0; text-align:center;">' +
+          '<h1 style="font-family:var(--font-display); font-size:22px; margin-bottom:12px;">Projet introuvable</h1>' +
+          '<p style="color:var(--text-dim); margin-bottom:24px;">Ce projet n\'existe plus ou le lien est incorrect.</p>' +
+          '<a class="pill-btn" href="index.html">← Retour à l\'accueil</a>' +
+        '</div>';
+      return;
+    }
+
+    document.title = p.title + ' — Adam';
+
+    var media = '';
+    if (p.images && p.images.length){
+      media += '<div class="detail-gallery">' + p.images.map(function(src){
+        return '<img src="' + src + '" alt="' + p.title + '" loading="lazy">';
+      }).join('') + '</div>';
+    }
+    if (p.videoUrl) media += '<div class="detail-embed">' + videoEmbedHTML(p.videoUrl) + '</div>';
+    if (p.audioUrl) media += '<div class="detail-audio"><audio controls src="' + p.audioUrl + '"></audio></div>';
+
+    container.innerHTML =
+      '<div class="wrap detail-wrap">' +
+        '<a class="pill-btn back-link" href="' + linkForProject(p) + '">← ' + (BACK_LABEL[p.ctx] || 'Retour') + '</a>' +
+        '<div class="detail-meta-row">' +
+          '<span class="tag">' + (mediumLabel[p.medium] || p.medium) + '</span>' +
+          '<span class="tag">' + p.year + '</span>' +
+          (p.featured ? '<span class="tag">★ Mis en avant</span>' : '') +
+        '</div>' +
+        '<h1 class="detail-title">' + p.title + '</h1>' +
+        '<div class="card-tags detail-tags">' + p.tags.map(function(t){ return '<span class="tag">#' + t.replace(/\s+/g,'') + '</span>'; }).join('') + '</div>' +
+        '<p class="detail-desc">' + (p.longDesc || p.desc) + '</p>' +
+        (p.link ? '<a class="btn btn-primary" href="' + p.link + '" target="_blank" rel="noopener">Visiter le site ↗</a>' : '') +
+        media +
+      '</div>';
   }
 
   function renderGrids(projects){
@@ -302,6 +364,7 @@
       applyFavori(site, projects);
       renderTimeline(site.timeline);
       renderGrids(projects);
+      renderProjectDetail(site, projects);
       initScramble();
     })
     .catch(function(err){
