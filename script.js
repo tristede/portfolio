@@ -36,8 +36,11 @@
     if (obj.audioUrl) out.push({ type: 'audio', url: obj.audioUrl });
     return out;
   }
+  // in the admin's visual editor everything is rendered — hidden entries
+  // included, flagged so the editor can grey them out and offer to unhide.
   function visibleAssets(obj){
-    return assetsOf(obj).filter(function(a){ return a && a.url && !a.hidden; });
+    var all = assetsOf(obj).filter(function(a){ return a && a.url; });
+    return window.__EDIT_MODE__ ? all : all.filter(function(a){ return !a.hidden; });
   }
 
   function thumbSrc(p){
@@ -49,7 +52,9 @@
   function cardHTML(p, i){
     var thumb = thumbSrc(p);
     return (
-      '<a class="card" href="projet.html?id=' + encodeURIComponent(p.id) + '" style="transition-delay:' + ((i % 8) * 40) + 'ms">' +
+      '<a class="card" href="projet.html?id=' + encodeURIComponent(p.id) + '" data-project-id="' + p.id + '"' +
+        (p.hidden ? ' data-project-hidden="1"' : '') +
+        ' style="transition-delay:' + ((i % 8) * 40) + 'ms">' +
         '<div class="thumb' + (thumb ? ' has-img' : '') + '">' +
           (thumb ? '<img class="thumb-img" src="' + thumb + '" alt="' + p.title + '" loading="lazy">' : '') +
           '<span class="year">' + p.year + '</span>' +
@@ -158,17 +163,23 @@
   // shared by the main project and each of its sub-projects: gallery of
   // images, then video embed, then audio embed — whichever are present.
   function mediaBlocksHTML(obj){
+    var all = assetsOf(obj);
     var list = visibleAssets(obj);
+    // the index within the *full* list is what the editor needs to act on
+    function attrs(a){
+      var i = all.indexOf(a);
+      return ' data-asset-index="' + i + '"' + (a.hidden ? ' data-asset-hidden="1"' : '');
+    }
     var imgs = list.filter(function(a){ return a.type === 'image'; });
     var media = '';
     if (imgs.length){
       media += '<div class="detail-gallery">' + imgs.map(function(a){
-        return '<img src="' + a.url + '" alt="' + obj.title + '" loading="lazy" draggable="false">';
+        return '<img src="' + a.url + '" alt="' + obj.title + '" loading="lazy" draggable="false"' + attrs(a) + '>';
       }).join('') + '</div>';
     }
     list.forEach(function(a){
-      if (a.type === 'video') media += '<div class="detail-embed">' + videoEmbedHTML(a.url) + '</div>';
-      if (a.type === 'audio') media += '<div class="detail-audio">' + audioEmbedHTML(a.url) + '</div>';
+      if (a.type === 'video') media += '<div class="detail-embed"' + attrs(a) + '>' + videoEmbedHTML(a.url) + '</div>';
+      if (a.type === 'audio') media += '<div class="detail-audio"' + attrs(a) + '>' + audioEmbedHTML(a.url) + '</div>';
     });
     return media;
   }
@@ -246,6 +257,8 @@
   // discourages casual copying, it is NOT real protection (a screenshot or the
   // browser's dev tools still get the file).
   function initLightbox(scope){
+    // in the editor a click on an image belongs to the editing controls
+    if (window.__EDIT_MODE__) return;
     var gallery = scope.querySelectorAll('.detail-gallery img');
     if (!gallery.length) return;
 
@@ -293,7 +306,7 @@
   }
 
   function renderGrids(projects){
-    var shown = projects.filter(function(p){ return !p.hidden; });
+    var shown = window.__EDIT_MODE__ ? projects : projects.filter(function(p){ return !p.hidden; });
     document.querySelectorAll('.grid[data-group]').forEach(function(grid){
       var group = grid.dataset.group;
       var list = group === 'featured' ? shown.filter(function(p){ return p.featured; }) : shown.filter(function(p){ return p.ctx === group; });

@@ -460,6 +460,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
     </div><!-- /#form-view -->
 
+    <input type="file" id="visual-image-upload" accept="image/*" multiple class="hidden">
+
     <div class="sticky-save">
       <div class="sticky-save-inner">
         <span class="small" id="save-hint">Les modifications restent locales tant que tu n'as pas cliqué ici.</span>
@@ -1297,13 +1299,32 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
   function buildFrameDoc(html, data, projectId){
     var inject =
-      '<script>window.__SITE_DATA__ = ' + JSON.stringify(data).replace(/<\//g, '<\\/') + ';<\/script>' +
+      '<script>window.__SITE_DATA__ = ' + JSON.stringify(data).replace(/<\//g, '<\\/') + ';' +
+      'window.__EDIT_MODE__ = true;<\/script>' +
       '<style>' +
         '[data-edit]{ outline:1px dashed rgba(127,196,255,0.45); outline-offset:3px; border-radius:3px; cursor:text; transition: background .15s ease, outline-color .15s ease; }' +
         '[data-edit]:hover{ background: rgba(127,196,255,0.10); outline-color: rgba(127,196,255,0.9); }' +
         '[data-edit]:focus{ background: rgba(127,196,255,0.14); outline:2px solid var(--accent-sky); }' +
-        '.card{ cursor:pointer; }' +
+        '.card{ cursor:pointer; position:relative; }' +
         '.card:hover{ outline:2px solid var(--accent-sky); outline-offset:2px; }' +
+        // hidden things stay visible in the editor, visibly dimmed
+        '[data-project-hidden], [data-asset-hidden]{ opacity:0.42; }' +
+        '.ed-badge{ position:absolute; top:8px; left:8px; z-index:5; font-size:10px; font-weight:700;' +
+          'letter-spacing:0.06em; text-transform:uppercase; background:rgba(4,6,26,0.85); color:#fff;' +
+          'border:1px solid rgba(255,255,255,0.25); border-radius:999px; padding:2px 8px; }' +
+        // floating control clusters injected by the editor
+        '.ed-tools{ position:absolute; top:8px; right:8px; z-index:6; display:flex; gap:6px; opacity:0; transition:opacity .15s ease; }' +
+        '.ed-host{ position:relative; }' +
+        '.ed-host:hover .ed-tools, .ed-tools:focus-within{ opacity:1; }' +
+        '.ed-btn{ width:30px; height:30px; border-radius:50%; border:1px solid rgba(255,255,255,0.28);' +
+          'background:rgba(4,6,26,0.88); color:#fff; font-size:13px; line-height:1; cursor:pointer;' +
+          'display:flex; align-items:center; justify-content:center; padding:0; }' +
+        '.ed-btn:hover{ background:#4650ff; border-color:#7fc4ff; }' +
+        '.ed-btn.is-danger:hover{ background:#c53434; border-color:#ff8a8a; }' +
+        '.ed-addbar{ display:flex; gap:8px; flex-wrap:wrap; margin:24px 0 4px; }' +
+        '.ed-add{ font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; color:#fff;' +
+          'background:rgba(70,80,255,0.22); border:1px dashed rgba(127,196,255,0.7); border-radius:10px; padding:9px 16px; }' +
+        '.ed-add:hover{ background:rgba(70,80,255,0.4); border-style:solid; }' +
       '</style>';
     // the project detail page reads its id from the query string, which an
     // srcdoc frame doesn't have — so hand it over explicitly instead.
@@ -1393,7 +1414,133 @@ body.visual-mode .wrap{ max-width: 1400px; }
       if (!p) return;
       bindEditable(card.querySelector('h3'), function(){ return p.title || ''; }, function(v){ p.title = v; });
       bindEditable(card.querySelector('.desc'), function(){ return p.desc || ''; }, function(v){ p.desc = v; }, true);
+
+      edTools(doc, card, [
+        edButton(doc, p.hidden ? '🙈' : '👁', p.hidden ? 'Afficher ce projet sur le site' : 'Masquer ce projet du site', false, function(){
+          p.hidden = !p.hidden;
+          applyAndRefresh();
+        }),
+        edButton(doc, '🖼', 'Changer la miniature (envoyer une image)', false, function(){
+          pendingUpload = { owner: p, hint: p.title + '-miniature', thumbOnly: true };
+          $('visual-image-upload').click();
+        })
+      ]);
+      if (p.hidden) edBadge(doc, card, 'masqué');
     });
+  }
+
+  // ---- floating controls injected over the rendered site ----
+  function edButton(doc, glyph, title, danger, onClick){
+    var b = doc.createElement('button');
+    b.type = 'button';
+    b.className = 'ed-btn' + (danger ? ' is-danger' : '');
+    b.textContent = glyph;
+    b.title = title;
+    b.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); onClick(); });
+    return b;
+  }
+
+  function edTools(doc, host, buttons){
+    host.classList.add('ed-host');
+    var wrap = doc.createElement('div');
+    wrap.className = 'ed-tools';
+    buttons.forEach(function(b){ wrap.appendChild(b); });
+    host.appendChild(wrap);
+    return wrap;
+  }
+
+  function edBadge(doc, host, text){
+    var s = doc.createElement('span');
+    s.className = 'ed-badge';
+    s.textContent = text;
+    host.appendChild(s);
+  }
+
+  // any structural change re-renders the frame so the site reflects it at once
+  function applyAndRefresh(){
+    markDirty();
+    openVisual(visualNav.page, visualNav.projectId);
+  }
+
+  // owner is the project or sub-project the assets belong to
+  function ensureAssets(owner){
+    if (!Array.isArray(owner.assets)) owner.assets = assetsOf(owner);
+    delete owner.images; delete owner.videoUrl; delete owner.audioUrl;
+    return owner.assets;
+  }
+
+  var pendingUpload = null;
+  function visualAddImage(owner, hint){
+    pendingUpload = { owner: owner, hint: hint };
+    $('visual-image-upload').click();
+  }
+
+  function wireAssetControls(doc, scope, owner, hint){
+    var assets = ensureAssets(owner);
+    scope.querySelectorAll('[data-asset-index]').forEach(function(node){
+      var i = +node.getAttribute('data-asset-index');
+      var a = assets[i];
+      if (!a) return;
+
+      // an <img> can't host children — wrap it so the tools have a container
+      var host = node;
+      if (node.tagName === 'IMG'){
+        var wrap = doc.createElement('div');
+        wrap.style.position = 'relative';
+        node.parentNode.insertBefore(wrap, node);
+        wrap.appendChild(node);
+        host = wrap;
+      }
+
+      var btns = [
+        edButton(doc, a.hidden ? '🙈' : '👁', a.hidden ? 'Afficher sur le site' : 'Masquer du site', false, function(){
+          a.hidden = !a.hidden;
+          applyAndRefresh();
+        }),
+        edButton(doc, '✕', 'Retirer ce contenu', true, function(){
+          if (!confirm('Retirer ce contenu du projet ?')) return;
+          assets.splice(i, 1);
+          applyAndRefresh();
+        })
+      ];
+      if (a.type === 'image'){
+        btns.unshift(edButton(doc, '★', 'Utiliser comme miniature', false, function(){
+          owner.thumb = a.url;
+          applyAndRefresh();
+        }));
+      }
+      edTools(doc, host, btns);
+      if (a.hidden) edBadge(doc, host, 'masqué');
+    });
+  }
+
+  function wireAddBar(doc, anchor, owner, hint){
+    var bar = doc.createElement('div');
+    bar.className = 'ed-addbar';
+    [
+      ['+ Image', function(){ visualAddImage(owner, hint); }],
+      ['+ Vidéo', function(){
+        var url = prompt('Lien vidéo (YouTube, Vimeo ou fichier .mp4) :', '');
+        if (!url) return;
+        ensureAssets(owner).push({ type: 'video', url: url.trim(), hidden: false });
+        applyAndRefresh();
+      }],
+      ['+ Audio', function(){
+        var url = prompt('Lien audio (SoundCloud ou fichier .mp3/.wav) :', '');
+        if (!url) return;
+        ensureAssets(owner).push({ type: 'audio', url: url.trim(), hidden: false });
+        applyAndRefresh();
+      }]
+    ].forEach(function(pair){
+      var b = doc.createElement('button');
+      b.type = 'button';
+      b.className = 'ed-add';
+      b.textContent = pair[0];
+      b.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); pair[1](); });
+      bar.appendChild(b);
+    });
+    anchor.appendChild(bar);
+    return bar;
   }
 
   function wireDetailEditing(doc, projectId){
@@ -1405,19 +1552,46 @@ body.visual-mode .wrap{ max-width: 1400px; }
       function(){ return p.longDesc || p.desc || ''; },
       function(v){ p.longDesc = v; }, true);
 
+    var wrap = doc.querySelector('.detail-wrap');
+    var subsRoot = doc.querySelector('.detail-subprojects');
+
+    // project-level assets are everything before the sub-projects block
+    wireAssetControls(doc, subsRoot ? sliceBefore(doc, wrap, subsRoot) : wrap, p, p.title);
+    var addAnchor = doc.createElement('div');
+    if (subsRoot) wrap.insertBefore(addAnchor, subsRoot); else wrap.appendChild(addAnchor);
+    wireAddBar(doc, addAnchor, p, p.title);
+
     doc.querySelectorAll('.subproject').forEach(function(node, i){
       var sp = (p.subProjects || [])[i];
       if (!sp) return;
       bindEditable(node.querySelector('h3'), function(){ return sp.title || ''; }, function(v){ sp.title = v; });
       bindEditable(node.querySelector('.detail-desc'), function(){ return sp.desc || ''; }, function(v){ sp.desc = v; }, true);
+      wireAssetControls(doc, node, sp, p.title + '-' + sp.title);
+      wireAddBar(doc, node, sp, p.title + '-' + sp.title);
     });
+  }
+
+  // a lightweight "scope" holding only the asset nodes that sit before a
+  // boundary element — sub-project assets must not be treated as the
+  // parent project's own.
+  function sliceBefore(doc, root, boundary){
+    var fake = { querySelectorAll: function(sel){
+      return Array.prototype.filter.call(root.querySelectorAll(sel), function(n){
+        return !boundary.contains(n);
+      });
+    }};
+    return fake;
   }
 
   // links inside the frame must never navigate the frame away from our
   // injected document — project links re-render in place, the rest is inert.
   function interceptLinks(doc){
     doc.addEventListener('click', function(e){
-      var a = e.target.closest ? e.target.closest('a') : null;
+      if (!e.target.closest) return;
+      // this runs in the capture phase, so it would otherwise swallow clicks
+      // on the editor's own buttons before they ever reach them
+      if (e.target.closest('.ed-tools, .ed-btn, .ed-add')){ e.preventDefault(); return; }
+      var a = e.target.closest('a');
       if (!a) return;
       var href = a.getAttribute('href') || '';
       if (href.indexOf('projet.html') === 0){
@@ -1483,6 +1657,37 @@ body.visual-mode .wrap{ max-width: 1400px; }
     document.body.classList.toggle('visual-mode', visual);
     if (visual) openVisual(visualNav.page, visualNav.projectId);
   }
+
+  // image picked from inside the visual editor: same WebP conversion + commit
+  // as the form view, then either appended as an asset or set as thumbnail.
+  $('visual-image-upload').addEventListener('change', function(e){
+    var files = Array.prototype.slice.call(e.target.files || []);
+    var target = pendingUpload;
+    pendingUpload = null;
+    e.target.value = '';
+    if (!files.length || !target) return;
+
+    $('visual-location').textContent = 'Envoi de ' + files.length + ' image' + (files.length > 1 ? 's' : '') + '…';
+    var uploaded = [];
+    var i = 0;
+    (function next(){
+      if (i >= files.length){
+        if (!uploaded.length){ openVisual(visualNav.page, visualNav.projectId); return; }
+        if (target.thumbOnly){
+          target.owner.thumb = uploaded[0];
+        } else {
+          var arr = ensureAssets(target.owner);
+          uploaded.forEach(function(u){ arr.push({ type: 'image', url: u, hidden: false }); });
+        }
+        applyAndRefresh();
+        return;
+      }
+      uploadProjectImage(files[i], target.hint || 'projet', i)
+        .then(function(path){ uploaded.push(path); })
+        .catch(function(err){ alert('Erreur sur « ' + files[i].name + ' » : ' + err.message); })
+        .then(function(){ i++; next(); });
+    })();
+  });
 
   $('view-form-btn').addEventListener('click', function(){ showView('form'); });
   $('view-visual-btn').addEventListener('click', function(){
