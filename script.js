@@ -330,11 +330,12 @@
       var photos = gallery._photos;
       if (!photos.length) return;
 
+      // aim for a ~360px column: full-bleed with only 3 columns made each photo
+      // huge on wide screens, so the count grows with the available width.
       function columnCount(){
         var w = gallery.clientWidth || window.innerWidth;
-        if (w < 620) return 1;
-        if (w < 1000) return 2;
-        return 3;
+        if (w < 560) return 1;
+        return Math.max(2, Math.min(5, Math.round(w / 360)));
       }
 
       function build(){
