@@ -203,6 +203,39 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
         <button class="primary" id="add-project-btn" type="button">+ Ajouter un projet</button>
       </div>
       <p class="small" style="margin:0 0 14px;">★ = mis en avant sur l'accueil (section "Projets mis en avant").</p>
+
+      <div class="row" style="margin-bottom:16px; align-items:flex-end;">
+        <div>
+          <label for="filter-search" style="margin-top:0;">Recherche</label>
+          <input type="text" id="filter-search" placeholder="Titre, tag...">
+        </div>
+        <div style="max-width:180px;">
+          <label for="filter-ctx" style="margin-top:0;">Catégorie</label>
+          <select id="filter-ctx">
+            <option value="">Toutes</option>
+            <option value="perso">Perso</option>
+            <option value="academique">Académique</option>
+            <option value="stage">Stage</option>
+          </select>
+        </div>
+        <div style="max-width:180px;">
+          <label for="filter-medium" style="margin-top:0;">Médium</label>
+          <select id="filter-medium">
+            <option value="">Tous</option>
+            <option value="graphisme">Graphisme</option>
+            <option value="video">Vidéo</option>
+            <option value="audio">Audio</option>
+            <option value="web">Site web</option>
+            <option value="social">Réseaux sociaux</option>
+            <option value="event">Événementiel</option>
+            <option value="ecrit">Écrit</option>
+          </select>
+        </div>
+        <div style="flex:0;">
+          <button class="ghost" id="filter-reset-btn" type="button" style="margin-top:0; white-space:nowrap;">Réinitialiser</button>
+        </div>
+      </div>
+
       <div id="project-list"></div>
 
       <div class="form-box hidden" id="project-form-box">
@@ -349,11 +382,27 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
   var CTX_LABEL = { perso: 'Perso', academique: 'Académique', stage: 'Stage' };
   var MEDIUM_LABEL = { graphisme:'Graphisme', video:'Vidéo', audio:'Audio', web:'Site web', social:'Réseaux sociaux', event:'Événementiel', ecrit:'Écrit' };
 
+  function projectMatchesFilter(p){
+    var ctx = $('filter-ctx').value;
+    var medium = $('filter-medium').value;
+    var q = $('filter-search').value.trim().toLowerCase();
+    if (ctx && p.ctx !== ctx) return false;
+    if (medium && p.medium !== medium) return false;
+    if (q){
+      var haystack = (p.title + ' ' + (p.tags||[]).join(' ') + ' ' + (p.desc||'')).toLowerCase();
+      if (haystack.indexOf(q) === -1) return false;
+    }
+    return true;
+  }
+
   function renderProjectList(){
     $('project-count').textContent = '(' + state.projects.length + ')';
     var list = $('project-list');
     list.innerHTML = '';
+    var visibleCount = 0;
     state.projects.forEach(function(p, i){
+      if (!projectMatchesFilter(p)) return;
+      visibleCount++;
       var row = document.createElement('div');
       row.className = 'project-item';
       row.innerHTML =
@@ -368,6 +417,12 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
         '</div>';
       list.appendChild(row);
     });
+    if (visibleCount === 0 && state.projects.length > 0){
+      list.innerHTML = '<p class="small">Aucun projet ne correspond aux filtres.</p>';
+    }
+    if (state.projects.length > 0 && visibleCount !== state.projects.length){
+      $('project-count').textContent = '(' + visibleCount + ' / ' + state.projects.length + ')';
+    }
     list.querySelectorAll('button[data-action="edit"]').forEach(function(b){
       b.addEventListener('click', function(){ openProjectForm(+b.dataset.i); });
     });
@@ -515,6 +570,14 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
     }).catch(function(err){
       setStatus($('save-status'), err.message, 'err');
     });
+  });
+
+  $('filter-search').addEventListener('input', renderProjectList);
+  $('filter-ctx').addEventListener('change', renderProjectList);
+  $('filter-medium').addEventListener('change', renderProjectList);
+  $('filter-reset-btn').addEventListener('click', function(){
+    $('filter-search').value = ''; $('filter-ctx').value = ''; $('filter-medium').value = '';
+    renderProjectList();
   });
 
   $('add-project-btn').addEventListener('click', function(){ openProjectForm(-1); });
