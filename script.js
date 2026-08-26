@@ -3,6 +3,19 @@
   if (yearEl) yearEl.textContent = new Date().getFullYear();
   var reduceMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
+  // full-bleed blocks use 100vw, which counts the scrollbar the page content
+  // doesn't get — publish the difference so CSS can subtract it
+  function setScrollbarVar(){
+    var sbw = window.innerWidth - document.documentElement.clientWidth;
+    document.documentElement.style.setProperty('--sbw', (sbw > 0 ? sbw : 0) + 'px');
+  }
+  setScrollbarVar();
+  window.addEventListener('resize', setScrollbarVar, { passive: true });
+  // a scrollbar can also appear later, once images make the page taller
+  if (window.ResizeObserver){
+    new ResizeObserver(setScrollbarVar).observe(document.documentElement);
+  }
+
   // small UI marks (never emoji — they'd clash with the site's typography)
   var UI_ICON = {
     star: '<svg class="ui-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg>',
@@ -302,7 +315,71 @@
         subProjectsHTML(p.subProjects) +
       '</div>';
 
+    layoutGalleries(container);
     initLightbox(container);
+  }
+
+  // Distributes photos into flex columns, shortest-first so the wall stays
+  // balanced. Re-runs on resize and once images report their real proportions.
+  function layoutGalleries(scope){
+    scope.querySelectorAll('.detail-gallery').forEach(function(gallery){
+      // keep the original order so re-layouts stay stable
+      if (!gallery._photos){
+        gallery._photos = Array.prototype.slice.call(gallery.querySelectorAll('.photo'));
+      }
+      var photos = gallery._photos;
+      if (!photos.length) return;
+
+      function columnCount(){
+        var w = gallery.clientWidth || window.innerWidth;
+        if (w < 620) return 1;
+        if (w < 1000) return 2;
+        return 3;
+      }
+
+      function build(){
+        var n = Math.min(columnCount(), photos.length);
+        if (gallery._cols === n && gallery.querySelector('.gallery-col')) return;
+        gallery._cols = n;
+        gallery.innerHTML = '';
+        var cols = [], heights = [];
+        for (var i = 0; i < n; i++){
+          var c = document.createElement('div');
+          c.className = 'gallery-col';
+          gallery.appendChild(c);
+          cols.push(c); heights.push(0);
+        }
+        photos.forEach(function(p){
+          // estimate with the image's own ratio when known, else a 3:2 guess
+          var img = p.querySelector('img');
+          var ratio = (img && img.naturalWidth) ? (img.naturalHeight / img.naturalWidth) : 0.66;
+          var target = heights.indexOf(Math.min.apply(null, heights));
+          cols[target].appendChild(p);
+          heights[target] += ratio;
+        });
+      }
+
+      build();
+
+      if (!gallery._bound){
+        gallery._bound = true;
+        var t;
+        window.addEventListener('resize', function(){
+          clearTimeout(t);
+          t = setTimeout(function(){ gallery._cols = null; build(); }, 150);
+        }, { passive: true });
+        // once the real sizes are in, rebalance with accurate ratios
+        photos.forEach(function(p){
+          var img = p.querySelector('img');
+          if (img && !img.complete){
+            img.addEventListener('load', function(){
+              clearTimeout(t);
+              t = setTimeout(function(){ gallery._cols = null; build(); }, 80);
+            }, { once: true });
+          }
+        });
+      }
+    });
   }
 
   // Click any gallery image to view it full-screen. Right-click, dragging and
