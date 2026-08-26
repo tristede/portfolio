@@ -247,7 +247,9 @@
         "Vidéo 360°"
       ],
       "desc": "Production d'un contenu vidéo immersif à 360°.",
-      "featured": false
+      "featured": false,
+      "assets": [],
+      "subProjects": []
     },
     {
       "id": "carte-visite-echo-nexus",
