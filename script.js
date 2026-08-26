@@ -243,7 +243,9 @@
     if (gdoc){
       src = 'https://docs.google.com/' + gdoc[1] + '/d/' + gdoc[2] + '/preview';
     } else if (/\.pdf($|\?|#)/.test(lower)){
-      src = url;
+      // hide the built-in PDF chrome where the browser honours it (Chrome,
+      // Edge); Firefox and Safari ignore these and keep their own toolbar.
+      src = url + (url.indexOf('#') === -1 ? '#toolbar=0&navpanes=0&scrollbar=0&view=FitH' : '');
     } else if (/\.(docx?|pptx?|xlsx?)($|\?|#)/.test(lower)){
       src = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(url);
       note = 'Aperçu fourni par le visualiseur Office de Microsoft.';
@@ -315,72 +317,7 @@
         subProjectsHTML(p.subProjects) +
       '</div>';
 
-    layoutGalleries(container);
     initLightbox(container);
-  }
-
-  // Distributes photos into flex columns, shortest-first so the wall stays
-  // balanced. Re-runs on resize and once images report their real proportions.
-  function layoutGalleries(scope){
-    scope.querySelectorAll('.detail-gallery').forEach(function(gallery){
-      // keep the original order so re-layouts stay stable
-      if (!gallery._photos){
-        gallery._photos = Array.prototype.slice.call(gallery.querySelectorAll('.photo'));
-      }
-      var photos = gallery._photos;
-      if (!photos.length) return;
-
-      // aim for a ~360px column: full-bleed with only 3 columns made each photo
-      // huge on wide screens, so the count grows with the available width.
-      function columnCount(){
-        var w = gallery.clientWidth || window.innerWidth;
-        if (w < 560) return 1;
-        return Math.max(2, Math.min(5, Math.round(w / 360)));
-      }
-
-      function build(){
-        var n = Math.min(columnCount(), photos.length);
-        if (gallery._cols === n && gallery.querySelector('.gallery-col')) return;
-        gallery._cols = n;
-        gallery.innerHTML = '';
-        var cols = [], heights = [];
-        for (var i = 0; i < n; i++){
-          var c = document.createElement('div');
-          c.className = 'gallery-col';
-          gallery.appendChild(c);
-          cols.push(c); heights.push(0);
-        }
-        photos.forEach(function(p){
-          // estimate with the image's own ratio when known, else a 3:2 guess
-          var img = p.querySelector('img');
-          var ratio = (img && img.naturalWidth) ? (img.naturalHeight / img.naturalWidth) : 0.66;
-          var target = heights.indexOf(Math.min.apply(null, heights));
-          cols[target].appendChild(p);
-          heights[target] += ratio;
-        });
-      }
-
-      build();
-
-      if (!gallery._bound){
-        gallery._bound = true;
-        var t;
-        window.addEventListener('resize', function(){
-          clearTimeout(t);
-          t = setTimeout(function(){ gallery._cols = null; build(); }, 150);
-        }, { passive: true });
-        // once the real sizes are in, rebalance with accurate ratios
-        photos.forEach(function(p){
-          var img = p.querySelector('img');
-          if (img && !img.complete){
-            img.addEventListener('load', function(){
-              clearTimeout(t);
-              t = setTimeout(function(){ gallery._cols = null; build(); }, 80);
-            }, { once: true });
-          }
-        });
-      }
-    });
   }
 
   // Click any gallery image to view it full-screen. Right-click, dragging and
