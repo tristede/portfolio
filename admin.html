@@ -188,8 +188,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
       </div>
       <div class="actions">
         <div class="view-switch">
-          <button class="view-tab is-active" id="view-form-btn" type="button">Formulaire</button>
-          <button class="view-tab" id="view-visual-btn" type="button">Vue visuelle</button>
+          <button class="view-tab is-active" id="view-visual-btn" type="button">Vue visuelle</button>
+          <button class="view-tab" id="view-form-btn" type="button">Liste</button>
         </div>
         <a href="https://tristede.github.io/portfolio/" target="_blank" rel="noopener"><button class="ghost" type="button">Voir le site <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 16L18 6M9.5 6H18v8.5"/></svg></button></a>
         <button class="ghost" id="reload-btn" type="button">Recharger depuis GitHub</button>
@@ -197,7 +197,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
       </div>
     </div>
 
-    <div id="visual-view" class="hidden">
+    <div id="visual-view">
       <div class="visual-bar">
         <div class="visual-bar-left">
           <button class="ghost" id="visual-home-btn" type="button">⌂ Accueil</button>
@@ -211,7 +211,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
       </div>
     </div>
 
-    <div id="form-view">
+    <div id="form-view" class="hidden">
 
     <div class="panel">
       <h2>Textes du site</h2>
@@ -389,6 +389,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
               <button class="ghost" id="pf-add-audio-btn" type="button">+ Audio</button>
               <button class="ghost" id="pf-add-web-btn" type="button">+ Site web</button>
               <button class="ghost" id="pf-add-doc-btn" type="button">+ Document</button>
+              <button class="ghost" id="pf-add-doclink-btn" type="button">+ Doc en ligne</button>
             </div>
           </div>
           <p class="small" style="margin:0 0 12px;">Images, vidéos et audio affichés sur la page détail. L'œil masque un contenu sans le supprimer.</p>
@@ -449,6 +450,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
                 <button class="ghost" id="spf-add-audio-btn" type="button">+ Audio</button>
                 <button class="ghost" id="spf-add-web-btn" type="button">+ Site web</button>
                 <button class="ghost" id="spf-add-doc-btn" type="button">+ Document</button>
+                <button class="ghost" id="spf-add-doclink-btn" type="button">+ Doc en ligne</button>
               </div>
             </div>
             <input type="file" id="spf-images-upload" accept="image/*" multiple class="hidden">
@@ -1217,6 +1219,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
     $('login-screen').classList.add('hidden');
     $('editor-screen').classList.remove('hidden');
     $('repo-label').textContent = REPO_OWNER + '/' + REPO_NAME;
+    // the visual editor is the default way in; the list view stays a click away
+    showView('visual');
   }
   function showLogin(){
     $('editor-screen').classList.add('hidden');
@@ -1399,12 +1403,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
   $('pf-add-web-btn').addEventListener('click', function(){ promptAsset('web', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); }); });
   $('pf-add-doc-btn').addEventListener('click', function(){
-    if (confirm('Envoyer un fichier PDF depuis ton ordinateur ?\n\n« Annuler » pour coller un lien (Google Docs, PDF en ligne…) à la place.')){
-      pickAndUploadDocs(currentAssets, function(){ return $('pf-title').value.trim(); },
-        function(){ renderProjectAssets(); refreshThumbOptions(); }, $('pf-images-upload-status'));
-    } else {
-      promptAsset('doc', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); });
-    }
+    pickAndUploadDocs(currentAssets, function(){ return $('pf-title').value.trim(); },
+      function(){ renderProjectAssets(); refreshThumbOptions(); }, $('pf-images-upload-status'));
+  });
+  $('pf-add-doclink-btn').addEventListener('click', function(){
+    promptAsset('doc', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); });
   });
 
   $('spf-add-image-btn').addEventListener('click', function(){ $('spf-images-upload').click(); });
@@ -1412,12 +1415,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
   $('spf-add-audio-btn').addEventListener('click', function(){ promptAsset('audio', currentSubAssets, renderSubAssets); });
   $('spf-add-web-btn').addEventListener('click', function(){ promptAsset('web', currentSubAssets, renderSubAssets); });
   $('spf-add-doc-btn').addEventListener('click', function(){
-    if (confirm('Envoyer un fichier PDF depuis ton ordinateur ?\n\n« Annuler » pour coller un lien à la place.')){
-      pickAndUploadDocs(currentSubAssets, function(){ return ($('pf-title').value.trim() || 'projet') + '-' + $('spf-title').value.trim(); },
-        renderSubAssets, $('spf-images-upload-status'));
-    } else {
-      promptAsset('doc', currentSubAssets, renderSubAssets);
-    }
+    pickAndUploadDocs(currentSubAssets, function(){ return ($('pf-title').value.trim() || 'projet') + '-' + $('spf-title').value.trim(); },
+      renderSubAssets, $('spf-images-upload-status'));
+  });
+  $('spf-add-doclink-btn').addEventListener('click', function(){
+    promptAsset('doc', currentSubAssets, renderSubAssets);
   });
 
   // shared handler for every "+ Document" file picker
@@ -1881,19 +1883,21 @@ body.visual-mode .wrap{ max-width: 1400px; }
         ensureAssets(owner).push({ type: 'web', url: url.trim(), hidden: false });
         applyAndRefresh();
       }],
+      // No confirm() before opening the picker: a modal dialog ends the user
+      // activation, and the browser then silently refuses to open a file
+      // dialog — which is why this button did nothing in the visual view.
       ['+ Document', function(){
-        if (confirm('Envoyer un fichier PDF depuis ton ordinateur ?\n\n« Annuler » pour coller un lien (Google Docs, PDF en ligne…) à la place.')){
-          pendingDocTarget = {
-            assets: ensureAssets(owner), hint: function(){ return hint; },
-            rerender: applyAndRefresh, statusEl: null
-          };
-          $('doc-upload').click();
-        } else {
-          var url = prompt('Lien du document (PDF, Google Docs/Slides, Word…) :', '');
-          if (!url) return;
-          ensureAssets(owner).push({ type: 'doc', url: url.trim(), hidden: false });
-          applyAndRefresh();
-        }
+        pendingDocTarget = {
+          assets: ensureAssets(owner), hint: function(){ return hint; },
+          rerender: applyAndRefresh, statusEl: null
+        };
+        $('doc-upload').click();
+      }],
+      ['+ Doc en ligne', function(){
+        var url = prompt('Lien du document (PDF, Google Docs/Slides, Word…) :', '');
+        if (!url) return;
+        ensureAssets(owner).push({ type: 'doc', url: url.trim(), hidden: false });
+        applyAndRefresh();
       }]
     ].forEach(function(pair){
       var b = doc.createElement('button');
