@@ -345,25 +345,6 @@
     }
   }
 
-  // ---- background: drifts slower than the page, so the texture feels like a
-  // wall sitting behind the content rather than a sticker on the viewport. The
-  // layer is 12vh taller top and bottom, which is the travel budget. ----
-  var topoBg = document.querySelector('.topo-bg');
-  if (topoBg && !reduceMotionQuery.matches) {
-    var bgTicking = false;
-    var updateBgParallax = function(){
-      var maxTravel = window.innerHeight * 0.12;
-      var offset = Math.max(-maxTravel, Math.min(maxTravel, window.scrollY * 0.08));
-      topoBg.style.setProperty('--bgy', offset.toFixed(1) + 'px');
-      bgTicking = false;
-    };
-    window.addEventListener('scroll', function(){
-      if (!bgTicking) { requestAnimationFrame(updateBgParallax); bgTicking = true; }
-    }, { passive: true });
-    window.addEventListener('resize', updateBgParallax, { passive: true });
-    updateBgParallax();
-  }
-
   // ---- nav-cards: stay visible from the start, but sway gently with scroll —
   // each card moves at a slightly different rate/direction for a subtle
   // parallax "alive" feel while the page scrolls. (static markup, no data) ----

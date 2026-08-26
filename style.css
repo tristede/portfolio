@@ -109,22 +109,15 @@ h1,h2,h3{ font-family: var(--font-title); font-weight: 400; letter-spacing:0; ma
   background-size: cover;
 }
 /* the topographic texture rides on top of the gradient at low opacity, so the
-   gradient still does the colour work underneath. It's taller than the
-   viewport and shifted by --bgy on scroll, which is what gives the parallax. */
+   gradient still does the colour work underneath */
 .topo-bg::after{
-  content: ""; position: absolute;
-  left: 0; right: 0; top: -12vh; bottom: -12vh;
+  content: ""; position: absolute; inset: 0;
   background: url('images/bg-hor.webp') center/cover no-repeat;
   opacity: 0.55;
-  transform: translateY(var(--bgy, 0px));
-  will-change: transform;
 }
 /* portrait screens get the vertical artwork so it isn't stretched */
 @media (max-aspect-ratio: 1/1){
   .topo-bg::after{ background-image: url('images/bg-vert.webp'); }
-}
-@media (prefers-reduced-motion: reduce){
-  .topo-bg::after{ transform: none; }
 }
 
 /* ---------- Nav (floating glass pill, blue-tinted) ---------- */
