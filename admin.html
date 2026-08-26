@@ -387,6 +387,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
               <button class="ghost" id="pf-add-image-btn" type="button">+ Image</button>
               <button class="ghost" id="pf-add-video-btn" type="button">+ Vidéo</button>
               <button class="ghost" id="pf-add-audio-btn" type="button">+ Audio</button>
+              <button class="ghost" id="pf-add-web-btn" type="button">+ Site web</button>
+              <button class="ghost" id="pf-add-doc-btn" type="button">+ Document</button>
             </div>
           </div>
           <p class="small" style="margin:0 0 12px;">Images, vidéos et audio affichés sur la page détail. L'œil masque un contenu sans le supprimer.</p>
@@ -410,14 +412,14 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
         <div class="form-box">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h2 style="margin:0; font-size:15px;">Sous-projets <span class="small" id="subproject-count"></span></h2>
-            <button class="ghost" id="add-subproject-btn" type="button">+ Ajouter un sous-projet</button>
+            <h2 style="margin:0; font-size:15px;">Sections <span class="small" id="subproject-count"></span></h2>
+            <button class="ghost" id="add-subproject-btn" type="button">+ Ajouter une section</button>
           </div>
-          <p class="small" style="margin:0 0 12px;">Ex: "Refonte graphique", "Community management" — des sections à l'intérieur de la page détail de ce projet.</p>
+          <p class="small" style="margin:0 0 12px;">Ex: « Refonte graphique », « Community management » — des sections affichées à l'intérieur de la page de ce projet.</p>
           <div id="subproject-list"></div>
 
           <div class="form-box hidden" id="subproject-form-box">
-            <h2 id="subproject-form-title" style="font-size:15px;">Ajouter un sous-projet</h2>
+            <h2 id="subproject-form-title" style="font-size:15px;">Ajouter une section</h2>
             <div class="row">
               <div>
                 <label for="spf-title">Titre</label>
@@ -445,6 +447,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
                 <button class="ghost" id="spf-add-image-btn" type="button">+ Image</button>
                 <button class="ghost" id="spf-add-video-btn" type="button">+ Vidéo</button>
                 <button class="ghost" id="spf-add-audio-btn" type="button">+ Audio</button>
+                <button class="ghost" id="spf-add-web-btn" type="button">+ Site web</button>
+                <button class="ghost" id="spf-add-doc-btn" type="button">+ Document</button>
               </div>
             </div>
             <input type="file" id="spf-images-upload" accept="image/*" multiple class="hidden">
@@ -453,7 +457,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
             <label for="spf-link">Lien externe</label>
             <input type="url" id="spf-link" placeholder="https://...">
             <div style="margin-top:14px; display:flex; gap:10px;">
-              <button class="primary" id="spf-save-btn" type="button">Enregistrer ce sous-projet</button>
+              <button class="primary" id="spf-save-btn" type="button">Enregistrer cette section</button>
               <button class="ghost" id="spf-cancel-btn" type="button">Annuler</button>
             </div>
           </div>
@@ -469,6 +473,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
     </div><!-- /#form-view -->
 
     <input type="file" id="visual-image-upload" accept="image/*" multiple class="hidden">
+    <input type="file" id="doc-upload" accept=".pdf,application/pdf" multiple class="hidden">
 
     <div class="sticky-save">
       <div class="sticky-save-inner">
@@ -524,7 +529,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
     music: svg('<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>'),
     check: svg('<path d="M20 6L9 17l-5-5"/>'),
     chevronLeft: svg('<path d="M15 5l-7 7 7 7"/>'),
-    chevronRight: svg('<path d="M9 5l7 7-7 7"/>')
+    chevronRight: svg('<path d="M9 5l7 7-7 7"/>'),
+    globe: svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.4 2.6 3.7 5.7 3.7 9s-1.3 6.4-3.7 9c-2.4-2.6-3.7-5.7-3.7-9s1.3-6.4 3.7-9z"/>'),
+    file: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>')
   };
   // slightly larger variant for the in-page (non-frame) lists
   function iconHTML(name){ return '<span class="ico">' + (ICON[name] || '') + '</span>'; }
@@ -619,7 +626,23 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // Uploading N images through the Contents API means N sequential commits,
   // which crawls once you pick a dozen files. The Git Data API instead lets us
   // push every image as a blob (in parallel) and land them in ONE commit.
-  function uploadImagesBatch(files, idHint, onProgress){
+  // repo path -> data: URL of the bytes we just uploaded, so the editor can
+  // show an image before GitHub Pages has published it
+  var freshUploads = {};
+
+  function fileToRawBase64(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(){ resolve(reader.result.split(',')[1]); };
+      reader.onerror = function(){ reject(new Error('Lecture du fichier impossible.')); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // kind: 'image' converts to WebP under images/; 'doc' commits the file as-is
+  // under docs/, keeping its original extension.
+  function uploadImagesBatch(files, idHint, onProgress, kind){
+    var isDoc = kind === 'doc';
     var stamp = Date.now();
     var slug = slugify(idHint || 'projet');
     var done = 0;
@@ -628,22 +651,27 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
     // 1. convert + upload each file as a blob, a few at a time
     var entries = new Array(total);
+    var pendingB64 = new Array(total);
     var next = 0;
     function worker(){
       if (next >= total) return Promise.resolve();
       var i = next++;
-      return fileToWebpBase64(files[i], 1920)
+      var prep = isDoc ? fileToRawBase64(files[i]) : fileToWebpBase64(files[i], 1920);
+      return prep
         .then(function(b64){
+          pendingB64[i] = b64;
           return ghRequest('/git/blobs', {
             method: 'POST',
             body: JSON.stringify({ content: b64, encoding: 'base64' })
           });
         })
         .then(function(blob){
-          entries[i] = {
-            path: 'images/' + slug + '-' + stamp + '-' + i + '.webp',
-            mode: '100644', type: 'blob', sha: blob.sha
-          };
+          var ext = isDoc ? ((files[i].name.match(/\.[a-z0-9]+$/i) || ['.pdf'])[0].toLowerCase()) : '.webp';
+          var path = (isDoc ? 'docs/' : 'images/') + slug + '-' + stamp + '-' + i + ext;
+          entries[i] = { path: path, mode: '100644', type: 'blob', sha: blob.sha };
+          // GitHub Pages needs ~a minute to serve the new file, so keep the
+          // local bytes around and show those in the editor meanwhile.
+          if (!isDoc) freshUploads[path] = 'data:image/webp;base64,' + pendingB64[i];
           done++; report('upload');
           return worker();
         });
@@ -669,7 +697,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
             return ghRequest('/git/commits', {
               method: 'POST',
               body: JSON.stringify({
-                message: 'Ajoute ' + total + ' image' + (total > 1 ? 's' : '') + ' (' + slug + ')',
+                message: 'Ajoute ' + total + ' ' + (isDoc ? 'document' : 'image') + (total > 1 ? 's' : '') + ' (' + slug + ')',
                 tree: tree.sha, parents: [headSha]
               })
             });
@@ -803,7 +831,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
     });
     list.querySelectorAll('button[data-action="delete"]').forEach(function(b){
       b.addEventListener('click', function(){
-        if (!confirm('Supprimer ce sous-projet ?')) return;
+        if (!confirm('Supprimer cette section ?')) return;
         currentSubProjects.splice(+b.dataset.i, 1);
         renderSubProjectList();
       });
@@ -815,13 +843,13 @@ body.visual-mode .wrap{ max-width: 1400px; }
     var box = $('subproject-form-box');
     box.classList.remove('hidden');
     if (index === -1){
-      $('subproject-form-title').textContent = 'Ajouter un sous-projet';
+      $('subproject-form-title').textContent = 'Ajouter une section';
       $('spf-title').value = ''; $('spf-medium').value = ''; $('spf-desc').value = '';
       $('spf-link').value = '';
       currentSubAssets = [];
     } else {
       var sp = currentSubProjects[index];
-      $('subproject-form-title').textContent = 'Modifier le sous-projet';
+      $('subproject-form-title').textContent = 'Modifier la section';
       $('spf-title').value = sp.title; $('spf-medium').value = sp.medium || ''; $('spf-desc').value = sp.desc || '';
       $('spf-link').value = sp.link || '';
       currentSubAssets = assetsOf(sp);
@@ -834,7 +862,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
   function saveSubProjectForm(){
     var title = $('spf-title').value.trim();
-    if (!title){ alert('Le titre du sous-projet est obligatoire.'); return; }
+    if (!title){ alert('Le titre de la section est obligatoire.'); return; }
     var sp = {
       title: title,
       medium: $('spf-medium').value,
@@ -867,7 +895,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
     return out;
   }
 
-  var ASSET_LABEL = { image: 'Image', video: 'Vidéo', audio: 'Audio' };
+  var ASSET_LABEL = { image: 'Image', video: 'Vidéo', audio: 'Audio', web: 'Site web', doc: 'Document' };
+  var ASSET_ICON = { video: ICON.play, audio: ICON.music, web: ICON.globe, doc: ICON.file };
 
   function renderAssetList(listId, countId, assets, afterChange){
     var list = $(listId);
@@ -884,7 +913,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
         '<div style="display:flex; align-items:center; gap:12px; min-width:0;">' +
           (a.type === 'image'
             ? '<img src="' + escapeHtml(a.url) + '" alt="" style="width:64px; height:44px; object-fit:cover; border-radius:6px; border:1px solid var(--line); flex:none;">'
-            : '<span class="asset-badge">' + (a.type === 'video' ? ICON.play : ICON.music) + '</span>') +
+            : '<span class="asset-badge">' + (ASSET_ICON[a.type] || ICON.file) + '</span>') +
           '<div style="min-width:0;">' +
             '<div class="meta">' + ASSET_LABEL[a.type] + (a.hidden ? ' · masqué' : '') + '</div>' +
             '<div class="asset-url">' + escapeHtml(a.url) + '</div>' +
@@ -920,15 +949,26 @@ body.visual-mode .wrap{ max-width: 1400px; }
     renderAssetList('spf-assets-list', 'spf-assets-count', currentSubAssets, renderSubAssets);
   }
 
+  var ASSET_PROMPT = {
+    video: 'Lien vidéo (YouTube, Vimeo ou fichier .mp4) :',
+    audio: 'Lien audio (SoundCloud ou fichier .mp3/.wav) :',
+    web: 'Adresse du site à intégrer (https://…) :',
+    doc: 'Lien du document (PDF, Google Docs/Slides, Word…) :'
+  };
   function promptAsset(type, assets, rerender){
-    var label = type === 'video'
-      ? 'Lien vidéo (YouTube, Vimeo ou fichier .mp4) :'
-      : 'Lien audio (SoundCloud ou fichier .mp3/.wav) :';
-    var url = prompt(label, '');
+    var url = prompt(ASSET_PROMPT[type] || 'Adresse :', '');
     if (!url) return;
     assets.push({ type: type, url: url.trim(), hidden: false });
     rerender();
   }
+
+  // documents are committed as-is (no conversion), through the same one-commit
+  // batch path the images use
+  function pickAndUploadDocs(assets, hintFn, rerender, statusEl){
+    pendingDocTarget = { assets: assets, hint: hintFn, rerender: rerender, statusEl: statusEl };
+    $('doc-upload').click();
+  }
+  var pendingDocTarget = null;
 
   // the thumbnail can be any image asset OR a dedicated upload that never
   // appears in the project's contents — hence the extra "(image dédiée)" entry.
@@ -1326,9 +1366,50 @@ body.visual-mode .wrap{ max-width: 1400px; }
   $('pf-add-video-btn').addEventListener('click', function(){ promptAsset('video', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); }); });
   $('pf-add-audio-btn').addEventListener('click', function(){ promptAsset('audio', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); }); });
 
+  $('pf-add-web-btn').addEventListener('click', function(){ promptAsset('web', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); }); });
+  $('pf-add-doc-btn').addEventListener('click', function(){
+    if (confirm('Envoyer un fichier PDF depuis ton ordinateur ?\n\n« Annuler » pour coller un lien (Google Docs, PDF en ligne…) à la place.')){
+      pickAndUploadDocs(currentAssets, function(){ return $('pf-title').value.trim(); },
+        function(){ renderProjectAssets(); refreshThumbOptions(); }, $('pf-images-upload-status'));
+    } else {
+      promptAsset('doc', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); });
+    }
+  });
+
   $('spf-add-image-btn').addEventListener('click', function(){ $('spf-images-upload').click(); });
   $('spf-add-video-btn').addEventListener('click', function(){ promptAsset('video', currentSubAssets, renderSubAssets); });
   $('spf-add-audio-btn').addEventListener('click', function(){ promptAsset('audio', currentSubAssets, renderSubAssets); });
+  $('spf-add-web-btn').addEventListener('click', function(){ promptAsset('web', currentSubAssets, renderSubAssets); });
+  $('spf-add-doc-btn').addEventListener('click', function(){
+    if (confirm('Envoyer un fichier PDF depuis ton ordinateur ?\n\n« Annuler » pour coller un lien à la place.')){
+      pickAndUploadDocs(currentSubAssets, function(){ return ($('pf-title').value.trim() || 'projet') + '-' + $('spf-title').value.trim(); },
+        renderSubAssets, $('spf-images-upload-status'));
+    } else {
+      promptAsset('doc', currentSubAssets, renderSubAssets);
+    }
+  });
+
+  // shared handler for every "+ Document" file picker
+  $('doc-upload').addEventListener('change', function(e){
+    var files = Array.prototype.slice.call(e.target.files || []);
+    var target = pendingDocTarget;
+    pendingDocTarget = null;
+    e.target.value = '';
+    if (!files.length || !target) return;
+    var statusEl = target.statusEl;
+    uploadImagesBatch(files, target.hint(), function(done, total, step){
+      if (statusEl) setStatus(statusEl, step === 'commit'
+        ? 'Enregistrement des documents…'
+        : 'Envoi… (' + done + '/' + total + ')', '');
+    }, 'doc').then(function(paths){
+      paths.forEach(function(u){ target.assets.push({ type: 'doc', url: u, hidden: false }); });
+      if (statusEl) setStatus(statusEl, 'Envoyé (' + paths.length + ' document' + (paths.length > 1 ? 's' : '') + ')', 'ok');
+      target.rerender();
+    }).catch(function(err){
+      if (statusEl) setStatus(statusEl, 'Échec de l\'envoi : ' + err.message, 'err');
+      else alert('Échec de l\'envoi : ' + err.message);
+    });
+  });
 
   $('add-subproject-btn').addEventListener('click', function(){ openSubProjectForm(-1); });
   $('spf-save-btn').addEventListener('click', saveSubProjectForm);
@@ -1762,6 +1843,26 @@ body.visual-mode .wrap{ max-width: 1400px; }
         if (!url) return;
         ensureAssets(owner).push({ type: 'audio', url: url.trim(), hidden: false });
         applyAndRefresh();
+      }],
+      ['+ Site web', function(){
+        var url = prompt('Adresse du site à intégrer (https://…) :', '');
+        if (!url) return;
+        ensureAssets(owner).push({ type: 'web', url: url.trim(), hidden: false });
+        applyAndRefresh();
+      }],
+      ['+ Document', function(){
+        if (confirm('Envoyer un fichier PDF depuis ton ordinateur ?\n\n« Annuler » pour coller un lien (Google Docs, PDF en ligne…) à la place.')){
+          pendingDocTarget = {
+            assets: ensureAssets(owner), hint: function(){ return hint; },
+            rerender: applyAndRefresh, statusEl: null
+          };
+          $('doc-upload').click();
+        } else {
+          var url = prompt('Lien du document (PDF, Google Docs/Slides, Word…) :', '');
+          if (!url) return;
+          ensureAssets(owner).push({ type: 'doc', url: url.trim(), hidden: false });
+          applyAndRefresh();
+        }
       }]
     ].forEach(function(pair){
       var b = doc.createElement('button');
@@ -1851,36 +1952,36 @@ body.visual-mode .wrap{ max-width: 1400px; }
           if (i >= subs.length - 1) return;
           var tmp = subs[i+1]; subs[i+1] = subs[i]; subs[i] = tmp; applyAndRefresh();
         }),
-        edButton(doc, 'sliders', 'Changer le médium du sous-projet', false, function(){
+        edButton(doc, 'sliders', 'Changer le médium de la section', false, function(){
           var keys = Object.keys(MEDIUM_LABEL);
           var lines = keys.map(function(k, n){ return (n + 1) + '. ' + MEDIUM_LABEL[k]; }).join('\n');
-          var raw = prompt('Médium du sous-projet (vide = aucun) :\n\n' + lines + '\n\nNuméro :', '');
+          var raw = prompt('Médium de la section (vide = aucun) :\n\n' + lines + '\n\nNuméro :', '');
           if (raw === null) return;
           sp.medium = keys[parseInt(raw, 10) - 1] || '';
           applyAndRefresh();
         }),
-        edButton(doc, 'link', 'Lien externe du sous-projet', false, function(){
+        edButton(doc, 'link', 'Lien externe de la section', false, function(){
           var v = prompt('Lien externe (vide pour retirer) :', sp.link || '');
           if (v === null) return;
           sp.link = v.trim(); applyAndRefresh();
         }),
-        edButton(doc, 'close', 'Supprimer ce sous-projet', true, function(){
-          if (!confirm('Supprimer le sous-projet « ' + sp.title + ' » ?')) return;
+        edButton(doc, 'close', 'Supprimer cette section', true, function(){
+          if (!confirm('Supprimer la section « ' + sp.title + ' » ?')) return;
           subs.splice(i, 1); applyAndRefresh();
         })
       ]);
     });
 
-    // "+ Sous-projet" — appended after the sub-projects block, or at the end
+    // "+ Nouvelle section" — appended after the sub-projects block, or at the end
     // of the page when the project has none yet.
     var subAnchor = doc.querySelector('.detail-subprojects') || wrap;
     var subBar = doc.createElement('div');
     subBar.className = 'ed-addbar';
     var subAdd = doc.createElement('button');
-    subAdd.type = 'button'; subAdd.className = 'ed-add'; subAdd.textContent = '+ Sous-projet';
+    subAdd.type = 'button'; subAdd.className = 'ed-add'; subAdd.textContent = '+ Nouvelle section';
     subAdd.addEventListener('click', function(e){
       e.preventDefault(); e.stopPropagation();
-      var title = prompt('Titre du sous-projet (ex: « Refonte graphique ») :', '');
+      var title = prompt('Titre de la section (ex: « Refonte graphique ») :', '');
       if (!title) return;
       subs.push({ title: title.trim(), medium: '', desc: '', assets: [], link: '' });
       applyAndRefresh();
@@ -1899,6 +2000,17 @@ body.visual-mode .wrap{ max-width: 1400px; }
       });
     }};
     return fake;
+  }
+
+  // Freshly uploaded images point at a repo path GitHub Pages hasn't published
+  // yet, so they'd render broken for the first minute. Swap in the bytes we
+  // still hold from the upload — the markup keeps the real path.
+  function applyFreshPreviews(doc){
+    if (!Object.keys(freshUploads).length) return;
+    doc.querySelectorAll('img').forEach(function(img){
+      var src = img.getAttribute('src') || '';
+      if (freshUploads[src]) img.src = freshUploads[src];
+    });
   }
 
   // links inside the frame must never navigate the frame away from our
@@ -1956,6 +2068,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
             ? doc.querySelector('.detail-title, .detail-wrap')
             : doc.querySelector('#js-bio, .card, .grid');
           if (!ready && tries++ < 60){ setTimeout(waitForRender, 50); return; }
+          applyFreshPreviews(doc);
           interceptLinks(doc);
           if (page === 'projet.html') wireDetailEditing(doc, projectId);
           else {

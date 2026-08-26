@@ -62,14 +62,14 @@ En haut du panneau, un sélecteur bascule entre :
   |---|---|
   | N'importe quel texte | clic pour éditer (`Échap` annule) |
   | Icônes réseaux sociaux | clic pour changer le lien LinkedIn / Instagram |
-  | Étape du parcours | ↑ ↓ réordonner · ◉ étape en cours · ✕ supprimer — et **+ Étape du parcours** en dessous |
-  | Bloc projet favori | ♥ choisir un autre projet favori |
-  | Vignette de projet | 👁 masquer/afficher · ☆ mettre en avant · ♥ définir favori · 🖼 changer la miniature · ✕ supprimer |
+  | Étape du parcours | ↑ ↓ réordonner · étape en cours · supprimer — et **+ Étape du parcours** en dessous |
+  | Bloc projet favori | choisir un autre projet favori |
+  | Vignette de projet | masquer/afficher · mettre en avant · définir favori · changer la miniature · supprimer |
   | Sous une grille | **+ Nouveau projet** |
-  | Page projet (bandeau du haut) | 🏷 tags · 🎛 médium · 📂 catégorie · 🔗 lien externe · 📅 année |
-  | Image / vidéo / audio | ↑ ↓ réordonner · ★ définir comme miniature · 👁 masquer · ✕ retirer |
-  | Bas d'un projet ou sous-projet | **+ Image / + Vidéo / + Audio** |
-  | Sous-projet | ↑ ↓ réordonner · 🎛 médium · 🔗 lien · ✕ supprimer — et **+ Sous-projet** en dessous |
+  | Page projet (bandeau du haut) | tags · médium · catégorie · lien externe · année |
+  | Image / vidéo / audio / site / document | ↑ ↓ réordonner · définir comme miniature · masquer · retirer |
+  | Bas d'un projet ou d'une section | **+ Image / + Vidéo / + Audio / + Site web / + Document** |
+  | Section | ↑ ↓ réordonner · médium · lien · supprimer — et **+ Nouvelle section** en dessous |
 
   Clique une vignette pour **entrer dans la page détail** du projet, comme sur
   le site public ; ⌂ Accueil et ← Retour servent à circuler. Les éléments
@@ -182,6 +182,14 @@ page détail :
     **WebP** (1920px max, qualité 85%) et envoyés dans `images/` sur GitHub.
   - **+ Vidéo** : colle un lien YouTube, Vimeo ou un `.mp4`.
   - **+ Audio** : colle un lien **SoundCloud** ou un fichier `.mp3`/`.wav`.
+  - **+ Site web** : intègre un site directement dans la page. Certains sites
+    refusent d'être intégrés (`X-Frame-Options`) — un lien direct est alors
+    proposé juste en dessous.
+  - **+ Document** : envoie un **PDF** depuis ton ordinateur (déposé dans
+    `docs/` du repo), ou colle un lien. Les PDF et les Google Docs/Slides/Sheets
+    s'affichent dans la page ; les fichiers Word/PowerPoint/Excel passent par le
+    visualiseur public de Microsoft ; tout autre format devient un simple bouton
+    d'ouverture.
 
   Chaque ligne peut être réordonnée (↑ ↓), **masquée sans être supprimée**
   (l'icône œil) ou retirée (✕). Un contenu masqué reste dans l'admin mais
@@ -217,14 +225,13 @@ des positions différentes, pour qu'aucune ne paraisse dupliquée. Pour en chang
 ou en ajouter : dépose un PNG/WebP détouré dans ce dossier et modifie les règles
 `.photo::before` / `.photo-1::before`… dans `style.css`.
 
-### Sous-projets
+### Sections
 
-Un projet peut contenir des **sous-projets** — des sections affichées dans sa
-page détail, pour découper un gros projet en volets. Par exemple
+Un projet peut contenir des **sections** — des blocs affichés dans sa page détail, pour découper un gros projet en volets. Par exemple
 "Union Oasis Forest" → "Refonte graphique", "Community management",
-"Stratégie digitale". Chaque sous-projet a son propre titre, médium,
+"Stratégie digitale". Chaque section a son propre titre, médium,
 description, images (avec le même upload WebP), vidéo, audio et lien. Ça se
-gère depuis le formulaire du projet parent, section "Sous-projets".
+gère depuis le formulaire du projet parent, section « Sections ».
 
 Tous les médiums sont supportés (graphisme, vidéo, audio, **site web**,
 réseaux sociaux, événementiel, écrit) — la catégorie ne limite pas les champs

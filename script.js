@@ -201,6 +201,8 @@
         media += '<div class="detail-embed photo photo-' + (n % 4) + '"' + attrs(a) + '>' + videoEmbedHTML(a.url) + '</div>';
       }
       if (a.type === 'audio') media += '<div class="detail-audio"' + attrs(a) + '>' + audioEmbedHTML(a.url) + '</div>';
+      if (a.type === 'web') media += '<div' + attrs(a) + '>' + websiteEmbedHTML(a.url) + '</div>';
+      if (a.type === 'doc') media += '<div' + attrs(a) + '>' + docEmbedHTML(a.url) + '</div>';
     });
     return media;
   }
@@ -216,10 +218,40 @@
     '</div>';
   }
 
+  // Documents: PDFs embed natively in every modern browser; Google Docs/Slides/
+  // Sheets have a /preview form; Office files have no native embed, so they get
+  // routed through Microsoft's public viewer. A direct link always sits below,
+  // because any of these can be blocked or unavailable.
+  function docEmbedHTML(url){
+    var lower = url.toLowerCase();
+    var src = null, note = '';
+
+    var gdoc = url.match(/docs\.google\.com\/(document|presentation|spreadsheets)\/d\/([\w-]+)/);
+    if (gdoc){
+      src = 'https://docs.google.com/' + gdoc[1] + '/d/' + gdoc[2] + '/preview';
+    } else if (/\.pdf($|\?|#)/.test(lower)){
+      src = url;
+    } else if (/\.(docx?|pptx?|xlsx?)($|\?|#)/.test(lower)){
+      src = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(url);
+      note = 'Aperçu fourni par le visualiseur Office de Microsoft.';
+    }
+
+    if (!src){
+      return '<div class="detail-doc">' +
+        '<a class="btn btn-primary" href="' + url + '" target="_blank" rel="noopener">Ouvrir le document ' + UI_ICON.external + '</a>' +
+      '</div>';
+    }
+    return '<div class="detail-doc">' +
+      '<iframe src="' + src + '" title="Document" loading="lazy"></iframe>' +
+      '<p class="detail-embed-caption">' + (note ? note + ' ' : '') +
+        'Si rien ne s\'affiche, <a href="' + url + '" target="_blank" rel="noopener">ouvre le document directement ' + UI_ICON.external + '</a>.</p>' +
+    '</div>';
+  }
+
   function subProjectsHTML(list){
     if (!list || !list.length) return '';
     return '<div class="detail-subprojects">' +
-      '<h2 class="detail-sub-heading">Sous-projets</h2>' +
+      '<h2 class="detail-sub-heading">Sections</h2>' +
       list.map(function(sp){
         return '<div class="subproject">' +
           (sp.medium ? '<span class="tag">' + (mediumLabel[sp.medium] || sp.medium) + '</span>' : '') +
