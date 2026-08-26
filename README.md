@@ -63,7 +63,40 @@ changements. Une fois enregistré, le site public se met à jour tout seul en
 30 à 60 secondes (le temps que GitHub Pages republie).
 
 Ne colle pas ce token sur un ordinateur public ; tu peux le révoquer à tout
-moment depuis GitHub si besoin.
+moment depuis GitHub si besoin. **Ce token fonctionne déjà sur autant
+d'appareils que tu veux** — colle le même sur ton téléphone, un autre
+ordinateur, etc., pas besoin d'en régénérer un par appareil.
+
+### "Se connecter avec GitHub" (bouton OAuth, en option)
+
+Le bouton **"Se connecter avec GitHub"** en haut de `/admin.html` évite de
+copier-coller un token — comme sur oasisforest.be avec Sveltia CMS. GitHub
+Pages étant 100% statique, ce flow a besoin d'un petit relais externe qui
+garde le "client secret" en sécurité (impossible de le faire en JS pur côté
+navigateur). Mise en place, une seule fois (~15-20 min) :
+
+1. **Déployer le relais** — [sveltia-cms-auth](https://github.com/sveltia/sveltia-cms-auth),
+   un Cloudflare Worker open-source. Clique son bouton "Deploy to Cloudflare
+   Workers" (crée un compte Cloudflare gratuit si besoin), puis récupère
+   l'URL du Worker déployé (`https://sveltia-cms-auth.<TON-SOUS-DOMAINE>.workers.dev`).
+2. **Créer une OAuth App GitHub** — [github.com/settings/applications/new](https://github.com/settings/applications/new) :
+   - *Homepage URL* : `https://tristede.github.io/portfolio/`
+   - *Authorization callback URL* : `<URL DU WORKER>/callback`
+   - Génère le *Client Secret*.
+3. **Configurer le Worker** — dans les *Variables* du Worker sur Cloudflare :
+   - `GITHUB_CLIENT_ID` : le Client ID de l'OAuth App
+   - `GITHUB_CLIENT_SECRET` : le secret généré (marque-le *encrypted*)
+   - `ALLOWED_DOMAINS` : `tristede.github.io`
+4. **Donne-moi le Client ID et l'URL du Worker** (jamais le Client Secret —
+   celui-là reste uniquement dans les variables du Worker) — je les colle
+   dans `admin.html` (constantes `OAUTH_CLIENT_ID` / `OAUTH_WORKER_URL`) et
+   le bouton "Se connecter avec GitHub" s'active tout seul.
+
+Note sécurité : contrairement au token manuel (limité au seul repo
+`portfolio`), un token obtenu via ce flow OAuth a accès en écriture à
+**tous tes repos publics** (portée `public_repo`, la plus restrictive que
+GitHub propose pour ce type d'app) — un compromis à connaître, propre au
+fonctionnement des OAuth Apps GitHub.
 
 ## Polices — une substitution à connaître
 

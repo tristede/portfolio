@@ -122,22 +122,35 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
     <h1>Panneau d'édition</h1>
     <p class="subtitle">Portfolio d'Adam — modifie les textes, le projet favori, les projets mis en avant, et ajoute/supprime des projets, sans toucher au code.</p>
 
-    <label for="token-input">Token d'accès GitHub</label>
-    <input type="password" id="token-input" placeholder="ghp_... ou github_pat_...">
-    <div style="margin-top:10px; display:flex; gap:10px;">
-      <button class="primary" id="login-btn">Se connecter</button>
-    </div>
-    <div class="status" id="login-status"></div>
+    <button class="primary" id="oauth-login-btn" type="button" style="width:100%; padding:13px; font-size:15px;">
+      Se connecter avec GitHub
+    </button>
+    <div class="status" id="oauth-status" style="text-align:center;"></div>
+    <p class="small" id="oauth-unconfigured-note" style="text-align:center; margin-top:8px;">
+      (pas encore configuré — utilise le token manuel ci-dessous en attendant)
+    </p>
 
-    <div class="token-help form-box">
-      <strong>Comment obtenir ce token (à faire une seule fois) :</strong>
-      <ol>
-        <li>Va sur <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a> (connecte-toi si besoin).</li>
-        <li><em>Repository access</em> → <strong>Only select repositories</strong> → choisis <code>portfolio</code>.</li>
-        <li><em>Permissions</em> → <strong>Repository permissions</strong> → <strong>Contents</strong> → mets <strong>Read and write</strong>.</li>
-        <li>Clique <strong>Generate token</strong>, copie-le, et colle-le ci-dessus.</li>
-      </ol>
-      <p>Ce token reste uniquement dans <strong>ce navigateur</strong> (stockage local) — il n'est envoyé qu'à l'API GitHub pour enregistrer tes modifications. Ne le colle pas sur un ordinateur public ; tu peux le révoquer à tout moment depuis GitHub.</p>
+    <div class="form-box">
+      <button class="ghost" id="toggle-token-btn" type="button" style="width:100%;">Utiliser un token manuel à la place ▾</button>
+      <div id="token-section" class="hidden" style="margin-top:14px;">
+        <label for="token-input">Token d'accès GitHub</label>
+        <input type="password" id="token-input" placeholder="ghp_... ou github_pat_...">
+        <div style="margin-top:10px; display:flex; gap:10px;">
+          <button class="primary" id="login-btn">Se connecter</button>
+        </div>
+        <div class="status" id="login-status"></div>
+
+        <div class="token-help form-box">
+          <strong>Comment obtenir ce token (à faire une seule fois) :</strong>
+          <ol>
+            <li>Va sur <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a> (connecte-toi si besoin).</li>
+            <li><em>Repository access</em> → <strong>Only select repositories</strong> → choisis <code>portfolio</code>.</li>
+            <li><em>Permissions</em> → <strong>Repository permissions</strong> → <strong>Contents</strong> → mets <strong>Read and write</strong>.</li>
+            <li>Clique <strong>Generate token</strong>, copie-le, et colle-le ci-dessus.</li>
+          </ol>
+          <p>Ce token reste uniquement dans <strong>ce navigateur</strong> (stockage local) — il n'est envoyé qu'à l'API GitHub pour enregistrer tes modifications. Ne le colle pas sur un ordinateur public ; tu peux le révoquer à tout moment depuis GitHub. Fonctionne sur autant d'appareils que tu veux : colle le même token sur chacun.</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -305,6 +318,14 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
   var BRANCH = 'main';
   var DATA_PATH = 'data.json';
   var TOKEN_KEY = 'portfolio_admin_pat_v1';
+
+  // ---- "Se connecter avec GitHub" (OAuth via a self-hosted sveltia-cms-auth
+  // Cloudflare Worker — see README). Both left empty until that Worker +
+  // GitHub OAuth App exist; the manual-token login below always works as a
+  // fallback regardless of whether this is configured. ----
+  var OAUTH_CLIENT_ID = '';
+  var OAUTH_WORKER_URL = '';
+  var OAUTH_SCOPE = 'public_repo';
 
   var state = { site: {}, projects: [] };
   var currentSha = null;
@@ -533,25 +554,107 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
     $('login-screen').classList.remove('hidden');
   }
 
-  function connectAndLoad(token){
+  function connectAndLoad(token, statusEl){
+    statusEl = statusEl || $('login-status');
     setToken(token);
-    setStatus($('login-status'), 'Connexion…', '');
+    setStatus(statusEl, 'Connexion…', '');
     return loadData().then(function(data){
       state.site = data.site || {};
       state.projects = data.projects || [];
       fillFormsFromState();
       showEditor();
     }).catch(function(err){
-      setStatus($('login-status'), err.message || 'Échec de connexion — vérifie le token.', 'err');
+      setStatus(statusEl, err.message || 'Échec de connexion — vérifie le token.', 'err');
     });
   }
 
   $('login-btn').addEventListener('click', function(){
     var token = $('token-input').value.trim();
     if (!token){ setStatus($('login-status'), 'Colle ton token GitHub d\'abord.', 'err'); return; }
-    connectAndLoad(token);
+    connectAndLoad(token, $('login-status'));
   });
   $('token-input').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('login-btn').click(); });
+
+  $('toggle-token-btn').addEventListener('click', function(){
+    $('token-section').classList.toggle('hidden');
+  });
+
+  // ---- OAuth popup flow, compatible with the sveltia-cms-auth Worker protocol:
+  // popup announces itself with 'authorizing:github', we echo it back as a
+  // handshake ack, then it replies with 'authorization:github:success:{...}'
+  // (or an ':error:' variant) containing the real token. ----
+  function loginWithGithubOAuth(){
+    return new Promise(function(resolve, reject){
+      if (!OAUTH_CLIENT_ID || !OAUTH_WORKER_URL){
+        reject(new Error('OAuth pas encore configuré — utilise le token manuel ci-dessous en attendant.'));
+        return;
+      }
+      var width = 600, height = 700;
+      var left = Math.round((screen.width - width) / 2);
+      var top = Math.round((screen.height - height) / 2);
+      var authUrl = 'https://github.com/login/oauth/authorize' +
+        '?client_id=' + encodeURIComponent(OAUTH_CLIENT_ID) +
+        '&scope=' + encodeURIComponent(OAUTH_SCOPE) +
+        '&redirect_uri=' + encodeURIComponent(OAUTH_WORKER_URL.replace(/\/$/, '') + '/callback');
+      var popup = window.open(authUrl, 'github-oauth', 'width=' + width + ',height=' + height + ',top=' + top + ',left=' + left);
+      if (!popup){
+        reject(new Error('Le popup a été bloqué par le navigateur — autorise les popups pour ce site et réessaie.'));
+        return;
+      }
+
+      var settled = false;
+      function handleMessage(e){
+        var data = e.data;
+        if (typeof data !== 'string') return;
+        if (data === 'authorizing:github'){
+          popup.postMessage('authorizing:github', '*');
+          return;
+        }
+        if (data.indexOf('authorization:github:success:') === 0){
+          settled = true;
+          window.removeEventListener('message', handleMessage);
+          var payload = JSON.parse(data.slice('authorization:github:success:'.length));
+          try { popup.close(); } catch(e2){}
+          resolve(payload.token);
+          return;
+        }
+        if (data.indexOf('authorization:github:error:') === 0){
+          settled = true;
+          window.removeEventListener('message', handleMessage);
+          var errPayload = JSON.parse(data.slice('authorization:github:error:'.length));
+          try { popup.close(); } catch(e2){}
+          reject(new Error(errPayload.error || 'Échec de connexion GitHub.'));
+          return;
+        }
+      }
+      window.addEventListener('message', handleMessage);
+
+      var closeCheck = setInterval(function(){
+        if (popup.closed){
+          clearInterval(closeCheck);
+          if (!settled){
+            window.removeEventListener('message', handleMessage);
+            reject(new Error('Fenêtre de connexion fermée avant la fin.'));
+          }
+        }
+      }, 500);
+    });
+  }
+
+  if (!OAUTH_CLIENT_ID || !OAUTH_WORKER_URL){
+    $('oauth-login-btn').disabled = true;
+  } else {
+    $('oauth-unconfigured-note').classList.add('hidden');
+  }
+
+  $('oauth-login-btn').addEventListener('click', function(){
+    setStatus($('oauth-status'), 'Connexion à GitHub…', '');
+    loginWithGithubOAuth().then(function(token){
+      return connectAndLoad(token, $('oauth-status'));
+    }).catch(function(err){
+      setStatus($('oauth-status'), err.message, 'err');
+    });
+  });
 
   $('logout-btn').addEventListener('click', function(){
     clearToken();
