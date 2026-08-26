@@ -297,15 +297,29 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
 /* ---------- Photos "collées au mur" (masking tape, sans cadre polaroid) ----------
    Inspiré du traitement polaroid d'oasisforest.be, mais on ne garde que le
    ruban : pas de cadre blanc, l'image est posée directement sur le fond. */
+/* The gallery breaks out of the 760px reading column to span the full window,
+   so the photos read as a wall rather than a list. Masonry-style columns let
+   every image keep its own proportions — nothing is ever cropped. */
 .detail-gallery{
-  display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 42px 28px;
-  margin-top: 44px;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding: 0 clamp(18px, 5vw, 76px);
+  columns: 3 300px;
+  column-gap: clamp(24px, 3.5vw, 54px);
+  margin-top: 56px;
 }
 .photo{
-  position: relative; margin: 0;
+  position: relative;
+  break-inside: avoid; -webkit-column-break-inside: avoid;
+  display: inline-block; width: 100%;
+  margin: 0 0 clamp(34px, 4vw, 62px);
   transition: transform .25s ease, filter .25s ease;
 }
+/* small insets so the posters sit at slightly different sizes and offsets
+   instead of lining up on a perfect grid */
+.photo-1{ margin-right: 7%; }
+.photo-2{ margin-left: 6%; }
+.photo-3{ margin-right: 4%; margin-left: 3%; }
 /* four tape variants + slight rotations so no two photos look stamped alike */
 .photo::before{
   content: ""; position: absolute; z-index: 2;
@@ -325,7 +339,7 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
 .photo-3::before{ background-image: url('images/tape/tape-4.webp'); transform: rotate(3deg); left: 60%; }
 
 .photo img{
-  width:100%; height:100%; object-fit:cover; aspect-ratio: 4/3;
+  width:100%; height:auto; object-fit:contain;
   border-radius: 2px;
   box-shadow: 0 18px 34px -14px rgba(0,0,6,0.8), 0 2px 6px rgba(0,0,6,0.4);
   display:block;
@@ -404,7 +418,14 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
   display:grid; grid-template-columns: 1fr 1fr; align-items:stretch;
   background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-lg);
   overflow:hidden;
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
 }
+.favori-card:hover{
+  border-color: var(--accent-sky);
+  transform: translateY(-3px);
+  box-shadow: 0 22px 44px -22px rgba(0,0,10,0.9);
+}
+.favori-card:hover .pill-btn{ background: var(--accent-soft); border-color: var(--accent-sky); }
 .favori-card .thumb{
   position:relative; min-height:280px;
   background: repeating-linear-gradient(90deg, #10164a 0 11%, #0c1140 11% 22%, #10164a 22% 33%, #161d5c 33% 44%, #10164a 44% 55%, #0c1140 55% 66%, #10164a 66% 77%, #161d5c 77% 88%, #10164a 88% 100%);

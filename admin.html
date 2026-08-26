@@ -1849,6 +1849,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
       // this runs in the capture phase, so it would otherwise swallow clicks
       // on the editor's own buttons before they ever reach them
       if (e.target.closest('.ed-tools, .ed-btn, .ed-add')){ e.preventDefault(); return; }
+      // clicking an editable text inside a link (the favourite-project card is
+      // itself a link) must start editing, not navigate
+      if (e.target.closest('[contenteditable]')){ e.preventDefault(); return; }
       var a = e.target.closest('a');
       if (!a) return;
       var href = a.getAttribute('href') || '';

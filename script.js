@@ -114,6 +114,10 @@
     var p = shown.filter(function(x){ return x.id === site.favoriProjectId; })[0] || shown[0];
     if (!p){ container.closest('.projects-section').style.display = 'none'; return; }
     var thumb = thumbSrc(p);
+    // the whole card is the link — the pill inside is only a visual cue, so it
+    // stays a <span> (an <a> inside an <a> is invalid and breaks the click)
+    container.setAttribute('href', 'projet.html?id=' + encodeURIComponent(p.id));
+    container.setAttribute('data-project-id', p.id);
     container.innerHTML =
       '<div class="thumb' + (thumb ? ' has-img' : '') + '">' +
         (thumb ? '<img class="thumb-img" src="' + thumb + '" alt="' + p.title + '" loading="lazy">' : '') +
@@ -125,7 +129,7 @@
         '<h2>' + p.title + '</h2>' +
         '<p class="desc">' + p.desc + '</p>' +
         '<div class="card-tags">' + p.tags.map(function(t){ return '<span class="tag">#' + t.replace(/\s+/g,'') + '</span>'; }).join('') + '</div>' +
-        '<a class="pill-btn" href="projet.html?id=' + encodeURIComponent(p.id) + '" style="width:fit-content;">Voir le projet ' + UI_ICON.arrowRight + '</a>' +
+        '<span class="pill-btn" style="width:fit-content;">Voir le projet ' + UI_ICON.arrowRight + '</span>' +
       '</div>';
   }
 
