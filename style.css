@@ -108,6 +108,13 @@ h1,h2,h3{ font-family: var(--font-title); font-weight: 400; letter-spacing:0; ma
   background-repeat: no-repeat;
   background-size: cover;
 }
+/* the topographic texture rides on top of the gradient at low opacity, so the
+   gradient still does the colour work underneath */
+.topo-bg::after{
+  content: ""; position: absolute; inset: 0;
+  background: url('images/bg-hor.webp') center/cover no-repeat;
+  opacity: 0.55;
+}
 
 /* ---------- Nav (floating glass pill, blue-tinted) ---------- */
 .site-nav{
