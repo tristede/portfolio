@@ -85,6 +85,20 @@
       '</div>';
   }
 
+  function renderTimeline(items){
+    var container = document.getElementById('js-timeline');
+    if (!container || !items) return;
+    container.innerHTML = items.map(function(t){
+      return '<div class="timeline-item' + (t.current ? ' current' : '') + '">' +
+        '<span class="timeline-year">' + t.year + '</span>' +
+        '<div class="timeline-content">' +
+          '<h3>' + t.title + '</h3>' +
+          '<p>' + t.desc + '</p>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
   function renderGrids(projects){
     document.querySelectorAll('.grid[data-group]').forEach(function(grid){
       var group = grid.dataset.group;
@@ -286,6 +300,7 @@
       var projects = data.projects || [];
       applySiteTexts(site);
       applyFavori(site, projects);
+      renderTimeline(site.timeline);
       renderGrids(projects);
       initScramble();
     })

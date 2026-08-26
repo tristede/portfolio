@@ -10,7 +10,13 @@
     "contactEmail": "PLACEHOLDER@email.com",
     "linkedin": "https://www.linkedin.com/in/adam-d-3b2352240/",
     "instagram": "https://www.instagram.com/_adamdrk",
-    "favoriProjectId": "union-oasis-forest"
+    "favoriProjectId": "union-oasis-forest",
+    "timeline": [
+      { "year": "2021", "title": "CESS", "desc": "Obtention du Certificat d'Enseignement Secondaire Supérieur.", "current": false },
+      { "year": "2022", "title": "1ère en Bachelier Informatique", "desc": "Une première année d'études supérieures en informatique.", "current": false },
+      { "year": "2023 — Aujourd'hui", "title": "Réorientation : Bachelier en Communication", "desc": "ISFSC, Bruxelles.", "current": true },
+      { "year": "2025", "title": "Stage — En Esprit", "desc": "Stage de deuxième année : montage vidéo, community management, création de contenu.", "current": false }
+    ]
   },
   "projects": [
     {

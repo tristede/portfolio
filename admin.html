@@ -76,10 +76,6 @@ button.danger{ border-color: rgba(255,107,107,0.4); color: var(--danger); backgr
 button.ghost{ background: transparent; }
 button:disabled{ opacity:0.5; cursor:not-allowed; }
 
-.token-help{ font-size:13px; color: var(--text-dim); line-height:1.6; }
-.token-help code{ background: rgba(255,255,255,0.08); padding:1px 6px; border-radius:5px; font-size:12.5px; }
-.token-help ol{ padding-left: 20px; margin: 10px 0; }
-
 .status{ font-size:13.5px; margin-top:12px; min-height: 18px; }
 .status.ok{ color: var(--ok); }
 .status.err{ color: var(--danger); }
@@ -111,6 +107,9 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
   border:1px solid var(--panel-border); border-radius: 999px; padding: 10px 12px 10px 22px;
   backdrop-filter: blur(20px); box-shadow: 0 20px 50px -20px rgba(0,0,10,0.7);
 }
+/* the button inside this pill needs to be a pill itself, not the standard
+   10px-radius rectangle — a square button in an oval capsule looked wrong */
+.sticky-save-inner button{ border-radius: 999px; }
 .hidden{ display:none !important; }
 .small{ font-size:12.5px; color: var(--text-faint); }
 </style>
@@ -126,32 +125,6 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       Se connecter avec GitHub
     </button>
     <div class="status" id="oauth-status" style="text-align:center;"></div>
-    <p class="small" id="oauth-unconfigured-note" style="text-align:center; margin-top:8px;">
-      (pas encore configuré — utilise le token manuel ci-dessous en attendant)
-    </p>
-
-    <div class="form-box">
-      <button class="ghost" id="toggle-token-btn" type="button" style="width:100%;">Utiliser un token manuel à la place ▾</button>
-      <div id="token-section" class="hidden" style="margin-top:14px;">
-        <label for="token-input">Token d'accès GitHub</label>
-        <input type="password" id="token-input" placeholder="ghp_... ou github_pat_...">
-        <div style="margin-top:10px; display:flex; gap:10px;">
-          <button class="primary" id="login-btn">Se connecter</button>
-        </div>
-        <div class="status" id="login-status"></div>
-
-        <div class="token-help form-box">
-          <strong>Comment obtenir ce token (à faire une seule fois) :</strong>
-          <ol>
-            <li>Va sur <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a> (connecte-toi si besoin).</li>
-            <li><em>Repository access</em> → <strong>Only select repositories</strong> → choisis <code>portfolio</code>.</li>
-            <li><em>Permissions</em> → <strong>Repository permissions</strong> → <strong>Contents</strong> → mets <strong>Read and write</strong>.</li>
-            <li>Clique <strong>Generate token</strong>, copie-le, et colle-le ci-dessus.</li>
-          </ol>
-          <p>Ce token reste uniquement dans <strong>ce navigateur</strong> (stockage local) — il n'est envoyé qu'à l'API GitHub pour enregistrer tes modifications. Ne le colle pas sur un ordinateur public ; tu peux le révoquer à tout moment depuis GitHub. Fonctionne sur autant d'appareils que tu veux : colle le même token sur chacun.</p>
-        </div>
-      </div>
-    </div>
   </div>
 
   <div id="editor-screen" class="hidden">
@@ -208,6 +181,37 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       <h2>Projet favori</h2>
       <label for="f-favori">Projet mis en avant en haut de la page d'accueil</label>
       <select id="f-favori"></select>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h2 style="margin:0;">Parcours <span class="small" id="timeline-count"></span></h2>
+        <button class="primary" id="add-timeline-btn" type="button">+ Ajouter une étape</button>
+      </div>
+      <p class="small" style="margin:0 0 14px;">Affiché dans l'ordre ci-dessous, du plus ancien au plus récent. Une seule étape "en cours" à la fois (affichée avec un point plus vif sur la ligne du temps).</p>
+      <div id="timeline-list"></div>
+
+      <div class="form-box hidden" id="timeline-form-box">
+        <h2 id="timeline-form-title">Ajouter une étape</h2>
+        <div class="row">
+          <div>
+            <label for="tf-year">Année (libre — ex: "2025" ou "2023 — Aujourd'hui")</label>
+            <input type="text" id="tf-year">
+          </div>
+          <div class="check-row" style="margin-top:26px;">
+            <input type="checkbox" id="tf-current">
+            <label for="tf-current">Étape "en cours"</label>
+          </div>
+        </div>
+        <label for="tf-title">Titre</label>
+        <input type="text" id="tf-title">
+        <label for="tf-desc">Description</label>
+        <textarea id="tf-desc"></textarea>
+        <div style="margin-top:16px; display:flex; gap:10px;">
+          <button class="primary" id="tf-save-btn" type="button">Enregistrer cette étape</button>
+          <button class="ghost" id="tf-cancel-btn" type="button">Annuler</button>
+        </div>
+      </div>
     </div>
 
     <div class="panel">
@@ -526,6 +530,8 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
     $('f-email').value = s.contactEmail || '';
     $('f-linkedin').value = s.linkedin || '';
     $('f-instagram').value = s.instagram || '';
+    if (!Array.isArray(state.site.timeline)) state.site.timeline = [];
+    renderTimelineList();
     renderProjectList();
   }
 
@@ -538,6 +544,86 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
     state.site.linkedin = $('f-linkedin').value.trim();
     state.site.instagram = $('f-instagram').value.trim();
     state.site.favoriProjectId = $('f-favori').value;
+    // state.site.timeline is kept up to date live by the timeline
+    // add/edit/delete/reorder handlers below — nothing to collect here.
+  }
+
+  var timelineEditingIndex = -1;
+
+  function renderTimelineList(){
+    var items = state.site.timeline || [];
+    $('timeline-count').textContent = '(' + items.length + ')';
+    var list = $('timeline-list');
+    list.innerHTML = '';
+    items.forEach(function(t, i){
+      var row = document.createElement('div');
+      row.className = 'project-item';
+      row.innerHTML =
+        '<div>' +
+          '<div class="title">' + (t.current ? '<span class="star">●</span>' : '') + escapeHtml(t.title) + '</div>' +
+          '<div class="meta">' + escapeHtml(t.year) + '</div>' +
+        '</div>' +
+        '<div class="btns">' +
+          '<button class="ghost" data-action="up" data-i="' + i + '" type="button"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+          '<button class="ghost" data-action="down" data-i="' + i + '" type="button"' + (i === items.length - 1 ? ' disabled' : '') + '>↓</button>' +
+          '<button class="ghost" data-action="edit" data-i="' + i + '" type="button">Modifier</button>' +
+          '<button class="danger" data-action="delete" data-i="' + i + '" type="button">Supprimer</button>' +
+        '</div>';
+      list.appendChild(row);
+    });
+    list.querySelectorAll('button[data-action="edit"]').forEach(function(b){
+      b.addEventListener('click', function(){ openTimelineForm(+b.dataset.i); });
+    });
+    list.querySelectorAll('button[data-action="delete"]').forEach(function(b){
+      b.addEventListener('click', function(){
+        if (!confirm('Supprimer cette étape du parcours ?')) return;
+        state.site.timeline.splice(+b.dataset.i, 1);
+        renderTimelineList();
+      });
+    });
+    list.querySelectorAll('button[data-action="up"]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var i = +b.dataset.i;
+        var arr = state.site.timeline;
+        if (i > 0){ var tmp = arr[i-1]; arr[i-1] = arr[i]; arr[i] = tmp; renderTimelineList(); }
+      });
+    });
+    list.querySelectorAll('button[data-action="down"]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var i = +b.dataset.i;
+        var arr = state.site.timeline;
+        if (i < arr.length - 1){ var tmp = arr[i+1]; arr[i+1] = arr[i]; arr[i] = tmp; renderTimelineList(); }
+      });
+    });
+  }
+
+  function openTimelineForm(index){
+    timelineEditingIndex = index;
+    var box = $('timeline-form-box');
+    box.classList.remove('hidden');
+    if (index === -1){
+      $('timeline-form-title').textContent = 'Ajouter une étape';
+      $('tf-year').value = ''; $('tf-title').value = ''; $('tf-desc').value = ''; $('tf-current').checked = false;
+    } else {
+      var t = state.site.timeline[index];
+      $('timeline-form-title').textContent = 'Modifier l\'étape';
+      $('tf-year').value = t.year; $('tf-title').value = t.title; $('tf-desc').value = t.desc || ''; $('tf-current').checked = !!t.current;
+    }
+    box.scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+
+  function saveTimelineForm(){
+    var title = $('tf-title').value.trim();
+    var year = $('tf-year').value.trim();
+    if (!title || !year){ alert('Année et titre sont obligatoires.'); return; }
+    var t = { year: year, title: title, desc: $('tf-desc').value.trim(), current: $('tf-current').checked };
+    // only one "current" step at a time
+    if (t.current) state.site.timeline.forEach(function(x){ x.current = false; });
+    if (timelineEditingIndex === -1) state.site.timeline.push(t);
+    else state.site.timeline[timelineEditingIndex] = t;
+    $('timeline-form-box').classList.add('hidden');
+    timelineEditingIndex = -1;
+    renderTimelineList();
   }
 
   function setStatus(el, text, kind){
@@ -556,7 +642,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
   }
 
   function connectAndLoad(token, statusEl){
-    statusEl = statusEl || $('login-status');
+    statusEl = statusEl || $('oauth-status');
     setToken(token);
     setStatus(statusEl, 'Connexion…', '');
     return loadData().then(function(data){
@@ -569,17 +655,6 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
     });
   }
 
-  $('login-btn').addEventListener('click', function(){
-    var token = $('token-input').value.trim();
-    if (!token){ setStatus($('login-status'), 'Colle ton token GitHub d\'abord.', 'err'); return; }
-    connectAndLoad(token, $('login-status'));
-  });
-  $('token-input').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('login-btn').click(); });
-
-  $('toggle-token-btn').addEventListener('click', function(){
-    $('token-section').classList.toggle('hidden');
-  });
-
   // ---- OAuth popup flow, compatible with the sveltia-cms-auth Worker protocol:
   // popup announces itself with 'authorizing:github', we echo it back as a
   // handshake ack, then it replies with 'authorization:github:success:{...}'
@@ -587,7 +662,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
   function loginWithGithubOAuth(){
     return new Promise(function(resolve, reject){
       if (!OAUTH_WORKER_URL){
-        reject(new Error('OAuth pas encore configuré — utilise le token manuel ci-dessous en attendant.'));
+        reject(new Error('OAuth pas configuré.'));
         return;
       }
       var width = 600, height = 700;
@@ -648,8 +723,6 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
 
   if (!OAUTH_WORKER_URL){
     $('oauth-login-btn').disabled = true;
-  } else {
-    $('oauth-unconfigured-note').classList.add('hidden');
   }
 
   $('oauth-login-btn').addEventListener('click', function(){
@@ -664,8 +737,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
   $('logout-btn').addEventListener('click', function(){
     clearToken();
     showLogin();
-    $('token-input').value = '';
-    setStatus($('login-status'), '', '');
+    setStatus($('oauth-status'), '', '');
   });
 
   $('reload-btn').addEventListener('click', function(){
@@ -695,6 +767,13 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
     editingIndex = -1;
   });
 
+  $('add-timeline-btn').addEventListener('click', function(){ openTimelineForm(-1); });
+  $('tf-save-btn').addEventListener('click', saveTimelineForm);
+  $('tf-cancel-btn').addEventListener('click', function(){
+    $('timeline-form-box').classList.add('hidden');
+    timelineEditingIndex = -1;
+  });
+
   $('save-btn').addEventListener('click', function(){
     collectStateFromForms();
     var btn = $('save-btn');
@@ -710,11 +789,10 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       .then(function(){ btn.disabled = false; });
   });
 
-  // auto-connect if a token is already stored
+  // auto-connect if a token from a previous OAuth login is still stored
   var existing = getToken();
   if (existing){
-    $('token-input').value = existing;
-    connectAndLoad(existing);
+    connectAndLoad(existing, $('oauth-status'));
   }
 })();
 </script>
