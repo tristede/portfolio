@@ -3,6 +3,17 @@
   if (yearEl) yearEl.textContent = new Date().getFullYear();
   var reduceMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
+  // small UI marks (never emoji — they'd clash with the site's typography)
+  var UI_ICON = {
+    star: '<svg class="ui-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg>',
+    close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+    prev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
+    arrowRight: '<svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
+    arrowLeft: '<svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>',
+    external: '<svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 16L18 6M9.5 6H18v8.5"/></svg>'
+  };
+
   var icons = {
     video: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2.5" y="6" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M16.5 10.2l5-2.7v9l-5-2.7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
     audio: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12h2l2.5-6 3 12 2.5-9 2 6H21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -62,7 +73,7 @@
           '<span class="medium-label">' + (mediumLabel[p.medium] || p.medium) + '</span>' +
         '</div>' +
         '<div class="card-body">' +
-          (p.featured ? '<span class="card-featured-label">★ Mis en avant</span>' : '') +
+          (p.featured ? '<span class="card-featured-label">' + UI_ICON.star + ' Mis en avant</span>' : '') +
           '<h3>' + p.title + '</h3>' +
           '<p class="desc">' + p.desc + '</p>' +
           '<div class="card-tags">' + p.tags.map(function(t){ return '<span class="tag">#' + t.replace(/\s+/g,'') + '</span>'; }).join('') + '</div>' +
@@ -114,7 +125,7 @@
         '<h2>' + p.title + '</h2>' +
         '<p class="desc">' + p.desc + '</p>' +
         '<div class="card-tags">' + p.tags.map(function(t){ return '<span class="tag">#' + t.replace(/\s+/g,'') + '</span>'; }).join('') + '</div>' +
-        '<a class="pill-btn" href="projet.html?id=' + encodeURIComponent(p.id) + '" style="width:fit-content;">Voir le projet →</a>' +
+        '<a class="pill-btn" href="projet.html?id=' + encodeURIComponent(p.id) + '" style="width:fit-content;">Voir le projet ' + UI_ICON.arrowRight + '</a>' +
       '</div>';
   }
 
@@ -191,7 +202,7 @@
     return '<div class="detail-site-embed">' +
       '<iframe src="' + link + '" title="Aperçu du site" loading="lazy" referrerpolicy="no-referrer"></iframe>' +
       '<p class="detail-embed-caption">Aperçu en direct — si rien ne s\'affiche ci-dessus, ce site bloque l\'intégration ; ' +
-        '<a href="' + link + '" target="_blank" rel="noopener">ouvre-le directement ↗</a>.</p>' +
+        '<a href="' + link + '" target="_blank" rel="noopener">ouvre-le directement ' + UI_ICON.external + '</a>.</p>' +
     '</div>';
   }
 
@@ -204,7 +215,7 @@
           (sp.medium ? '<span class="tag">' + (mediumLabel[sp.medium] || sp.medium) + '</span>' : '') +
           '<h3>' + sp.title + '</h3>' +
           (sp.desc ? '<p class="detail-desc">' + sp.desc + '</p>' : '') +
-          (sp.link ? '<a class="pill-btn" href="' + sp.link + '" target="_blank" rel="noopener">Voir ↗</a>' : '') +
+          (sp.link ? '<a class="pill-btn" href="' + sp.link + '" target="_blank" rel="noopener">Voir ' + UI_ICON.external + '</a>' : '') +
           mediaBlocksHTML(sp) +
         '</div>';
       }).join('') +
@@ -225,7 +236,7 @@
         '<div class="wrap" style="padding:80px 0; text-align:center;">' +
           '<h1 style="font-family:var(--font-display); font-size:22px; margin-bottom:12px;">Projet introuvable</h1>' +
           '<p style="color:var(--text-dim); margin-bottom:24px;">Ce projet n\'existe plus ou le lien est incorrect.</p>' +
-          '<a class="pill-btn" href="index.html">← Retour à l\'accueil</a>' +
+          '<a class="pill-btn" href="index.html">' + UI_ICON.arrowLeft + ' Retour à l\'accueil</a>' +
         '</div>';
       return;
     }
@@ -234,16 +245,16 @@
 
     container.innerHTML =
       '<div class="wrap detail-wrap">' +
-        '<a class="pill-btn back-link" href="' + linkForProject(p) + '">← ' + (BACK_LABEL[p.ctx] || 'Retour') + '</a>' +
+        '<a class="pill-btn back-link" href="' + linkForProject(p) + '">' + UI_ICON.arrowLeft + ' ' + (BACK_LABEL[p.ctx] || 'Retour') + '</a>' +
         '<div class="detail-meta-row">' +
           '<span class="tag">' + (mediumLabel[p.medium] || p.medium) + '</span>' +
           '<span class="tag">' + p.year + '</span>' +
-          (p.featured ? '<span class="tag">★ Mis en avant</span>' : '') +
+          (p.featured ? '<span class="tag tag-featured">' + UI_ICON.star + ' Mis en avant</span>' : '') +
         '</div>' +
         '<h1 class="detail-title">' + p.title + '</h1>' +
         '<div class="card-tags detail-tags">' + p.tags.map(function(t){ return '<span class="tag">#' + t.replace(/\s+/g,'') + '</span>'; }).join('') + '</div>' +
         '<p class="detail-desc">' + (p.longDesc || p.desc) + '</p>' +
-        (p.link ? '<a class="btn btn-primary" href="' + p.link + '" target="_blank" rel="noopener">Visiter le site ↗</a>' : '') +
+        (p.link ? '<a class="btn btn-primary" href="' + p.link + '" target="_blank" rel="noopener">Visiter le site ' + UI_ICON.external + '</a>' : '') +
         (p.link ? websiteEmbedHTML(p.link) : '') +
         mediaBlocksHTML(p) +
         subProjectsHTML(p.subProjects) +
@@ -266,10 +277,10 @@
     box.className = 'lightbox';
     box.setAttribute('aria-hidden', 'true');
     box.innerHTML =
-      '<button class="lightbox-close" type="button" aria-label="Fermer">✕</button>' +
-      '<button class="lightbox-nav lightbox-prev" type="button" aria-label="Image précédente">‹</button>' +
+      '<button class="lightbox-close" type="button" aria-label="Fermer">' + UI_ICON.close + '</button>' +
+      '<button class="lightbox-nav lightbox-prev" type="button" aria-label="Image précédente">' + UI_ICON.prev + '</button>' +
       '<img alt="" draggable="false">' +
-      '<button class="lightbox-nav lightbox-next" type="button" aria-label="Image suivante">›</button>';
+      '<button class="lightbox-nav lightbox-next" type="button" aria-label="Image suivante">' + UI_ICON.next + '</button>';
     document.body.appendChild(box);
 
     var imgEl = box.querySelector('img');

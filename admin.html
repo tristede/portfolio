@@ -119,6 +119,14 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
   padding:1px 8px; margin-left:6px; vertical-align:middle;
 }
 .is-hidden-asset{ opacity:0.5; }
+/* icons render at text size, aligned with whatever label sits beside them */
+button svg{ display:block; }
+button{ display:inline-flex; align-items:center; justify-content:center; gap:7px; }
+.ui-arrow{ width:15px; height:15px; flex:none; }
+.project-item .btns button{ padding:8px 10px; display:inline-flex; align-items:center; justify-content:center; }
+.star{ display:inline-flex; vertical-align:-2px; }
+.star svg{ width:13px; height:13px; }
+.asset-badge svg{ width:18px; height:18px; }
 .asset-badge{
   width:64px; height:44px; flex:none; border-radius:6px; border:1px solid var(--line);
   background: rgba(5,8,30,0.6); color: var(--accent-sky);
@@ -183,7 +191,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
           <button class="view-tab is-active" id="view-form-btn" type="button">Formulaire</button>
           <button class="view-tab" id="view-visual-btn" type="button">Vue visuelle</button>
         </div>
-        <a href="https://tristede.github.io/portfolio/" target="_blank" rel="noopener"><button class="ghost" type="button">Voir le site ↗</button></a>
+        <a href="https://tristede.github.io/portfolio/" target="_blank" rel="noopener"><button class="ghost" type="button">Voir le site <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 16L18 6M9.5 6H18v8.5"/></svg></button></a>
         <button class="ghost" id="reload-btn" type="button">Recharger depuis GitHub</button>
         <button class="ghost" id="logout-btn" type="button">Se déconnecter</button>
       </div>
@@ -193,7 +201,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
       <div class="visual-bar">
         <div class="visual-bar-left">
           <button class="ghost" id="visual-home-btn" type="button">⌂ Accueil</button>
-          <button class="ghost" id="visual-back-btn" type="button" disabled>← Retour</button>
+          <button class="ghost" id="visual-back-btn" type="button" disabled><svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg> Retour</button>
           <span class="small" id="visual-location">Accueil</span>
         </div>
         <span class="small visual-hint">Clique sur un texte pour l'éditer · clique une vignette pour ouvrir le projet</span>
@@ -284,7 +292,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
         <h2 style="margin:0;">Projets <span class="small" id="project-count"></span></h2>
         <button class="primary" id="add-project-btn" type="button">+ Ajouter un projet</button>
       </div>
-      <p class="small" style="margin:0 0 14px;">★ = mis en avant sur l'accueil (section "Projets mis en avant").</p>
+      <p class="small" style="margin:0 0 14px;">L'étoile marque les projets mis en avant sur l'accueil (section "Projets mis en avant").</p>
 
       <div class="row" style="margin-bottom:16px; align-items:flex-end;">
         <div>
@@ -488,6 +496,38 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // /auth before redirecting to GitHub itself). Left empty until that Worker
   // exists; the manual-token login below always works as a fallback. ----
   var OAUTH_WORKER_URL = 'https://portfolioadamxbc.tristederk.workers.dev';
+
+  // ---- icon set: line SVGs on currentColor, no emoji anywhere in the UI ----
+  function svg(paths, extra){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" ' +
+      'stroke-linecap="round" stroke-linejoin="round" width="15" height="15" aria-hidden="true"' +
+      (extra || '') + '>' + paths + '</svg>';
+  }
+  var ICON = {
+    eye: svg('<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/>'),
+    eyeOff: svg('<path d="M10.6 6.1A9.9 9.9 0 0 1 12 5.5c6.4 0 10 6.5 10 6.5a17.7 17.7 0 0 1-3.3 4.1M6.2 7.9A17.6 17.6 0 0 0 2 12s3.6 6.5 10 6.5c1.5 0 2.8-.3 4-.9"/><path d="M3 3l18 18"/>'),
+    starFilled: svg('<path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" fill="currentColor"/>'),
+    star: svg('<path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>'),
+    heart: svg('<path d="M12 20s-7-4.4-7-9.2A4 4 0 0 1 12 8a4 4 0 0 1 7 2.8C19 15.6 12 20 12 20z"/>'),
+    image: svg('<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M3 16l5-4 4 3.5 3-2.5 6 5"/>'),
+    close: svg('<path d="M6 6l12 12M18 6L6 18"/>'),
+    up: svg('<path d="M12 19V5M6 11l6-6 6 6"/>'),
+    down: svg('<path d="M12 5v14M18 13l-6 6-6-6"/>'),
+    dotFilled: svg('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.6" fill="currentColor"/>'),
+    dot: svg('<circle cx="12" cy="12" r="8"/>'),
+    tag: svg('<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0l-7-7A2 2 0 0 1 3 12.2V4.6A1.6 1.6 0 0 1 4.6 3h7.6a2 2 0 0 1 1.4.6l7 7a2 2 0 0 1 0 2.8z"/><circle cx="7.8" cy="7.8" r="1.3" fill="currentColor" stroke="none"/>'),
+    sliders: svg('<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>'),
+    folder: svg('<path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4.2l2 2.4h8.8A1.5 1.5 0 0 1 21 9.9v7.6A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/>'),
+    link: svg('<path d="M10.5 13.5a4 4 0 0 0 5.7 0l2.6-2.6a4 4 0 0 0-5.7-5.7l-1.3 1.3"/><path d="M13.5 10.5a4 4 0 0 0-5.7 0l-2.6 2.6a4 4 0 0 0 5.7 5.7l1.3-1.3"/>'),
+    calendar: svg('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'),
+    play: svg('<path d="M8 5.5l10 6.5-10 6.5z"/>'),
+    music: svg('<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>'),
+    check: svg('<path d="M20 6L9 17l-5-5"/>'),
+    chevronLeft: svg('<path d="M15 5l-7 7 7 7"/>'),
+    chevronRight: svg('<path d="M9 5l7 7-7 7"/>')
+  };
+  // slightly larger variant for the in-page (non-frame) lists
+  function iconHTML(name){ return '<span class="ico">' + (ICON[name] || '') + '</span>'; }
   var OAUTH_SCOPE = 'public_repo';
 
   var state = { site: {}, projects: [] };
@@ -624,7 +664,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
       row.className = 'project-item';
       row.innerHTML =
         '<div>' +
-          '<div class="title">' + (p.featured ? '<span class="star">★</span>' : '') + escapeHtml(p.title) +
+          '<div class="title">' + (p.featured ? '<span class="star">' + ICON.starFilled + '</span>' : '') + escapeHtml(p.title) +
             (p.hidden ? ' <span class="hidden-badge">masqué</span>' : '') + '</div>' +
           '<div class="meta">' + p.year + ' · ' + (CTX_LABEL[p.ctx]||p.ctx) + ' · ' + (MEDIUM_LABEL[p.medium]||p.medium) + '</div>' +
           '<div class="tags-inline">' + (p.tags||[]).map(function(t){ return '<span>#'+escapeHtml(t)+'</span>'; }).join('') + '</div>' +
@@ -776,17 +816,17 @@ body.visual-mode .wrap{ max-width: 1400px; }
         '<div style="display:flex; align-items:center; gap:12px; min-width:0;">' +
           (a.type === 'image'
             ? '<img src="' + escapeHtml(a.url) + '" alt="" style="width:64px; height:44px; object-fit:cover; border-radius:6px; border:1px solid var(--line); flex:none;">'
-            : '<span class="asset-badge">' + (a.type === 'video' ? '▶' : '♪') + '</span>') +
+            : '<span class="asset-badge">' + (a.type === 'video' ? ICON.play : ICON.music) + '</span>') +
           '<div style="min-width:0;">' +
             '<div class="meta">' + ASSET_LABEL[a.type] + (a.hidden ? ' · masqué' : '') + '</div>' +
             '<div class="asset-url">' + escapeHtml(a.url) + '</div>' +
           '</div>' +
         '</div>' +
         '<div class="btns">' +
-          '<button class="ghost" data-act="up" data-i="' + i + '" type="button"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
-          '<button class="ghost" data-act="down" data-i="' + i + '" type="button"' + (i === assets.length - 1 ? ' disabled' : '') + '>↓</button>' +
-          '<button class="ghost" data-act="toggle" data-i="' + i + '" type="button" title="' + (a.hidden ? 'Afficher' : 'Masquer') + '">' + (a.hidden ? '🙈' : '👁') + '</button>' +
-          '<button class="danger" data-act="del" data-i="' + i + '" type="button">✕</button>' +
+          '<button class="ghost" data-act="up" data-i="' + i + '" type="button"' + (i === 0 ? ' disabled' : '') + ' title="Monter">' + ICON.up + '</button>' +
+          '<button class="ghost" data-act="down" data-i="' + i + '" type="button"' + (i === assets.length - 1 ? ' disabled' : '') + ' title="Descendre">' + ICON.down + '</button>' +
+          '<button class="ghost" data-act="toggle" data-i="' + i + '" type="button" title="' + (a.hidden ? 'Afficher' : 'Masquer') + '">' + (a.hidden ? ICON.eyeOff : ICON.eye) + '</button>' +
+          '<button class="danger" data-act="del" data-i="' + i + '" type="button" title="Retirer">' + ICON.close + '</button>' +
         '</div>';
       list.appendChild(row);
     });
@@ -963,12 +1003,12 @@ body.visual-mode .wrap{ max-width: 1400px; }
       row.className = 'project-item';
       row.innerHTML =
         '<div>' +
-          '<div class="title">' + (t.current ? '<span class="star">●</span>' : '') + escapeHtml(t.title) + '</div>' +
+          '<div class="title">' + (t.current ? '<span class="star">' + ICON.dotFilled + '</span>' : '') + escapeHtml(t.title) + '</div>' +
           '<div class="meta">' + escapeHtml(t.year) + '</div>' +
         '</div>' +
         '<div class="btns">' +
-          '<button class="ghost" data-action="up" data-i="' + i + '" type="button"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
-          '<button class="ghost" data-action="down" data-i="' + i + '" type="button"' + (i === items.length - 1 ? ' disabled' : '') + '>↓</button>' +
+          '<button class="ghost" data-action="up" data-i="' + i + '" type="button"' + (i === 0 ? ' disabled' : '') + ' title="Monter">' + ICON.up + '</button>' +
+          '<button class="ghost" data-action="down" data-i="' + i + '" type="button"' + (i === items.length - 1 ? ' disabled' : '') + ' title="Descendre">' + ICON.down + '</button>' +
           '<button class="ghost" data-action="edit" data-i="' + i + '" type="button">Modifier</button>' +
           '<button class="danger" data-action="delete" data-i="' + i + '" type="button">Supprimer</button>' +
         '</div>';
@@ -1177,7 +1217,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
         if (i >= files.length){
           if (uploaded.length) onUploaded(uploaded);
           if (uploaded.length === files.length){
-            setStatus(statusEl, 'Envoyé ✅ (' + uploaded.length + ' image' + (uploaded.length > 1 ? 's' : '') + ')', 'ok');
+            setStatus(statusEl, 'Envoyé (' + uploaded.length + ' image' + (uploaded.length > 1 ? 's' : '') + ')', 'ok');
           }
           e.target.value = '';
           return;
@@ -1258,7 +1298,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
     setStatus($('save-status'), 'Enregistrement sur GitHub…', '');
     saveData({ site: state.site, projects: state.projects }, 'Mise à jour du contenu depuis /admin.html')
       .then(function(){
-        setStatus($('save-status'), 'Enregistré ✅ — le site se mettra à jour dans 30 à 60 secondes.', 'ok');
+        setStatus($('save-status'), 'Enregistré — le site se mettra à jour dans 30 à 60 secondes.', 'ok');
       })
       .catch(function(err){
         setStatus($('save-status'), err.message || 'Échec de l\'enregistrement.', 'err');
@@ -1412,21 +1452,21 @@ body.visual-mode .wrap{ max-width: 1400px; }
         function(){ return t.desc || ''; }, function(v){ t.desc = v; }, true);
 
       edTools(doc, item, [
-        edButton(doc, '↑', 'Monter', false, function(){
+        edButton(doc, 'up', 'Monter', false, function(){
           if (i === 0) return;
           var tmp = timeline[i-1]; timeline[i-1] = timeline[i]; timeline[i] = tmp; applyAndRefresh();
         }),
-        edButton(doc, '↓', 'Descendre', false, function(){
+        edButton(doc, 'down', 'Descendre', false, function(){
           if (i >= timeline.length - 1) return;
           var tmp = timeline[i+1]; timeline[i+1] = timeline[i]; timeline[i] = tmp; applyAndRefresh();
         }),
-        edButton(doc, t.current ? '◉' : '○', t.current ? 'Étape en cours' : 'Marquer comme étape en cours', false, function(){
+        edButton(doc, t.current ? 'dotFilled' : 'dot', t.current ? 'Étape en cours' : 'Marquer comme étape en cours', false, function(){
           var wasCurrent = t.current;
           timeline.forEach(function(x){ x.current = false; });
           t.current = !wasCurrent;
           applyAndRefresh();
         }),
-        edButton(doc, '✕', 'Supprimer cette étape', true, function(){
+        edButton(doc, 'close', 'Supprimer cette étape', true, function(){
           if (!confirm('Supprimer « ' + t.title +' » du parcours ?')) return;
           timeline.splice(i, 1); applyAndRefresh();
         })
@@ -1459,7 +1499,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
       if (favP){
         bindEditable(fav.querySelector('h2'), function(){ return favP.title || ''; }, function(v){ favP.title = v; });
         bindEditable(fav.querySelector('.desc'), function(){ return favP.desc || ''; }, function(v){ favP.desc = v; }, true);
-        edTools(doc, fav, [ edButton(doc, '♥', 'Choisir un autre projet favori', false, function(){
+        edTools(doc, fav, [ edButton(doc, 'heart', 'Choisir un autre projet favori', false, function(){
           var choice = pickProject('Projet favori affiché en haut de l\'accueil :');
           if (!choice) return;
           s.favoriProjectId = choice.id; applyAndRefresh();
@@ -1493,24 +1533,24 @@ body.visual-mode .wrap{ max-width: 1400px; }
         function(v){ p.year = parseInt(v, 10) || p.year; });
 
       edTools(doc, card, [
-        edButton(doc, p.hidden ? '🙈' : '👁', p.hidden ? 'Afficher ce projet sur le site' : 'Masquer ce projet du site', false, function(){
+        edButton(doc, p.hidden ? 'eyeOff' : 'eye', p.hidden ? 'Afficher ce projet sur le site' : 'Masquer ce projet du site', false, function(){
           p.hidden = !p.hidden;
           applyAndRefresh();
         }),
-        edButton(doc, p.featured ? '★' : '☆', p.featured ? 'Retirer des projets mis en avant' : 'Mettre en avant sur l\'accueil', false, function(){
+        edButton(doc, p.featured ? 'starFilled' : 'star', p.featured ? 'Retirer des projets mis en avant' : 'Mettre en avant sur l\'accueil', false, function(){
           p.featured = !p.featured;
           applyAndRefresh();
         }),
-        edButton(doc, '♥', 'Définir comme projet favori', false, function(){
+        edButton(doc, 'heart', 'Définir comme projet favori', false, function(){
           state.site.favoriProjectId = p.id;
           applyAndRefresh();
         }),
-        edButton(doc, '🖼', 'Changer la miniature (envoyer une image)', false, function(){
+        edButton(doc, 'image', 'Changer la miniature (envoyer une image)', false, function(){
           pendingUpload = { owner: p, hint: p.title + '-miniature', thumbOnly: true };
           $('visual-image-upload').click();
         }),
-        edButton(doc, '✕', 'Supprimer ce projet', true, function(){
-          if (!confirm('Supprimer définitivement « ' + p.title + ' » ?\n(pour le retirer du site sans le perdre, utilise plutôt 👁)')) return;
+        edButton(doc, 'close', 'Supprimer ce projet', true, function(){
+          if (!confirm('Supprimer définitivement « ' + p.title + ' » ?\n(pour le retirer du site sans le perdre, utilise plutot le bouton oeil)')) return;
           state.projects = state.projects.filter(function(x){ return x.id !== p.id; });
           applyAndRefresh();
         })
@@ -1553,12 +1593,13 @@ body.visual-mode .wrap{ max-width: 1400px; }
   }
 
   // ---- floating controls injected over the rendered site ----
-  function edButton(doc, glyph, title, danger, onClick){
+  function edButton(doc, iconName, title, danger, onClick){
     var b = doc.createElement('button');
     b.type = 'button';
     b.className = 'ed-btn' + (danger ? ' is-danger' : '');
-    b.textContent = glyph;
+    b.innerHTML = ICON[iconName] || ICON.dot;
     b.title = title;
+    b.setAttribute('aria-label', title);
     b.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); onClick(); });
     return b;
   }
@@ -1616,26 +1657,26 @@ body.visual-mode .wrap{ max-width: 1400px; }
       }
 
       var btns = [
-        edButton(doc, '↑', 'Déplacer avant', false, function(){
+        edButton(doc, 'up', 'Déplacer avant', false, function(){
           if (i === 0) return;
           var tmp = assets[i-1]; assets[i-1] = assets[i]; assets[i] = tmp; applyAndRefresh();
         }),
-        edButton(doc, '↓', 'Déplacer après', false, function(){
+        edButton(doc, 'down', 'Déplacer après', false, function(){
           if (i >= assets.length - 1) return;
           var tmp = assets[i+1]; assets[i+1] = assets[i]; assets[i] = tmp; applyAndRefresh();
         }),
-        edButton(doc, a.hidden ? '🙈' : '👁', a.hidden ? 'Afficher sur le site' : 'Masquer du site', false, function(){
+        edButton(doc, a.hidden ? 'eyeOff' : 'eye', a.hidden ? 'Afficher sur le site' : 'Masquer du site', false, function(){
           a.hidden = !a.hidden;
           applyAndRefresh();
         }),
-        edButton(doc, '✕', 'Retirer ce contenu', true, function(){
+        edButton(doc, 'close', 'Retirer ce contenu', true, function(){
           if (!confirm('Retirer ce contenu du projet ?')) return;
           assets.splice(i, 1);
           applyAndRefresh();
         })
       ];
       if (a.type === 'image'){
-        btns.unshift(edButton(doc, '★', 'Utiliser comme miniature', false, function(){
+        btns.unshift(edButton(doc, 'starFilled', 'Utiliser comme miniature', false, function(){
           owner.thumb = a.url;
           applyAndRefresh();
         }));
@@ -1696,13 +1737,13 @@ body.visual-mode .wrap{ max-width: 1400px; }
     var metaRow = doc.querySelector('.detail-meta-row');
     if (metaRow){
       edTools(doc, metaRow, [
-        edButton(doc, '🏷', 'Modifier les tags', false, function(){
+        edButton(doc, 'tag', 'Modifier les tags', false, function(){
           var v = prompt('Tags, séparés par des virgules :', (p.tags || []).join(', '));
           if (v === null) return;
           p.tags = v.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
           applyAndRefresh();
         }),
-        edButton(doc, '🎛', 'Changer le médium', false, function(){
+        edButton(doc, 'sliders', 'Changer le médium', false, function(){
           var keys = Object.keys(MEDIUM_LABEL);
           var lines = keys.map(function(k, n){ return (n + 1) + '. ' + MEDIUM_LABEL[k]; }).join('\n');
           var raw = prompt('Médium du projet :\n\n' + lines + '\n\nNuméro :', '');
@@ -1710,19 +1751,19 @@ body.visual-mode .wrap{ max-width: 1400px; }
           var k = keys[parseInt(raw, 10) - 1];
           if (k){ p.medium = k; applyAndRefresh(); }
         }),
-        edButton(doc, '📂', 'Changer la catégorie', false, function(){
+        edButton(doc, 'folder', 'Changer la catégorie', false, function(){
           var keys = ['perso', 'academique', 'stage'];
           var raw = prompt('Catégorie :\n\n1. Projets perso\n2. Projets académiques\n3. Stage\n\nNuméro :', '');
           if (!raw) return;
           var k = keys[parseInt(raw, 10) - 1];
           if (k){ p.ctx = k; applyAndRefresh(); }
         }),
-        edButton(doc, '🔗', 'Lien externe (site à visiter)', false, function(){
+        edButton(doc, 'link', 'Lien externe (site à visiter)', false, function(){
           var v = prompt('Lien externe du projet (laisse vide pour retirer) :', p.link || '');
           if (v === null) return;
           p.link = v.trim(); applyAndRefresh();
         }),
-        edButton(doc, '📅', 'Changer l\'année', false, function(){
+        edButton(doc, 'calendar', 'Changer l\'année', false, function(){
           var v = prompt('Année du projet :', String(p.year || ''));
           if (v === null) return;
           var n = parseInt(v, 10);
@@ -1742,15 +1783,15 @@ body.visual-mode .wrap{ max-width: 1400px; }
       wireAddBar(doc, node, sp, p.title + '-' + sp.title);
 
       edTools(doc, node, [
-        edButton(doc, '↑', 'Monter', false, function(){
+        edButton(doc, 'up', 'Monter', false, function(){
           if (i === 0) return;
           var tmp = subs[i-1]; subs[i-1] = subs[i]; subs[i] = tmp; applyAndRefresh();
         }),
-        edButton(doc, '↓', 'Descendre', false, function(){
+        edButton(doc, 'down', 'Descendre', false, function(){
           if (i >= subs.length - 1) return;
           var tmp = subs[i+1]; subs[i+1] = subs[i]; subs[i] = tmp; applyAndRefresh();
         }),
-        edButton(doc, '🎛', 'Changer le médium du sous-projet', false, function(){
+        edButton(doc, 'sliders', 'Changer le médium du sous-projet', false, function(){
           var keys = Object.keys(MEDIUM_LABEL);
           var lines = keys.map(function(k, n){ return (n + 1) + '. ' + MEDIUM_LABEL[k]; }).join('\n');
           var raw = prompt('Médium du sous-projet (vide = aucun) :\n\n' + lines + '\n\nNuméro :', '');
@@ -1758,12 +1799,12 @@ body.visual-mode .wrap{ max-width: 1400px; }
           sp.medium = keys[parseInt(raw, 10) - 1] || '';
           applyAndRefresh();
         }),
-        edButton(doc, '🔗', 'Lien externe du sous-projet', false, function(){
+        edButton(doc, 'link', 'Lien externe du sous-projet', false, function(){
           var v = prompt('Lien externe (vide pour retirer) :', sp.link || '');
           if (v === null) return;
           sp.link = v.trim(); applyAndRefresh();
         }),
-        edButton(doc, '✕', 'Supprimer ce sous-projet', true, function(){
+        edButton(doc, 'close', 'Supprimer ce sous-projet', true, function(){
           if (!confirm('Supprimer le sous-projet « ' + sp.title + ' » ?')) return;
           subs.splice(i, 1); applyAndRefresh();
         })
