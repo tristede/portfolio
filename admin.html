@@ -1382,7 +1382,26 @@ body.visual-mode .wrap{ max-width: 1400px; }
         function(v){ s.contactEmail = v; el.setAttribute('href', 'mailto:' + v); });
     });
 
-    (s.timeline || []).forEach(function(t, i){
+    // the social icons are 42px circles — too small to host a button, so the
+    // icon itself opens the prompt (links are inert in the editor anyway)
+    function bindSocial(sel, label, key){
+      doc.querySelectorAll(sel).forEach(function(el){
+        el.style.cursor = 'pointer';
+        el.title = 'Modifier le lien ' + label;
+        el.setAttribute('data-edit', '1');
+        el.addEventListener('click', function(e){
+          e.preventDefault(); e.stopPropagation();
+          var v = prompt('Lien ' + label + ' :', s[key] || '');
+          if (v === null) return;
+          s[key] = v.trim(); applyAndRefresh();
+        });
+      });
+    }
+    bindSocial('.js-linkedin-link', 'LinkedIn', 'linkedin');
+    bindSocial('.js-instagram-link', 'Instagram', 'instagram');
+
+    var timeline = s.timeline || (s.timeline = []);
+    timeline.forEach(function(t, i){
       var item = doc.querySelectorAll('#js-timeline .timeline-item')[i];
       if (!item) return;
       bindEditable(item.querySelector('.timeline-year'),
@@ -1391,7 +1410,47 @@ body.visual-mode .wrap{ max-width: 1400px; }
         function(){ return t.title || ''; }, function(v){ t.title = v; });
       bindEditable(item.querySelector('p'),
         function(){ return t.desc || ''; }, function(v){ t.desc = v; }, true);
+
+      edTools(doc, item, [
+        edButton(doc, '↑', 'Monter', false, function(){
+          if (i === 0) return;
+          var tmp = timeline[i-1]; timeline[i-1] = timeline[i]; timeline[i] = tmp; applyAndRefresh();
+        }),
+        edButton(doc, '↓', 'Descendre', false, function(){
+          if (i >= timeline.length - 1) return;
+          var tmp = timeline[i+1]; timeline[i+1] = timeline[i]; timeline[i] = tmp; applyAndRefresh();
+        }),
+        edButton(doc, t.current ? '◉' : '○', t.current ? 'Étape en cours' : 'Marquer comme étape en cours', false, function(){
+          var wasCurrent = t.current;
+          timeline.forEach(function(x){ x.current = false; });
+          t.current = !wasCurrent;
+          applyAndRefresh();
+        }),
+        edButton(doc, '✕', 'Supprimer cette étape', true, function(){
+          if (!confirm('Supprimer « ' + t.title +' » du parcours ?')) return;
+          timeline.splice(i, 1); applyAndRefresh();
+        })
+      ]);
     });
+
+    var tlRoot = doc.getElementById('js-timeline');
+    if (tlRoot){
+      var tlBar = doc.createElement('div');
+      tlBar.className = 'ed-addbar';
+      var tlAdd = doc.createElement('button');
+      tlAdd.type = 'button'; tlAdd.className = 'ed-add'; tlAdd.textContent = '+ Étape du parcours';
+      tlAdd.addEventListener('click', function(e){
+        e.preventDefault(); e.stopPropagation();
+        var year = prompt('Année (ex: "2025" ou "2023 — Aujourd\'hui") :', '');
+        if (!year) return;
+        var title = prompt('Titre de l\'étape :', '');
+        if (!title) return;
+        timeline.push({ year: year.trim(), title: title.trim(), desc: '', current: false });
+        applyAndRefresh();
+      });
+      tlBar.appendChild(tlAdd);
+      tlRoot.parentNode.appendChild(tlBar);
+    }
 
     // favourite project block: same fields as its card, bound to that project
     var fav = doc.getElementById('js-favori');
@@ -1400,8 +1459,23 @@ body.visual-mode .wrap{ max-width: 1400px; }
       if (favP){
         bindEditable(fav.querySelector('h2'), function(){ return favP.title || ''; }, function(v){ favP.title = v; });
         bindEditable(fav.querySelector('.desc'), function(){ return favP.desc || ''; }, function(v){ favP.desc = v; }, true);
+        edTools(doc, fav, [ edButton(doc, '♥', 'Choisir un autre projet favori', false, function(){
+          var choice = pickProject('Projet favori affiché en haut de l\'accueil :');
+          if (!choice) return;
+          s.favoriProjectId = choice.id; applyAndRefresh();
+        }) ]);
       }
     }
+  }
+
+  // small numbered picker — a <select> can't live inside the frame's own
+  // layout without disturbing it, so a prompt list keeps this simple.
+  function pickProject(title){
+    var lines = state.projects.map(function(p, i){ return (i + 1) + '. ' + p.title; }).join('\n');
+    var raw = prompt(title + '\n\n' + lines + '\n\nNuméro :', '');
+    if (!raw) return null;
+    var idx = parseInt(raw, 10) - 1;
+    return state.projects[idx] || null;
   }
 
   function wireCardEditing(doc){
@@ -1415,17 +1489,66 @@ body.visual-mode .wrap{ max-width: 1400px; }
       bindEditable(card.querySelector('h3'), function(){ return p.title || ''; }, function(v){ p.title = v; });
       bindEditable(card.querySelector('.desc'), function(){ return p.desc || ''; }, function(v){ p.desc = v; }, true);
 
+      bindEditable(card.querySelector('.year'), function(){ return String(p.year || ''); },
+        function(v){ p.year = parseInt(v, 10) || p.year; });
+
       edTools(doc, card, [
         edButton(doc, p.hidden ? '🙈' : '👁', p.hidden ? 'Afficher ce projet sur le site' : 'Masquer ce projet du site', false, function(){
           p.hidden = !p.hidden;
           applyAndRefresh();
         }),
+        edButton(doc, p.featured ? '★' : '☆', p.featured ? 'Retirer des projets mis en avant' : 'Mettre en avant sur l\'accueil', false, function(){
+          p.featured = !p.featured;
+          applyAndRefresh();
+        }),
+        edButton(doc, '♥', 'Définir comme projet favori', false, function(){
+          state.site.favoriProjectId = p.id;
+          applyAndRefresh();
+        }),
         edButton(doc, '🖼', 'Changer la miniature (envoyer une image)', false, function(){
           pendingUpload = { owner: p, hint: p.title + '-miniature', thumbOnly: true };
           $('visual-image-upload').click();
+        }),
+        edButton(doc, '✕', 'Supprimer ce projet', true, function(){
+          if (!confirm('Supprimer définitivement « ' + p.title + ' » ?\n(pour le retirer du site sans le perdre, utilise plutôt 👁)')) return;
+          state.projects = state.projects.filter(function(x){ return x.id !== p.id; });
+          applyAndRefresh();
         })
       ]);
       if (p.hidden) edBadge(doc, card, 'masqué');
+    });
+
+    wireGridAddButtons(doc);
+  }
+
+  var CTX_OF_GROUP = { perso: 'perso', academique: 'academique', stage: 'stage' };
+
+  // "+ Nouveau projet" under each real category grid (not the featured one,
+  // which is a selection rather than a place a project lives)
+  function wireGridAddButtons(doc){
+    doc.querySelectorAll('.grid[data-group]').forEach(function(grid){
+      var group = grid.dataset.group;
+      var ctx = CTX_OF_GROUP[group];
+      if (!ctx) return;
+      var bar = doc.createElement('div');
+      bar.className = 'ed-addbar';
+      var b = doc.createElement('button');
+      b.type = 'button'; b.className = 'ed-add'; b.textContent = '+ Nouveau projet';
+      b.addEventListener('click', function(e){
+        e.preventDefault(); e.stopPropagation();
+        var title = prompt('Titre du nouveau projet :', '');
+        if (!title) return;
+        var base = slugify(title), id = base, n = 2;
+        while (state.projects.some(function(x){ return x.id === id; })){ id = base + '-' + n; n++; }
+        state.projects.push({
+          id: id, title: title.trim(), year: new Date().getFullYear(), ctx: ctx,
+          medium: 'graphisme', tags: [], desc: '', featured: false, hidden: false,
+          longDesc: '', assets: [], link: '', thumb: '', subProjects: []
+        });
+        applyAndRefresh();
+      });
+      bar.appendChild(b);
+      grid.parentNode.insertBefore(bar, grid.nextSibling);
     });
   }
 
@@ -1493,6 +1616,14 @@ body.visual-mode .wrap{ max-width: 1400px; }
       }
 
       var btns = [
+        edButton(doc, '↑', 'Déplacer avant', false, function(){
+          if (i === 0) return;
+          var tmp = assets[i-1]; assets[i-1] = assets[i]; assets[i] = tmp; applyAndRefresh();
+        }),
+        edButton(doc, '↓', 'Déplacer après', false, function(){
+          if (i >= assets.length - 1) return;
+          var tmp = assets[i+1]; assets[i+1] = assets[i]; assets[i] = tmp; applyAndRefresh();
+        }),
         edButton(doc, a.hidden ? '🙈' : '👁', a.hidden ? 'Afficher sur le site' : 'Masquer du site', false, function(){
           a.hidden = !a.hidden;
           applyAndRefresh();
@@ -1561,14 +1692,100 @@ body.visual-mode .wrap{ max-width: 1400px; }
     if (subsRoot) wrap.insertBefore(addAnchor, subsRoot); else wrap.appendChild(addAnchor);
     wireAddBar(doc, addAnchor, p, p.title);
 
+    // ---- project metadata that isn't plain inline text ----
+    var metaRow = doc.querySelector('.detail-meta-row');
+    if (metaRow){
+      edTools(doc, metaRow, [
+        edButton(doc, '🏷', 'Modifier les tags', false, function(){
+          var v = prompt('Tags, séparés par des virgules :', (p.tags || []).join(', '));
+          if (v === null) return;
+          p.tags = v.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+          applyAndRefresh();
+        }),
+        edButton(doc, '🎛', 'Changer le médium', false, function(){
+          var keys = Object.keys(MEDIUM_LABEL);
+          var lines = keys.map(function(k, n){ return (n + 1) + '. ' + MEDIUM_LABEL[k]; }).join('\n');
+          var raw = prompt('Médium du projet :\n\n' + lines + '\n\nNuméro :', '');
+          if (!raw) return;
+          var k = keys[parseInt(raw, 10) - 1];
+          if (k){ p.medium = k; applyAndRefresh(); }
+        }),
+        edButton(doc, '📂', 'Changer la catégorie', false, function(){
+          var keys = ['perso', 'academique', 'stage'];
+          var raw = prompt('Catégorie :\n\n1. Projets perso\n2. Projets académiques\n3. Stage\n\nNuméro :', '');
+          if (!raw) return;
+          var k = keys[parseInt(raw, 10) - 1];
+          if (k){ p.ctx = k; applyAndRefresh(); }
+        }),
+        edButton(doc, '🔗', 'Lien externe (site à visiter)', false, function(){
+          var v = prompt('Lien externe du projet (laisse vide pour retirer) :', p.link || '');
+          if (v === null) return;
+          p.link = v.trim(); applyAndRefresh();
+        }),
+        edButton(doc, '📅', 'Changer l\'année', false, function(){
+          var v = prompt('Année du projet :', String(p.year || ''));
+          if (v === null) return;
+          var n = parseInt(v, 10);
+          if (n){ p.year = n; applyAndRefresh(); }
+        })
+      ]);
+    }
+
+    // ---- sub-projects ----
+    var subs = p.subProjects || (p.subProjects = []);
     doc.querySelectorAll('.subproject').forEach(function(node, i){
-      var sp = (p.subProjects || [])[i];
+      var sp = subs[i];
       if (!sp) return;
       bindEditable(node.querySelector('h3'), function(){ return sp.title || ''; }, function(v){ sp.title = v; });
       bindEditable(node.querySelector('.detail-desc'), function(){ return sp.desc || ''; }, function(v){ sp.desc = v; }, true);
       wireAssetControls(doc, node, sp, p.title + '-' + sp.title);
       wireAddBar(doc, node, sp, p.title + '-' + sp.title);
+
+      edTools(doc, node, [
+        edButton(doc, '↑', 'Monter', false, function(){
+          if (i === 0) return;
+          var tmp = subs[i-1]; subs[i-1] = subs[i]; subs[i] = tmp; applyAndRefresh();
+        }),
+        edButton(doc, '↓', 'Descendre', false, function(){
+          if (i >= subs.length - 1) return;
+          var tmp = subs[i+1]; subs[i+1] = subs[i]; subs[i] = tmp; applyAndRefresh();
+        }),
+        edButton(doc, '🎛', 'Changer le médium du sous-projet', false, function(){
+          var keys = Object.keys(MEDIUM_LABEL);
+          var lines = keys.map(function(k, n){ return (n + 1) + '. ' + MEDIUM_LABEL[k]; }).join('\n');
+          var raw = prompt('Médium du sous-projet (vide = aucun) :\n\n' + lines + '\n\nNuméro :', '');
+          if (raw === null) return;
+          sp.medium = keys[parseInt(raw, 10) - 1] || '';
+          applyAndRefresh();
+        }),
+        edButton(doc, '🔗', 'Lien externe du sous-projet', false, function(){
+          var v = prompt('Lien externe (vide pour retirer) :', sp.link || '');
+          if (v === null) return;
+          sp.link = v.trim(); applyAndRefresh();
+        }),
+        edButton(doc, '✕', 'Supprimer ce sous-projet', true, function(){
+          if (!confirm('Supprimer le sous-projet « ' + sp.title + ' » ?')) return;
+          subs.splice(i, 1); applyAndRefresh();
+        })
+      ]);
     });
+
+    // "+ Sous-projet" — appended after the sub-projects block, or at the end
+    // of the page when the project has none yet.
+    var subAnchor = doc.querySelector('.detail-subprojects') || wrap;
+    var subBar = doc.createElement('div');
+    subBar.className = 'ed-addbar';
+    var subAdd = doc.createElement('button');
+    subAdd.type = 'button'; subAdd.className = 'ed-add'; subAdd.textContent = '+ Sous-projet';
+    subAdd.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      var title = prompt('Titre du sous-projet (ex: « Refonte graphique ») :', '');
+      if (!title) return;
+      subs.push({ title: title.trim(), medium: '', desc: '', assets: [], link: '' });
+      applyAndRefresh();
+    });
+    subBar.appendChild(subAdd);
+    subAnchor.appendChild(subBar);
   }
 
   // a lightweight "scope" holding only the asset nodes that sit before a

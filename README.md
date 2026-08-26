@@ -53,21 +53,27 @@ d'édition. Il te permet de :
 
 En haut du panneau, un sélecteur bascule entre :
 
-- **Formulaire** — la vue classique, champ par champ. Seule vue à donner accès
-  à *tous* les réglages (médium, tags, année, catégorie, tags, sous-projets,
-  ordre du parcours…).
-- **Vue visuelle** — le site réel s'affiche tel quel et s'édite dessus :
-  - **Textes** : clique un texte encadré en pointillés, tape, clique ailleurs
-    (`Échap` annule).
-  - **Vignettes de projet** : au survol, 👁 masque/affiche le projet sur le
-    site, 🖼 envoie une nouvelle miniature. Un projet masqué reste visible ici,
-    grisé avec un badge « masqué ».
-  - **Navigation** : clique une vignette pour **entrer dans sa page détail**,
-    comme sur le site public. Les boutons ⌂ Accueil et ← Retour circulent.
-  - **Contenus d'un projet** : au survol de chaque image/vidéo/audio, ★ la
-    définit comme miniature, 👁 la masque, ✕ la retire. En bas de chaque projet
-    et de chaque sous-projet, les boutons **+ Image / + Vidéo / + Audio**
-    ajoutent un contenu (l'image est convertie en WebP et envoyée sur GitHub).
+- **Formulaire** — la vue classique, champ par champ. Pratique pour saisir
+  beaucoup de choses d'un coup, ou filtrer/chercher parmi les projets.
+- **Vue visuelle** — le site réel s'affiche tel quel et s'édite dessus. Les
+  contrôles apparaissent **au survol**, en haut à droite de chaque élément :
+
+  | Où | Contrôles |
+  |---|---|
+  | N'importe quel texte | clic pour éditer (`Échap` annule) |
+  | Icônes réseaux sociaux | clic pour changer le lien LinkedIn / Instagram |
+  | Étape du parcours | ↑ ↓ réordonner · ◉ étape en cours · ✕ supprimer — et **+ Étape du parcours** en dessous |
+  | Bloc projet favori | ♥ choisir un autre projet favori |
+  | Vignette de projet | 👁 masquer/afficher · ☆ mettre en avant · ♥ définir favori · 🖼 changer la miniature · ✕ supprimer |
+  | Sous une grille | **+ Nouveau projet** |
+  | Page projet (bandeau du haut) | 🏷 tags · 🎛 médium · 📂 catégorie · 🔗 lien externe · 📅 année |
+  | Image / vidéo / audio | ↑ ↓ réordonner · ★ définir comme miniature · 👁 masquer · ✕ retirer |
+  | Bas d'un projet ou sous-projet | **+ Image / + Vidéo / + Audio** |
+  | Sous-projet | ↑ ↓ réordonner · 🎛 médium · 🔗 lien · ✕ supprimer — et **+ Sous-projet** en dessous |
+
+  Clique une vignette pour **entrer dans la page détail** du projet, comme sur
+  le site public ; ⌂ Accueil et ← Retour servent à circuler. Les éléments
+  masqués restent visibles ici, grisés avec un badge « masqué ».
 
 Les deux vues éditent la même chose : ce que tu changes dans l'une apparaît
 immédiatement dans l'autre. Dans les deux cas, rien n'est publié tant que tu
