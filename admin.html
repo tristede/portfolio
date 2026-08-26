@@ -605,6 +605,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
       var settled = false;
       function handleMessage(e){
         var data = e.data;
+        console.log('[oauth] message from', e.origin, ':', data);
         if (typeof data !== 'string') return;
         if (data === 'authorizing:github'){
           popup.postMessage('authorizing:github', '*');
