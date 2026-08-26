@@ -198,24 +198,26 @@
       var i = all.indexOf(a);
       return ' data-asset-index="' + i + '"' + (a.hidden ? ' data-asset-hidden="1"' : '');
     }
+    // three preset widths per asset; medium is the default
+    function sizeClass(a){ return ' size-' + (a.size || 'md'); }
     var imgs = list.filter(function(a){ return a.type === 'image'; });
     var media = '';
     if (imgs.length){
       // each photo is its own "taped to the wall" figure — the wrapper also
       // gives the admin editor a host for its per-asset controls.
       media += '<div class="detail-gallery">' + imgs.map(function(a, n){
-        return '<figure class="photo photo-' + (n % 4) + '"' + attrs(a) + '>' +
+        return '<figure class="photo photo-' + (n % 4) + sizeClass(a) + '"' + attrs(a) + '>' +
           '<img src="' + a.url + '" alt="' + obj.title + '" loading="lazy" draggable="false">' +
         '</figure>';
       }).join('') + '</div>';
     }
     list.forEach(function(a, n){
       if (a.type === 'video'){
-        media += '<div class="detail-embed photo photo-' + (n % 4) + '"' + attrs(a) + '>' + videoEmbedHTML(a.url) + '</div>';
+        media += '<div class="detail-embed photo photo-' + (n % 4) + sizeClass(a) + '"' + attrs(a) + '>' + videoEmbedHTML(a.url) + '</div>';
       }
-      if (a.type === 'audio') media += '<div class="detail-audio"' + attrs(a) + '>' + audioEmbedHTML(a.url) + '</div>';
-      if (a.type === 'web') media += '<div' + attrs(a) + '>' + websiteEmbedHTML(a.url) + '</div>';
-      if (a.type === 'doc') media += '<div' + attrs(a) + '>' + docEmbedHTML(a.url, a.pages) + '</div>';
+      if (a.type === 'audio') media += '<div class="detail-audio' + sizeClass(a) + '"' + attrs(a) + '>' + audioEmbedHTML(a.url) + '</div>';
+      if (a.type === 'web') media += '<div class="detail-webwrap' + sizeClass(a) + '"' + attrs(a) + '>' + websiteEmbedHTML(a.url) + '</div>';
+      if (a.type === 'doc') media += '<div class="detail-docwrap' + sizeClass(a) + '"' + attrs(a) + '>' + docEmbedHTML(a.url, a.pages) + '</div>';
     });
     return media;
   }

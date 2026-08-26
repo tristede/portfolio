@@ -336,6 +336,35 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
   margin: 0;
   transition: transform .25s ease, filter .25s ease;
 }
+
+/* ---------- Three preset sizes, chosen per asset in /admin.html ---------- */
+.photo.size-sm{ width: min(200px, 100%); }
+.photo.size-md{ width: min(300px, 100%); }
+.photo.size-lg{ width: min(460px, 100%); }
+/* the tape scales with the poster so it stays proportionate */
+.photo.size-sm::before{ width: 108px; height: 26px; margin-left: -54px; top: -13px; }
+.photo.size-lg::before{ width: 210px; height: 50px; margin-left: -105px; top: -25px; }
+
+/* videos, sites and documents get the same three widths, centred.
+   Embeds share the .photo class for the tape, so their width must be reset —
+   otherwise the poster widths above would win. */
+.detail-embed.photo{ width: auto; }
+.detail-embed.size-sm{ max-width: 420px; margin-left:auto; margin-right:auto; }
+.detail-embed.size-md{ max-width: 640px; margin-left:auto; margin-right:auto; }
+.detail-embed.size-lg{ max-width: 960px; margin-left:auto; margin-right:auto; }
+.detail-audio.size-sm{ max-width: 420px; margin-left:auto; margin-right:auto; }
+.detail-audio.size-md{ max-width: 640px; margin-left:auto; margin-right:auto; }
+.detail-audio.size-lg{ max-width: 960px; margin-left:auto; margin-right:auto; }
+.detail-webwrap.size-sm .detail-site-embed{ max-width: 480px; margin: 0 auto; }
+.detail-webwrap.size-md .detail-site-embed{ max-width: 760px; margin: 0 auto; }
+.detail-webwrap.size-lg .detail-site-embed{ max-width: 1100px; margin: 0 auto; }
+.detail-webwrap.size-sm iframe{ height: 340px; }
+.detail-webwrap.size-lg iframe{ height: 640px; }
+.detail-docwrap.size-sm .doc-viewer{ max-width: 460px; }
+.detail-docwrap.size-md .doc-viewer{ max-width: 720px; }
+.detail-docwrap.size-lg .doc-viewer{ max-width: 1000px; }
+.detail-docwrap.size-sm .doc-stage img{ max-height: 46vh; }
+.detail-docwrap.size-lg .doc-stage img{ max-height: 78vh; }
 /* vertical stagger — the wall shouldn't line up on a baseline */
 .photo-1{ margin-top: 38px; }
 .photo-2{ margin-top: 14px; }
