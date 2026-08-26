@@ -320,10 +320,11 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
   var TOKEN_KEY = 'portfolio_admin_pat_v1';
 
   // ---- "Se connecter avec GitHub" (OAuth via a self-hosted sveltia-cms-auth
-  // Cloudflare Worker — see README). Both left empty until that Worker +
-  // GitHub OAuth App exist; the manual-token login below always works as a
-  // fallback regardless of whether this is configured. ----
-  var OAUTH_CLIENT_ID = 'Ov23liDVjc8AUievRU7X';
+  // Cloudflare Worker — see README). The worker holds its own GITHUB_CLIENT_ID
+  // server-side; the client only ever needs the worker's own /auth endpoint,
+  // never GitHub's authorize URL directly (the worker sets a CSRF cookie on
+  // /auth before redirecting to GitHub itself). Left empty until that Worker
+  // exists; the manual-token login below always works as a fallback. ----
   var OAUTH_WORKER_URL = 'https://portfolioadamxbc.tristederk.workers.dev';
   var OAUTH_SCOPE = 'public_repo';
 
@@ -585,17 +586,20 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
   // (or an ':error:' variant) containing the real token. ----
   function loginWithGithubOAuth(){
     return new Promise(function(resolve, reject){
-      if (!OAUTH_CLIENT_ID || !OAUTH_WORKER_URL){
+      if (!OAUTH_WORKER_URL){
         reject(new Error('OAuth pas encore configuré — utilise le token manuel ci-dessous en attendant.'));
         return;
       }
       var width = 600, height = 700;
       var left = Math.round((screen.width - width) / 2);
       var top = Math.round((screen.height - height) / 2);
-      var authUrl = 'https://github.com/login/oauth/authorize' +
-        '?client_id=' + encodeURIComponent(OAUTH_CLIENT_ID) +
-        '&scope=' + encodeURIComponent(OAUTH_SCOPE) +
-        '&redirect_uri=' + encodeURIComponent(OAUTH_WORKER_URL.replace(/\/$/, '') + '/callback');
+      // hit the worker's own /auth endpoint (NOT github.com's authorize URL
+      // directly) — it holds the client ID/secret server-side and sets a
+      // CSRF cookie before redirecting the popup on to GitHub itself.
+      var authUrl = OAUTH_WORKER_URL.replace(/\/$/, '') + '/auth' +
+        '?provider=github' +
+        '&site_id=' + encodeURIComponent(window.location.hostname) +
+        '&scope=' + encodeURIComponent(OAUTH_SCOPE);
       var popup = window.open(authUrl, 'github-oauth', 'width=' + width + ',height=' + height + ',top=' + top + ',left=' + left);
       if (!popup){
         reject(new Error('Le popup a été bloqué par le navigateur — autorise les popups pour ce site et réessaie.'));
@@ -642,7 +646,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
     });
   }
 
-  if (!OAUTH_CLIENT_ID || !OAUTH_WORKER_URL){
+  if (!OAUTH_WORKER_URL){
     $('oauth-login-btn').disabled = true;
   } else {
     $('oauth-unconfigured-note').classList.add('hidden');
