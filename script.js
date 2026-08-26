@@ -215,7 +215,7 @@
       }
       if (a.type === 'audio') media += '<div class="detail-audio"' + attrs(a) + '>' + audioEmbedHTML(a.url) + '</div>';
       if (a.type === 'web') media += '<div' + attrs(a) + '>' + websiteEmbedHTML(a.url) + '</div>';
-      if (a.type === 'doc') media += '<div' + attrs(a) + '>' + docEmbedHTML(a.url) + '</div>';
+      if (a.type === 'doc') media += '<div' + attrs(a) + '>' + docEmbedHTML(a.url, a.pages) + '</div>';
     });
     return media;
   }
@@ -235,7 +235,25 @@
   // Sheets have a /preview form; Office files have no native embed, so they get
   // routed through Microsoft's public viewer. A direct link always sits below,
   // because any of these can be blocked or unavailable.
-  function docEmbedHTML(url){
+  function docEmbedHTML(url, pages){
+    // Converted at upload: show the pages as plain images. No browser PDF
+    // viewer means no toolbar we can't style, and the same look everywhere.
+    if (pages && pages.length){
+      // one self-contained viewer: a single page on screen at a time, with our
+      // own controls — never a stack of every page.
+      return '<div class="detail-doc doc-viewer" data-doc-pages="' + encodeURIComponent(JSON.stringify(pages)) + '">' +
+        '<div class="doc-stage">' +
+          '<img src="' + pages[0] + '" alt="Page 1" draggable="false">' +
+        '</div>' +
+        '<div class="doc-bar">' +
+          '<button class="doc-nav doc-prev" type="button" aria-label="Page précédente">' + UI_ICON.prev + '</button>' +
+          '<span class="doc-count">1 / ' + pages.length + '</span>' +
+          '<button class="doc-nav doc-next" type="button" aria-label="Page suivante">' + UI_ICON.next + '</button>' +
+          '<a class="doc-open" href="' + url + '" target="_blank" rel="noopener">Ouvrir le PDF ' + UI_ICON.external + '</a>' +
+        '</div>' +
+      '</div>';
+    }
+
     var lower = url.toLowerCase();
     var src = null, note = '';
 
@@ -317,7 +335,45 @@
         subProjectsHTML(p.subProjects) +
       '</div>';
 
+    initDocViewers(container);
     initLightbox(container);
+  }
+
+  // Paged document viewer: one page shown at a time, images preloaded lazily
+  // as the reader advances.
+  function initDocViewers(scope){
+    scope.querySelectorAll('.doc-viewer').forEach(function(v){
+      var pages;
+      try { pages = JSON.parse(decodeURIComponent(v.getAttribute('data-doc-pages'))); }
+      catch(e){ return; }
+      if (!pages || pages.length < 1) return;
+
+      var img = v.querySelector('.doc-stage img');
+      var count = v.querySelector('.doc-count');
+      var prev = v.querySelector('.doc-prev');
+      var next = v.querySelector('.doc-next');
+      var i = 0;
+
+      function show(n){
+        i = Math.max(0, Math.min(pages.length - 1, n));
+        img.src = pages[i];
+        img.alt = 'Page ' + (i + 1);
+        count.textContent = (i + 1) + ' / ' + pages.length;
+        prev.disabled = (i === 0);
+        next.disabled = (i === pages.length - 1);
+        // warm the neighbouring page so paging feels instant
+        var ahead = pages[i + 1];
+        if (ahead){ var p = new Image(); p.src = ahead; }
+      }
+      prev.addEventListener('click', function(){ show(i - 1); });
+      next.addEventListener('click', function(){ show(i + 1); });
+      v.addEventListener('keydown', function(e){
+        if (e.key === 'ArrowLeft') show(i - 1);
+        if (e.key === 'ArrowRight') show(i + 1);
+      });
+      v.tabIndex = 0;
+      show(0);
+    });
   }
 
   // Click any gallery image to view it full-screen. Right-click, dragging and

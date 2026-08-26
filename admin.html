@@ -671,7 +671,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
     function worker(){
       if (next >= total) return Promise.resolve();
       var i = next++;
-      var prep = isDoc ? fileToRawBase64(files[i]) : fileToWebpBase64(files[i], 1920);
+      // a plain object with .b64 is already-encoded content (rendered PDF
+      // pages) — nothing to convert, just commit it
+      var prep = files[i] && files[i].b64 !== undefined
+        ? Promise.resolve(files[i].b64)
+        : (isDoc ? fileToRawBase64(files[i]) : fileToWebpBase64(files[i], 1920));
       return prep
         .then(function(b64){
           pendingB64[i] = b64;
@@ -681,15 +685,19 @@ body.visual-mode .wrap{ max-width: 1400px; }
           });
         })
         .then(function(blob){
-          var ext = isDoc ? ((files[i].name.match(/\.[a-z0-9]+$/i) || ['.pdf'])[0].toLowerCase()) : '.webp';
-          var path = (isDoc ? 'docs/' : 'images/') + slug + '-' + stamp + '-' + i + ext;
+          var raw = files[i];
+          var isPreEncoded = raw && raw.b64 !== undefined;
+          var ext = isPreEncoded ? (raw.ext || '.webp')
+            : (isDoc ? ((raw.name.match(/\.[a-z0-9]+$/i) || ['.pdf'])[0].toLowerCase()) : '.webp');
+          var dir = isPreEncoded ? (raw.dir || 'images/') : (isDoc ? 'docs/' : 'images/');
+          var path = dir + slug + '-' + stamp + '-' + i + ext;
           entries[i] = { path: path, mode: '100644', type: 'blob', sha: blob.sha };
           // GitHub Pages needs ~a minute to serve the new file, so keep the
           // local bytes around and show those in the editor meanwhile.
           // PDFs render reliably from a blob: URL, images from a data: URL
-          freshUploads[path] = isDoc
-            ? URL.createObjectURL(files[i])
-            : 'data:image/webp;base64,' + pendingB64[i];
+          freshUploads[path] = (isDoc && !isPreEncoded)
+            ? URL.createObjectURL(raw)
+            : 'data:' + (ext === '.webp' ? 'image/webp' : 'application/pdf') + ';base64,' + pendingB64[i];
           done++; report('upload');
           return worker();
         });
@@ -1002,6 +1010,58 @@ body.visual-mode .wrap{ max-width: 1400px; }
     $('doc-upload').click();
   }
   var pendingDocTarget = null;
+
+  // ---- PDF -> page images -------------------------------------------------
+  // Browsers each impose their own PDF viewer chrome (toolbars we can't style
+  // or hide). Rendering the pages to WebP once, at upload, gives the same
+  // result everywhere and needs no viewer at all on the public site. pdf.js is
+  // loaded here only, never on the site itself.
+  var PDFJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+  var PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  var pdfjsReady = null;
+  function loadPdfJs(){
+    if (pdfjsReady) return pdfjsReady;
+    pdfjsReady = new Promise(function(resolve, reject){
+      if (window.pdfjsLib){ resolve(window.pdfjsLib); return; }
+      var s = document.createElement('script');
+      s.src = PDFJS_URL;
+      s.onload = function(){
+        if (!window.pdfjsLib){ reject(new Error('pdf.js indisponible')); return; }
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+        resolve(window.pdfjsLib);
+      };
+      s.onerror = function(){ reject(new Error('Impossible de charger le convertisseur PDF.')); };
+      document.head.appendChild(s);
+    });
+    return pdfjsReady;
+  }
+
+  // returns [{ b64, width, height }] — one entry per page
+  function pdfToPageImages(file, onPage){
+    return loadPdfJs()
+      .then(function(lib){ return file.arrayBuffer().then(function(buf){ return lib.getDocument({ data: buf }).promise; }); })
+      .then(function(pdf){
+        var pages = [];
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        function renderPage(n){
+          if (n > pdf.numPages) return Promise.resolve(pages);
+          return pdf.getPage(n).then(function(page){
+            var base = page.getViewport({ scale: 1 });
+            var scale = Math.min(2, 1600 / base.width);
+            var vp = page.getViewport({ scale: scale });
+            canvas.width = Math.round(vp.width);
+            canvas.height = Math.round(vp.height);
+            return page.render({ canvasContext: ctx, viewport: vp }).promise.then(function(){
+              pages.push({ b64: canvas.toDataURL('image/webp', 0.82).split(',')[1] });
+              if (onPage) onPage(n, pdf.numPages);
+              return renderPage(n + 1);
+            });
+          });
+        }
+        return renderPage(1);
+      });
+  }
 
   // the thumbnail can be any image asset OR a dedicated upload that never
   // appears in the project's contents — hence the extra "(image dédiée)" entry.
@@ -1430,17 +1490,64 @@ body.visual-mode .wrap{ max-width: 1400px; }
     e.target.value = '';
     if (!files.length || !target) return;
     var statusEl = target.statusEl;
-    uploadImagesBatch(files, target.hint(), function(done, total, step){
-      if (statusEl) setStatus(statusEl, step === 'commit'
-        ? 'Enregistrement des documents…'
-        : 'Envoi… (' + done + '/' + total + ')', '');
-    }, 'doc').then(function(paths){
-      paths.forEach(function(u){ target.assets.push({ type: 'doc', url: u, hidden: false }); });
-      if (statusEl) setStatus(statusEl, 'Envoyé (' + paths.length + ' document' + (paths.length > 1 ? 's' : '') + ')', 'ok');
-      target.rerender();
+    var say = function(msg, kind){
+      if (statusEl) setStatus(statusEl, msg, kind || '');
+      else $('visual-location').textContent = msg;
+    };
+    var hint = target.hint();
+
+    // Each PDF becomes: the original file (kept for download) + one WebP per
+    // page. The site then shows the pages as images, identically everywhere.
+    var jobs = files.map(function(f){
+      var isPdf = /\.pdf$/i.test(f.name) || f.type === 'application/pdf';
+      if (!isPdf) return Promise.resolve({ original: f, pages: [] });
+      say('Conversion de « ' + f.name +' »…');
+      return pdfToPageImages(f, function(n, total){
+        say('Conversion de « ' + f.name + ' »… page ' + n + '/' + total);
+      }).then(function(pages){
+        return { original: f, pages: pages };
+      }).catch(function(err){
+        // conversion unavailable (offline, blocked CDN): fall back to the
+        // plain PDF rather than failing the whole upload
+        console.warn('Conversion PDF impossible, envoi du fichier brut :', err);
+        return { original: f, pages: [] };
+      });
+    });
+
+    Promise.all(jobs).then(function(results){
+      // one flat upload list, remembering which entry belongs to which doc
+      var payload = [];
+      var map = [];
+      results.forEach(function(r, docIndex){
+        payload.push(r.original);
+        map.push({ doc: docIndex, role: 'original' });
+        r.pages.forEach(function(p){
+          payload.push({ b64: p.b64, ext: '.webp', dir: 'images/' });
+          map.push({ doc: docIndex, role: 'page' });
+        });
+      });
+
+      return uploadImagesBatch(payload, hint, function(done, total, step){
+        say(step === 'commit' ? 'Enregistrement…' : 'Envoi… (' + done + '/' + total + ')');
+      }, 'doc').then(function(paths){
+        results.forEach(function(r, docIndex){
+          var original = null, pages = [];
+          paths.forEach(function(p, i){
+            if (map[i].doc !== docIndex) return;
+            if (map[i].role === 'original') original = p; else pages.push(p);
+          });
+          var asset = { type: 'doc', url: original, hidden: false };
+          if (pages.length) asset.pages = pages;
+          target.assets.push(asset);
+        });
+        var pageTotal = results.reduce(function(n, r){ return n + r.pages.length; }, 0);
+        say('Envoyé (' + results.length + ' document' + (results.length > 1 ? 's' : '') +
+            (pageTotal ? ', ' + pageTotal + ' page' + (pageTotal > 1 ? 's' : '') : '') + ')', 'ok');
+        target.rerender();
+      });
     }).catch(function(err){
-      if (statusEl) setStatus(statusEl, 'Échec de l\'envoi : ' + err.message, 'err');
-      else alert('Échec de l\'envoi : ' + err.message);
+      say('Échec de l\'envoi : ' + err.message, 'err');
+      if (!statusEl) alert('Échec de l\'envoi : ' + err.message);
     });
   });
 

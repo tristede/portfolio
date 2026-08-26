@@ -422,6 +422,46 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
 .detail-embed-caption a{ color: var(--accent-sky); }
 
 .detail-doc{ margin-top: 34px; }
+/* Pages are rendered at upload, but only ever ONE is on screen: a single
+   compact viewer with our own controls, identical in every browser. */
+.doc-viewer{
+  max-width: 720px; margin-left: auto; margin-right: auto;
+  border: 1px solid var(--card-border); border-radius: var(--radius-md);
+  background: rgba(8,11,48,0.5); overflow: hidden;
+}
+.doc-viewer:focus-visible{ outline: 2px solid var(--accent-sky); outline-offset: 3px; }
+.doc-stage{
+  display: flex; align-items: center; justify-content: center;
+  min-height: 320px; max-height: 70vh; padding: 16px;
+}
+.doc-stage img{
+  max-width: 100%; max-height: 66vh; width: auto; height: auto;
+  border-radius: 3px; box-shadow: 0 12px 26px -14px rgba(0,0,6,0.9);
+}
+.doc-bar{
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-top: 1px solid var(--line);
+  background: rgba(5,8,30,0.45);
+}
+.doc-nav{
+  width: 32px; height: 32px; flex: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: 1px solid var(--line-strong);
+  background: transparent; color: var(--text);
+  transition: background .15s ease, border-color .15s ease, opacity .15s ease;
+}
+.doc-nav svg{ width: 16px; height: 16px; }
+.doc-nav:hover:not(:disabled){ background: var(--accent); border-color: var(--accent-sky); }
+.doc-nav:disabled{ opacity: .35; cursor: default; }
+.doc-count{
+  font-size: 12.5px; font-weight: 600; color: var(--text-dim);
+  font-variant-numeric: tabular-nums; min-width: 62px; text-align: center;
+}
+.doc-open{
+  margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 600; color: var(--accent-sky);
+}
+.doc-open:hover{ text-decoration: underline; }
 /* borderless: no frame and no white plate — the viewer sits straight on the
    page background */
 .detail-doc iframe{
