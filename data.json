@@ -124,7 +124,9 @@
         "Pochette d'album"
       ],
       "desc": "Création de visuels de pochettes pour des projets rap.",
-      "featured": false
+      "featured": false,
+      "assets": [],
+      "subProjects": []
     },
     {
       "id": "evenementiel-stand-zennit",
