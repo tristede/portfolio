@@ -12,10 +12,30 @@
     "instagram": "https://www.instagram.com/_adamdrk",
     "favoriProjectId": "union-oasis-forest",
     "timeline": [
-      { "year": "2021", "title": "CESS", "desc": "Obtention du Certificat d'Enseignement Secondaire Supérieur.", "current": false },
-      { "year": "2022", "title": "1ère en Bachelier Informatique", "desc": "Une première année d'études supérieures en informatique.", "current": false },
-      { "year": "2023 — Aujourd'hui", "title": "Réorientation : Bachelier en Communication", "desc": "ISFSC, Bruxelles.", "current": true },
-      { "year": "2025", "title": "Stage — En Esprit", "desc": "Stage de deuxième année : montage vidéo, community management, création de contenu.", "current": false }
+      {
+        "year": "2021",
+        "title": "CESS",
+        "desc": "Obtention du Certificat d'Enseignement Secondaire Supérieur.",
+        "current": false
+      },
+      {
+        "year": "2022",
+        "title": "1ère en Bachelier Informatique",
+        "desc": "Une première année d'études supérieures en informatique.",
+        "current": false
+      },
+      {
+        "year": "2023 — Aujourd'hui",
+        "title": "Réorientation : Bachelier en Communication",
+        "desc": "ISFSC, Bruxelles.",
+        "current": true
+      },
+      {
+        "year": "2025",
+        "title": "Stage — En Esprit",
+        "desc": "Stage de deuxième année : montage vidéo, community management, création de contenu.",
+        "current": false
+      }
     ]
   },
   "projects": [
@@ -56,7 +76,17 @@
         "Miniature"
       ],
       "desc": "Conception de miniatures pensées pour maximiser le taux de clic.",
-      "featured": false
+      "featured": false,
+      "longDesc": "",
+      "images": [
+        "images/miniatures-youtube-1787746152153-0.webp",
+        "images/miniatures-youtube-1787746157861-0.webp",
+        "images/miniatures-youtube-1787746161417-0.webp"
+      ],
+      "videoUrl": "",
+      "audioUrl": "",
+      "link": "",
+      "subProjects": []
     },
     {
       "id": "montage-video-style-youtube",
