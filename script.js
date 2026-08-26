@@ -25,10 +25,25 @@
 
   // the thumbnail image: an explicitly chosen one wins, otherwise the first
   // image of the project, otherwise nothing (the generated CSS pattern shows).
+  // Assets are the unified model (images / videos / audio, each hideable).
+  // Older entries stored images[]/videoUrl/audioUrl separately, so those are
+  // folded in here — both shapes keep working, in the site and in /admin.html.
+  function assetsOf(obj){
+    if (Array.isArray(obj.assets)) return obj.assets;
+    var out = [];
+    (obj.images || []).forEach(function(u){ out.push({ type: 'image', url: u }); });
+    if (obj.videoUrl) out.push({ type: 'video', url: obj.videoUrl });
+    if (obj.audioUrl) out.push({ type: 'audio', url: obj.audioUrl });
+    return out;
+  }
+  function visibleAssets(obj){
+    return assetsOf(obj).filter(function(a){ return a && a.url && !a.hidden; });
+  }
+
   function thumbSrc(p){
     if (p.thumb) return p.thumb;
-    if (p.images && p.images.length) return p.images[0];
-    return '';
+    var firstImg = visibleAssets(p).filter(function(a){ return a.type === 'image'; })[0];
+    return firstImg ? firstImg.url : '';
   }
 
   function cardHTML(p, i){
@@ -79,8 +94,9 @@
   function applyFavori(site, projects){
     var container = document.getElementById('js-favori');
     if (!container) return;
-    var p = projects.filter(function(x){ return x.id === site.favoriProjectId; })[0] || projects[0];
-    if (!p) return;
+    var shown = projects.filter(function(x){ return !x.hidden; });
+    var p = shown.filter(function(x){ return x.id === site.favoriProjectId; })[0] || shown[0];
+    if (!p){ container.closest('.projects-section').style.display = 'none'; return; }
     var thumb = thumbSrc(p);
     container.innerHTML =
       '<div class="thumb' + (thumb ? ' has-img' : '') + '">' +
@@ -142,14 +158,18 @@
   // shared by the main project and each of its sub-projects: gallery of
   // images, then video embed, then audio embed — whichever are present.
   function mediaBlocksHTML(obj){
+    var list = visibleAssets(obj);
+    var imgs = list.filter(function(a){ return a.type === 'image'; });
     var media = '';
-    if (obj.images && obj.images.length){
-      media += '<div class="detail-gallery">' + obj.images.map(function(src){
-        return '<img src="' + src + '" alt="' + obj.title + '" loading="lazy">';
+    if (imgs.length){
+      media += '<div class="detail-gallery">' + imgs.map(function(a){
+        return '<img src="' + a.url + '" alt="' + obj.title + '" loading="lazy" draggable="false">';
       }).join('') + '</div>';
     }
-    if (obj.videoUrl) media += '<div class="detail-embed">' + videoEmbedHTML(obj.videoUrl) + '</div>';
-    if (obj.audioUrl) media += '<div class="detail-audio">' + audioEmbedHTML(obj.audioUrl) + '</div>';
+    list.forEach(function(a){
+      if (a.type === 'video') media += '<div class="detail-embed">' + videoEmbedHTML(a.url) + '</div>';
+      if (a.type === 'audio') media += '<div class="detail-audio">' + audioEmbedHTML(a.url) + '</div>';
+    });
     return media;
   }
 
@@ -217,12 +237,66 @@
         mediaBlocksHTML(p) +
         subProjectsHTML(p.subProjects) +
       '</div>';
+
+    initLightbox(container);
+  }
+
+  // Click any gallery image to view it full-screen. Right-click, dragging and
+  // the long-press "save image" menu are suppressed inside the viewer — this
+  // discourages casual copying, it is NOT real protection (a screenshot or the
+  // browser's dev tools still get the file).
+  function initLightbox(scope){
+    var gallery = scope.querySelectorAll('.detail-gallery img');
+    if (!gallery.length) return;
+
+    var box = document.createElement('div');
+    box.className = 'lightbox';
+    box.setAttribute('aria-hidden', 'true');
+    box.innerHTML =
+      '<button class="lightbox-close" type="button" aria-label="Fermer">✕</button>' +
+      '<button class="lightbox-nav lightbox-prev" type="button" aria-label="Image précédente">‹</button>' +
+      '<img alt="" draggable="false">' +
+      '<button class="lightbox-nav lightbox-next" type="button" aria-label="Image suivante">›</button>';
+    document.body.appendChild(box);
+
+    var imgEl = box.querySelector('img');
+    var srcs = Array.prototype.map.call(gallery, function(im){ return im.getAttribute('src'); });
+    var index = 0;
+
+    function show(i){
+      index = (i + srcs.length) % srcs.length;
+      imgEl.src = srcs[index];
+      var multiple = srcs.length > 1;
+      box.querySelector('.lightbox-prev').style.display = multiple ? '' : 'none';
+      box.querySelector('.lightbox-next').style.display = multiple ? '' : 'none';
+    }
+    function open(i){ show(i); box.classList.add('is-open'); box.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; }
+    function close(){ box.classList.remove('is-open'); box.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
+
+    gallery.forEach(function(im, i){
+      im.style.cursor = 'zoom-in';
+      im.addEventListener('click', function(){ open(i); });
+    });
+
+    box.querySelector('.lightbox-close').addEventListener('click', close);
+    box.querySelector('.lightbox-prev').addEventListener('click', function(e){ e.stopPropagation(); show(index - 1); });
+    box.querySelector('.lightbox-next').addEventListener('click', function(e){ e.stopPropagation(); show(index + 1); });
+    box.addEventListener('click', function(e){ if (e.target === box) close(); });
+    box.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+    box.addEventListener('dragstart', function(e){ e.preventDefault(); });
+    document.addEventListener('keydown', function(e){
+      if (!box.classList.contains('is-open')) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') show(index - 1);
+      if (e.key === 'ArrowRight') show(index + 1);
+    });
   }
 
   function renderGrids(projects){
+    var shown = projects.filter(function(p){ return !p.hidden; });
     document.querySelectorAll('.grid[data-group]').forEach(function(grid){
       var group = grid.dataset.group;
-      var list = group === 'featured' ? projects.filter(function(p){ return p.featured; }) : projects.filter(function(p){ return p.ctx === group; });
+      var list = group === 'featured' ? shown.filter(function(p){ return p.featured; }) : shown.filter(function(p){ return p.ctx === group; });
       grid.innerHTML = list.map(cardHTML).join('');
     });
 

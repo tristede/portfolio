@@ -113,6 +113,22 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
 .hidden{ display:none !important; }
 .small{ font-size:12.5px; color: var(--text-faint); }
 
+.hidden-badge{
+  font-size:10.5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+  color: var(--text-faint); border:1px solid var(--line); border-radius:999px;
+  padding:1px 8px; margin-left:6px; vertical-align:middle;
+}
+.is-hidden-asset{ opacity:0.5; }
+.asset-badge{
+  width:64px; height:44px; flex:none; border-radius:6px; border:1px solid var(--line);
+  background: rgba(5,8,30,0.6); color: var(--accent-sky);
+  display:flex; align-items:center; justify-content:center; font-size:17px;
+}
+.asset-url{
+  font-size:12px; color: var(--text-dim);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 340px;
+}
+
 /* ---------- Visual (WYSIWYG) editing view ---------- */
 .view-switch{
   display:inline-flex; padding:3px; border-radius:999px;
@@ -346,33 +362,41 @@ body.visual-mode .wrap{ max-width: 1400px; }
           <input type="checkbox" id="pf-featured">
           <label for="pf-featured">Mis en avant sur l'accueil</label>
         </div>
+        <div class="check-row">
+          <input type="checkbox" id="pf-hidden">
+          <label for="pf-hidden">Masquer ce projet (invisible sur le site, conservé ici)</label>
+        </div>
 
         <p class="small" style="margin:18px 0 4px;">Ce qui suit est optionnel — affiché uniquement sur la page détail du projet (accessible en cliquant sur sa vignette).</p>
 
         <label for="pf-longdesc">Description longue (page détail — si vide, la description courte est réutilisée)</label>
         <textarea id="pf-longdesc"></textarea>
-        <label for="pf-images">Images</label>
-        <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
-          <input type="file" id="pf-images-upload" accept="image/*" multiple style="flex:1;">
-        </div>
-        <div class="status" id="pf-images-upload-status"></div>
-        <textarea id="pf-images" placeholder="images/mon-projet-1.webp&#10;images/mon-projet-2.webp"></textarea>
-        <p class="small" style="margin:2px 0 0;">Choisis des fichiers ci-dessus : ils sont convertis en WebP et envoyés directement sur GitHub — leur chemin s'ajoute automatiquement ci-dessous. Tu peux aussi coller des URL à la main (une par ligne).</p>
 
-        <label for="pf-thumb">Miniature (image affichée sur la vignette, avant de cliquer)</label>
-        <select id="pf-thumb"></select>
+        <div class="form-box">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h2 style="margin:0; font-size:15px;">Contenus du projet <span class="small" id="pf-assets-count"></span></h2>
+            <div style="display:flex; gap:8px;">
+              <button class="ghost" id="pf-add-image-btn" type="button">+ Image</button>
+              <button class="ghost" id="pf-add-video-btn" type="button">+ Vidéo</button>
+              <button class="ghost" id="pf-add-audio-btn" type="button">+ Audio</button>
+            </div>
+          </div>
+          <p class="small" style="margin:0 0 12px;">Images, vidéos et audio affichés sur la page détail. L'œil masque un contenu sans le supprimer.</p>
+          <input type="file" id="pf-images-upload" accept="image/*" multiple class="hidden">
+          <div class="status" id="pf-images-upload-status"></div>
+          <div id="pf-assets-list"></div>
+        </div>
+
+        <label for="pf-thumb">Miniature (image de la vignette, avant de cliquer)</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <select id="pf-thumb" style="flex:1;"></select>
+          <button class="ghost" id="pf-thumb-upload-btn" type="button" style="white-space:nowrap;">Envoyer une image…</button>
+        </div>
+        <input type="file" id="pf-thumb-upload" accept="image/*" class="hidden">
+        <div class="status" id="pf-thumb-upload-status"></div>
         <div id="pf-thumb-preview" style="margin-top:10px;"></div>
+        <p class="small" style="margin:6px 0 0;">La miniature peut être une image dédiée, qui n'apparaît pas dans les contenus ci-dessus.</p>
 
-        <div class="row">
-          <div>
-            <label for="pf-video">Lien vidéo (YouTube, Vimeo, ou fichier .mp4)</label>
-            <input type="text" id="pf-video" placeholder="https://youtube.com/watch?v=...">
-          </div>
-          <div>
-            <label for="pf-audio">Lien audio (SoundCloud, ou fichier .mp3/.wav)</label>
-            <input type="text" id="pf-audio" placeholder="https://soundcloud.com/...">
-          </div>
-        </div>
         <label for="pf-link">Lien externe (site web à visiter — affiché aussi en aperçu intégré sur la page détail)</label>
         <input type="url" id="pf-link" placeholder="https://...">
 
@@ -407,20 +431,17 @@ body.visual-mode .wrap{ max-width: 1400px; }
             </div>
             <label for="spf-desc">Description</label>
             <textarea id="spf-desc"></textarea>
-            <label for="spf-images">Images</label>
-            <input type="file" id="spf-images-upload" accept="image/*" multiple style="margin-bottom:8px;">
-            <div class="status" id="spf-images-upload-status"></div>
-            <textarea id="spf-images" placeholder="images/sous-projet.webp"></textarea>
-            <div class="row">
-              <div>
-                <label for="spf-video">Lien vidéo</label>
-                <input type="text" id="spf-video" placeholder="https://youtube.com/watch?v=...">
-              </div>
-              <div>
-                <label for="spf-audio">Lien audio</label>
-                <input type="text" id="spf-audio" placeholder="https://soundcloud.com/...">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px;">
+              <strong style="font-size:13.5px;">Contenus <span class="small" id="spf-assets-count"></span></strong>
+              <div style="display:flex; gap:8px;">
+                <button class="ghost" id="spf-add-image-btn" type="button">+ Image</button>
+                <button class="ghost" id="spf-add-video-btn" type="button">+ Vidéo</button>
+                <button class="ghost" id="spf-add-audio-btn" type="button">+ Audio</button>
               </div>
             </div>
+            <input type="file" id="spf-images-upload" accept="image/*" multiple class="hidden">
+            <div class="status" id="spf-images-upload-status"></div>
+            <div id="spf-assets-list"></div>
             <label for="spf-link">Lien externe</label>
             <input type="url" id="spf-link" placeholder="https://...">
             <div style="margin-top:14px; display:flex; gap:10px;">
@@ -601,7 +622,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
       row.className = 'project-item';
       row.innerHTML =
         '<div>' +
-          '<div class="title">' + (p.featured ? '<span class="star">★</span>' : '') + escapeHtml(p.title) + '</div>' +
+          '<div class="title">' + (p.featured ? '<span class="star">★</span>' : '') + escapeHtml(p.title) +
+            (p.hidden ? ' <span class="hidden-badge">masqué</span>' : '') + '</div>' +
           '<div class="meta">' + p.year + ' · ' + (CTX_LABEL[p.ctx]||p.ctx) + ' · ' + (MEDIUM_LABEL[p.medium]||p.medium) + '</div>' +
           '<div class="tags-inline">' + (p.tags||[]).map(function(t){ return '<span>#'+escapeHtml(t)+'</span>'; }).join('') + '</div>' +
         '</div>' +
@@ -685,14 +707,16 @@ body.visual-mode .wrap{ max-width: 1400px; }
     if (index === -1){
       $('subproject-form-title').textContent = 'Ajouter un sous-projet';
       $('spf-title').value = ''; $('spf-medium').value = ''; $('spf-desc').value = '';
-      $('spf-images').value = ''; $('spf-video').value = ''; $('spf-audio').value = ''; $('spf-link').value = '';
+      $('spf-link').value = '';
+      currentSubAssets = [];
     } else {
       var sp = currentSubProjects[index];
       $('subproject-form-title').textContent = 'Modifier le sous-projet';
       $('spf-title').value = sp.title; $('spf-medium').value = sp.medium || ''; $('spf-desc').value = sp.desc || '';
-      $('spf-images').value = (sp.images||[]).join('\n');
-      $('spf-video').value = sp.videoUrl || ''; $('spf-audio').value = sp.audioUrl || ''; $('spf-link').value = sp.link || '';
+      $('spf-link').value = sp.link || '';
+      currentSubAssets = assetsOf(sp);
     }
+    renderSubAssets();
     $('spf-images-upload').value = '';
     setStatus($('spf-images-upload-status'), '', '');
     box.scrollIntoView({ behavior:'smooth', block:'center' });
@@ -705,9 +729,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
       title: title,
       medium: $('spf-medium').value,
       desc: $('spf-desc').value.trim(),
-      images: $('spf-images').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean),
-      videoUrl: $('spf-video').value.trim(),
-      audioUrl: $('spf-audio').value.trim(),
+      assets: currentSubAssets,
       link: $('spf-link').value.trim()
     };
     if (subEditingIndex === -1) currentSubProjects.push(sp);
@@ -719,21 +741,106 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
   // the thumbnail dropdown is populated from whatever is currently listed in
   // the images textarea, so it stays in sync after an upload or a manual edit.
+  // ---- assets: one list per project (and per sub-project), each entry being
+  // { type: 'image'|'video'|'audio', url, hidden }. Older records that stored
+  // images[]/videoUrl/audioUrl separately are folded into this shape on load,
+  // exactly like the public site does. ----
+  var currentAssets = [];
+  var currentSubAssets = [];
+
+  function assetsOf(obj){
+    if (Array.isArray(obj.assets)) return JSON.parse(JSON.stringify(obj.assets));
+    var out = [];
+    (obj.images || []).forEach(function(u){ out.push({ type: 'image', url: u, hidden: false }); });
+    if (obj.videoUrl) out.push({ type: 'video', url: obj.videoUrl, hidden: false });
+    if (obj.audioUrl) out.push({ type: 'audio', url: obj.audioUrl, hidden: false });
+    return out;
+  }
+
+  var ASSET_LABEL = { image: 'Image', video: 'Vidéo', audio: 'Audio' };
+
+  function renderAssetList(listId, countId, assets, afterChange){
+    var list = $(listId);
+    $(countId).textContent = assets.length ? '(' + assets.length + ')' : '';
+    list.innerHTML = '';
+    if (!assets.length){
+      list.innerHTML = '<p class="small" style="margin:0;">Aucun contenu pour l\'instant — utilise les boutons ci-dessus.</p>';
+      return;
+    }
+    assets.forEach(function(a, i){
+      var row = document.createElement('div');
+      row.className = 'project-item' + (a.hidden ? ' is-hidden-asset' : '');
+      row.innerHTML =
+        '<div style="display:flex; align-items:center; gap:12px; min-width:0;">' +
+          (a.type === 'image'
+            ? '<img src="' + escapeHtml(a.url) + '" alt="" style="width:64px; height:44px; object-fit:cover; border-radius:6px; border:1px solid var(--line); flex:none;">'
+            : '<span class="asset-badge">' + (a.type === 'video' ? '▶' : '♪') + '</span>') +
+          '<div style="min-width:0;">' +
+            '<div class="meta">' + ASSET_LABEL[a.type] + (a.hidden ? ' · masqué' : '') + '</div>' +
+            '<div class="asset-url">' + escapeHtml(a.url) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="btns">' +
+          '<button class="ghost" data-act="up" data-i="' + i + '" type="button"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+          '<button class="ghost" data-act="down" data-i="' + i + '" type="button"' + (i === assets.length - 1 ? ' disabled' : '') + '>↓</button>' +
+          '<button class="ghost" data-act="toggle" data-i="' + i + '" type="button" title="' + (a.hidden ? 'Afficher' : 'Masquer') + '">' + (a.hidden ? '🙈' : '👁') + '</button>' +
+          '<button class="danger" data-act="del" data-i="' + i + '" type="button">✕</button>' +
+        '</div>';
+      list.appendChild(row);
+    });
+    list.querySelectorAll('button[data-act]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var i = +b.dataset.i, act = b.dataset.act, tmp;
+        if (act === 'toggle') assets[i].hidden = !assets[i].hidden;
+        else if (act === 'del'){ if (!confirm('Retirer ce contenu du projet ?')) return; assets.splice(i, 1); }
+        else if (act === 'up' && i > 0){ tmp = assets[i-1]; assets[i-1] = assets[i]; assets[i] = tmp; }
+        else if (act === 'down' && i < assets.length - 1){ tmp = assets[i+1]; assets[i+1] = assets[i]; assets[i] = tmp; }
+        if (afterChange) afterChange();
+      });
+    });
+  }
+
+  function renderProjectAssets(){
+    renderAssetList('pf-assets-list', 'pf-assets-count', currentAssets, function(){
+      renderProjectAssets();
+      refreshThumbOptions();
+    });
+  }
+  function renderSubAssets(){
+    renderAssetList('spf-assets-list', 'spf-assets-count', currentSubAssets, renderSubAssets);
+  }
+
+  function promptAsset(type, assets, rerender){
+    var label = type === 'video'
+      ? 'Lien vidéo (YouTube, Vimeo ou fichier .mp4) :'
+      : 'Lien audio (SoundCloud ou fichier .mp3/.wav) :';
+    var url = prompt(label, '');
+    if (!url) return;
+    assets.push({ type: type, url: url.trim(), hidden: false });
+    rerender();
+  }
+
+  // the thumbnail can be any image asset OR a dedicated upload that never
+  // appears in the project's contents — hence the extra "(image dédiée)" entry.
   function refreshThumbOptions(preferred){
     var sel = $('pf-thumb');
     var current = preferred !== undefined ? preferred : sel.value;
-    var imgs = $('pf-images').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
-    sel.innerHTML = '<option value="">Première image (par défaut)</option>' +
+    var imgs = currentAssets.filter(function(a){ return a.type === 'image'; }).map(function(a){ return a.url; });
+    var html = '<option value="">Première image visible (par défaut)</option>' +
       imgs.map(function(src){ return '<option value="' + escapeHtml(src) + '">' + escapeHtml(src) + '</option>'; }).join('');
-    sel.value = (current && imgs.indexOf(current) !== -1) ? current : '';
+    if (current && imgs.indexOf(current) === -1){
+      html += '<option value="' + escapeHtml(current) + '">' + escapeHtml(current) + ' (image dédiée)</option>';
+    }
+    sel.innerHTML = html;
+    sel.value = current || '';
     renderThumbPreview();
   }
 
   function renderThumbPreview(){
     var chosen = $('pf-thumb').value;
     if (!chosen){
-      var imgs = $('pf-images').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
-      chosen = imgs[0] || '';
+      var firstVisible = currentAssets.filter(function(a){ return a.type === 'image' && !a.hidden; })[0];
+      chosen = firstVisible ? firstVisible.url : '';
     }
     var box = $('pf-thumb-preview');
     box.innerHTML = chosen
@@ -750,8 +857,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
       $('pf-title').value = ''; $('pf-year').value = new Date().getFullYear();
       $('pf-ctx').value = 'perso'; $('pf-medium').value = 'graphisme';
       $('pf-tags').value = ''; $('pf-desc').value = ''; $('pf-featured').checked = false;
-      $('pf-longdesc').value = ''; $('pf-images').value = ''; $('pf-video').value = ''; $('pf-audio').value = ''; $('pf-link').value = '';
+      $('pf-hidden').checked = false;
+      $('pf-longdesc').value = ''; $('pf-link').value = '';
       currentSubProjects = [];
+      currentAssets = [];
+      renderProjectAssets();
       refreshThumbOptions('');
     } else {
       var p = state.projects[index];
@@ -760,16 +870,18 @@ body.visual-mode .wrap{ max-width: 1400px; }
       $('pf-ctx').value = p.ctx; $('pf-medium').value = p.medium;
       $('pf-tags').value = (p.tags||[]).join(', '); $('pf-desc').value = p.desc || '';
       $('pf-featured').checked = !!p.featured;
+      $('pf-hidden').checked = !!p.hidden;
       $('pf-longdesc').value = p.longDesc || '';
-      $('pf-images').value = (p.images||[]).join('\n');
-      $('pf-video').value = p.videoUrl || '';
-      $('pf-audio').value = p.audioUrl || '';
       $('pf-link').value = p.link || '';
       currentSubProjects = JSON.parse(JSON.stringify(p.subProjects || []));
+      currentAssets = assetsOf(p);
+      renderProjectAssets();
       refreshThumbOptions(p.thumb || '');
     }
     $('pf-images-upload').value = '';
+    $('pf-thumb-upload').value = '';
     setStatus($('pf-images-upload-status'), '', '');
+    setStatus($('pf-thumb-upload-status'), '', '');
     $('subproject-form-box').classList.add('hidden');
     subEditingIndex = -1;
     renderSubProjectList();
@@ -788,10 +900,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
       tags: $('pf-tags').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean),
       desc: $('pf-desc').value.trim(),
       featured: $('pf-featured').checked,
+      hidden: $('pf-hidden').checked,
       longDesc: $('pf-longdesc').value.trim(),
-      images: $('pf-images').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean),
-      videoUrl: $('pf-video').value.trim(),
-      audioUrl: $('pf-audio').value.trim(),
+      assets: currentAssets,
       link: $('pf-link').value.trim(),
       thumb: $('pf-thumb').value,
       subProjects: currentSubProjects
@@ -1050,7 +1161,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
     renderProjectList();
   });
 
-  function wireImageUploadInput(inputId, textareaId, statusId, idHintFn){
+  // uploads each picked file (converted to WebP) and hands the resulting repo
+  // paths to `onUploaded` — used both for asset lists and the thumbnail slot.
+  function wireImageUploadInput(inputId, statusId, idHintFn, onUploaded){
     $(inputId).addEventListener('change', function(e){
       var files = Array.prototype.slice.call(e.target.files || []);
       if (!files.length) return;
@@ -1060,13 +1173,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
       var i = 0;
       function next(){
         if (i >= files.length){
-          if (uploaded.length){
-            var existing = $(textareaId).value.trim();
-            $(textareaId).value = (existing ? existing + '\n' : '') + uploaded.join('\n');
-            // setting .value by script fires no 'input' event, so the
-            // thumbnail dropdown has to be refreshed explicitly here
-            if (textareaId === 'pf-images') refreshThumbOptions();
-          }
+          if (uploaded.length) onUploaded(uploaded);
           if (uploaded.length === files.length){
             setStatus(statusEl, 'Envoyé ✅ (' + uploaded.length + ' image' + (uploaded.length > 1 ? 's' : '') + ')', 'ok');
           }
@@ -1088,10 +1195,38 @@ body.visual-mode .wrap{ max-width: 1400px; }
       next();
     });
   }
-  wireImageUploadInput('pf-images-upload', 'pf-images', 'pf-images-upload-status', function(){ return $('pf-title').value.trim(); });
-  $('pf-images').addEventListener('input', function(){ refreshThumbOptions(); });
+
+  wireImageUploadInput('pf-images-upload', 'pf-images-upload-status',
+    function(){ return $('pf-title').value.trim(); },
+    function(paths){
+      paths.forEach(function(p){ currentAssets.push({ type: 'image', url: p, hidden: false }); });
+      renderProjectAssets();
+      refreshThumbOptions();
+    });
+
+  wireImageUploadInput('spf-images-upload', 'spf-images-upload-status',
+    function(){ return ($('pf-title').value.trim() || 'projet') + '-' + $('spf-title').value.trim(); },
+    function(paths){
+      paths.forEach(function(p){ currentSubAssets.push({ type: 'image', url: p, hidden: false }); });
+      renderSubAssets();
+    });
+
+  // dedicated thumbnail image: uploaded like any other, but stored only in
+  // `thumb` so it never shows up among the project's visible contents.
+  wireImageUploadInput('pf-thumb-upload', 'pf-thumb-upload-status',
+    function(){ return ($('pf-title').value.trim() || 'projet') + '-miniature'; },
+    function(paths){ refreshThumbOptions(paths[0]); });
+
   $('pf-thumb').addEventListener('change', renderThumbPreview);
-  wireImageUploadInput('spf-images-upload', 'spf-images', 'spf-images-upload-status', function(){ return ($('pf-title').value.trim() || 'projet') + '-' + $('spf-title').value.trim(); });
+  $('pf-thumb-upload-btn').addEventListener('click', function(){ $('pf-thumb-upload').click(); });
+
+  $('pf-add-image-btn').addEventListener('click', function(){ $('pf-images-upload').click(); });
+  $('pf-add-video-btn').addEventListener('click', function(){ promptAsset('video', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); }); });
+  $('pf-add-audio-btn').addEventListener('click', function(){ promptAsset('audio', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); }); });
+
+  $('spf-add-image-btn').addEventListener('click', function(){ $('spf-images-upload').click(); });
+  $('spf-add-video-btn').addEventListener('click', function(){ promptAsset('video', currentSubAssets, renderSubAssets); });
+  $('spf-add-audio-btn').addEventListener('click', function(){ promptAsset('audio', currentSubAssets, renderSubAssets); });
 
   $('add-subproject-btn').addEventListener('click', function(){ openSubProjectForm(-1); });
   $('spf-save-btn').addEventListener('click', saveSubProjectForm);

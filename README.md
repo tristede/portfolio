@@ -165,20 +165,31 @@ au-delà de "Description courte" sont optionnels et n'apparaissent que sur la
 page détail :
 
 - **Description longue** — remplace la description courte sur la page détail.
-- **Images** — **choisis simplement tes fichiers depuis l'admin** : ils sont
-  automatiquement convertis en **WebP** (redimensionnés à 1920px max, qualité
-  85%) puis envoyés directement dans le dossier `images/` du repo GitHub. Leur
-  chemin s'ajoute tout seul dans le champ en dessous. Tu peux aussi coller des
-  URL à la main (une par ligne) si tu préfères.
-- **Lien vidéo** — colle un lien YouTube ou Vimeo (n'importe quel format
-  d'URL), ou un lien direct vers un `.mp4` — la page choisit automatiquement
-  le bon type d'intégration.
-- **Lien audio** — colle un lien **SoundCloud** (lecteur intégré) ou un lien
-  direct vers un fichier `.mp3`/`.wav`.
+- **Contenus du projet** — la liste des médias, alimentée par trois boutons :
+  - **+ Image** : choisis un ou plusieurs fichiers ; ils sont convertis en
+    **WebP** (1920px max, qualité 85%) et envoyés dans `images/` sur GitHub.
+  - **+ Vidéo** : colle un lien YouTube, Vimeo ou un `.mp4`.
+  - **+ Audio** : colle un lien **SoundCloud** ou un fichier `.mp3`/`.wav`.
+
+  Chaque ligne peut être réordonnée (↑ ↓), **masquée sans être supprimée**
+  (l'icône œil) ou retirée (✕). Un contenu masqué reste dans l'admin mais
+  n'apparaît pas sur le site.
+- **Miniature** — l'image de la vignette avant de cliquer. Par défaut c'est la
+  première image visible du projet, mais tu peux en choisir une autre dans la
+  liste, ou **envoyer une image dédiée** qui ne figurera pas dans les contenus.
+- **Masquer ce projet** — retire le projet des grilles et de l'accueil tout en
+  le gardant dans l'admin (utile pour un brouillon).
 - **Lien externe** — le bouton "Visiter le site" pointe vers cette URL, et un
   **aperçu du site est intégré directement dans la page** (iframe). Note que
   certains sites refusent d'être intégrés (protection `X-Frame-Options`) : dans
   ce cas l'aperçu reste vide, et une phrase invite à ouvrir le lien directement.
+
+Sur le site, **cliquer une image l'ouvre en plein écran** (flèches ou ← →  pour
+naviguer, `Échap` ou clic à côté pour fermer). Le clic droit et le glisser y
+sont désactivés — c'est un frein au copier-coller distrait, **pas une vraie
+protection** : une capture d'écran ou les outils du navigateur récupèrent
+toujours le fichier. Pour des visuels réellement sensibles, mieux vaut un
+filigrane ou une version basse définition.
 
 ### Sous-projets
 
