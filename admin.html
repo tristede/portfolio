@@ -970,6 +970,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
         '<div class="btns">' +
           '<button class="ghost" data-act="up" data-i="' + i + '" type="button"' + (i === 0 ? ' disabled' : '') + ' title="Monter">' + ICON.up + '</button>' +
           '<button class="ghost" data-act="down" data-i="' + i + '" type="button"' + (i === assets.length - 1 ? ' disabled' : '') + ' title="Descendre">' + ICON.down + '</button>' +
+          (a.type === 'doc' && !(a.pages && a.pages.length) && /\.pdf($|\?|#)/i.test(a.url || '')
+            ? '<button class="ghost" data-act="convert" data-i="' + i + '" type="button" title="Convertir en pages">PDF</button>' : '') +
           '<button class="ghost" data-act="size" data-i="' + i + '" type="button" title="Taille : ' + (SIZE_TITLE[a.size || 'md']) + '">' + SIZE_LABEL[a.size || 'md'] + '</button>' +
           '<button class="ghost" data-act="toggle" data-i="' + i + '" type="button" title="' + (a.hidden ? 'Afficher' : 'Masquer') + '">' + (a.hidden ? ICON.eyeOff : ICON.eye) + '</button>' +
           '<button class="danger" data-act="del" data-i="' + i + '" type="button" title="Retirer">' + ICON.close + '</button>' +
@@ -979,6 +981,12 @@ body.visual-mode .wrap{ max-width: 1400px; }
     list.querySelectorAll('button[data-act]').forEach(function(b){
       b.addEventListener('click', function(){
         var i = +b.dataset.i, act = b.dataset.act, tmp;
+        if (act === 'convert'){
+          convertExistingPdf(assets[i], $('pf-title').value.trim() || 'document',
+            function(msg, kind){ setStatus($('pf-images-upload-status'), msg, kind); },
+            function(){ if (afterChange) afterChange(); });
+          return;
+        }
         if (act === 'size') assets[i].size = nextSize(assets[i].size);
         else if (act === 'toggle') assets[i].hidden = !assets[i].hidden;
         else if (act === 'del'){ if (!confirm('Retirer ce contenu du projet ?')) return; assets.splice(i, 1); }
@@ -1019,6 +1027,38 @@ body.visual-mode .wrap{ max-width: 1400px; }
     $('doc-upload').click();
   }
   var pendingDocTarget = null;
+
+  // Converts a PDF that is already in the repo (uploaded before the page
+  // conversion existed) without asking for the file again.
+  function convertExistingPdf(asset, hint, say, done){
+    if (!/\.pdf($|\?|#)/i.test(asset.url || '')){
+      say('Ce document n\'est pas un PDF.', 'err');
+      return;
+    }
+    say('Récupération du PDF…');
+    fetch(asset.url, { cache: 'no-store' })
+      .then(function(r){
+        if (!r.ok) throw new Error('PDF introuvable (' + r.status + ')');
+        return r.blob();
+      })
+      .then(function(blob){
+        var file = new File([blob], (asset.url.split('/').pop() || 'document.pdf'), { type: 'application/pdf' });
+        return pdfToPageImages(file, function(n, total){ say('Conversion… page ' + n + '/' + total); });
+      })
+      .then(function(pages){
+        if (!pages.length) throw new Error('Aucune page rendue.');
+        var payload = pages.map(function(p){ return { b64: p.b64, ext: '.webp', dir: 'images/' }; });
+        return uploadImagesBatch(payload, hint, function(d, t, step){
+          say(step === 'commit' ? 'Enregistrement…' : 'Envoi… (' + d + '/' + t + ')');
+        }, 'doc');
+      })
+      .then(function(paths){
+        asset.pages = paths;
+        say('Converti (' + paths.length + ' pages)', 'ok');
+        done();
+      })
+      .catch(function(err){ say('Échec de la conversion : ' + err.message, 'err'); });
+  }
 
   // ---- PDF -> page images -------------------------------------------------
   // Browsers each impose their own PDF viewer chrome (toolbars we can't style
@@ -1986,6 +2026,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
         btns.unshift(edButton(doc, 'starFilled', 'Utiliser comme miniature', false, function(){
           owner.thumb = a.url;
           applyAndRefresh();
+        }));
+      }
+      if (a.type === 'doc' && !(a.pages && a.pages.length) && /\.pdf($|\?|#)/i.test(a.url || '')){
+        btns.unshift(edTextButton(doc, 'PDF', 'Convertir en pages (rendu identique sur tous les navigateurs)', function(){
+          convertExistingPdf(a, hint, function(msg){ $('visual-location').textContent = msg; }, applyAndRefresh);
         }));
       }
       edTools(doc, host, btns);
