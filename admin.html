@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Portfolio Adam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: dark;
+  --bg: #080b30;
+  --bg-soft: #0d1454;
+  --panel: rgba(22,28,92,0.55);
+  --panel-border: rgba(140,160,255,0.18);
+  --text: #ffffff;
+  --text-dim: rgba(255,255,255,0.72);
+  --text-faint: rgba(255,255,255,0.5);
+  --accent: #4650ff;
+  --accent-strong: #5b63ff;
+  --accent-sky: #7fc4ff;
+  --danger: #ff6b6b;
+  --ok: #6bffa0;
+  --line: rgba(140,160,255,0.16);
+  --radius: 12px;
+  --font: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Baloo 2", ui-sans-serif, system-ui, sans-serif;
+}
+*,*::before,*::after{ box-sizing:border-box; }
+body{
+  margin:0; min-height:100vh;
+  background:
+    radial-gradient(ellipse 100% 50% at 50% -10%, rgba(90,100,255,0.2), rgba(0,0,0,0) 60%),
+    linear-gradient(160deg, var(--bg-soft) 0%, var(--bg) 60%, #05071f 100%);
+  color: var(--text); font-family: var(--font); font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+a{ color: var(--accent-sky); }
+.wrap{ max-width: 880px; margin:0 auto; padding: 40px 24px 100px; }
+h1{ font-family: var(--font-display); font-size: clamp(24px,4vw,32px); margin:0 0 6px; }
+h2{ font-family: var(--font-display); font-size: 18px; margin: 0 0 14px; }
+.subtitle{ color: var(--text-dim); margin: 0 0 32px; }
+.panel{
+  background: var(--panel); border: 1px solid var(--panel-border); border-radius: 16px;
+  padding: 24px; margin-bottom: 20px;
+  backdrop-filter: blur(20px) saturate(1.6); -webkit-backdrop-filter: blur(20px) saturate(1.6);
+}
+label{ display:block; font-size:12.5px; font-weight:600; color: var(--text-dim); margin: 14px 0 5px; letter-spacing:0.02em; }
+label:first-child{ margin-top:0; }
+input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="password"], textarea, select{
+  width:100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line);
+  background: rgba(5,8,30,0.5); color: var(--text); font-family: var(--font); font-size:14px;
+}
+textarea{ min-height: 70px; resize: vertical; line-height:1.45; }
+input:focus, textarea:focus, select:focus{ outline: 2px solid var(--accent-sky); outline-offset:1px; }
+.row{ display:flex; gap:14px; flex-wrap:wrap; }
+.row > *{ flex:1; min-width:140px; }
+.check-row{ display:flex; align-items:center; gap:8px; margin-top:14px; }
+.check-row input{ width:auto; }
+.check-row label{ margin:0; }
+
+button{
+  font-family: var(--font-display); font-weight:600; font-size:14px; cursor:pointer;
+  border-radius: 10px; padding: 10px 18px; border: 1px solid var(--line); color: var(--text);
+  background: rgba(255,255,255,0.04); transition: filter .15s ease, transform .1s ease;
+}
+button:hover{ filter: brightness(1.15); }
+button:active{ transform: scale(0.98); }
+button.primary{
+  background: linear-gradient(180deg, var(--accent-strong), var(--accent));
+  border-color: rgba(120,140,255,0.5); box-shadow: 0 8px 20px -10px rgba(70,80,255,0.6);
+}
+button.danger{ border-color: rgba(255,107,107,0.4); color: var(--danger); background: rgba(255,107,107,0.08); }
+button.ghost{ background: transparent; }
+button:disabled{ opacity:0.5; cursor:not-allowed; }
+
+.token-help{ font-size:13px; color: var(--text-dim); line-height:1.6; }
+.token-help code{ background: rgba(255,255,255,0.08); padding:1px 6px; border-radius:5px; font-size:12.5px; }
+.token-help ol{ padding-left: 20px; margin: 10px 0; }
+
+.status{ font-size:13.5px; margin-top:12px; min-height: 18px; }
+.status.ok{ color: var(--ok); }
+.status.err{ color: var(--danger); }
+
+.topbar{ display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom: 28px; }
+.topbar .actions{ display:flex; gap:10px; flex-wrap:wrap; }
+
+.project-item{
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; margin-bottom:8px;
+  background: rgba(5,8,30,0.35);
+}
+.project-item .meta{ font-size:12.5px; color: var(--text-faint); margin-top:2px; }
+.project-item .title{ font-weight:600; }
+.project-item .tags-inline{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+.project-item .tags-inline span{
+  font-size:11px; color: var(--accent-sky); background: rgba(18,22,80,0.6);
+  border:1px solid rgba(127,196,255,0.35); padding:1px 8px; border-radius:999px;
+}
+.project-item .btns{ display:flex; gap:8px; flex-shrink:0; }
+.star{ color: #ffd479; margin-right:6px; }
+
+.form-box{ border-top: 1px dashed var(--line); margin-top:16px; padding-top:16px; }
+.sticky-save{
+  position: sticky; bottom: 16px; display:flex; justify-content:center; margin-top: 24px; z-index: 10;
+}
+.sticky-save-inner{
+  display:flex; align-items:center; gap:14px; background: rgba(10,14,50,0.85);
+  border:1px solid var(--panel-border); border-radius: 999px; padding: 10px 12px 10px 22px;
+  backdrop-filter: blur(20px); box-shadow: 0 20px 50px -20px rgba(0,0,10,0.7);
+}
+.hidden{ display:none !important; }
+.small{ font-size:12.5px; color: var(--text-faint); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="login-screen" class="panel">
+    <h1>Panneau d'édition</h1>
+    <p class="subtitle">Portfolio d'Adam — modifie les textes, le projet favori, les projets mis en avant, et ajoute/supprime des projets, sans toucher au code.</p>
+
+    <label for="token-input">Token d'accès GitHub</label>
+    <input type="password" id="token-input" placeholder="ghp_... ou github_pat_...">
+    <div style="margin-top:10px; display:flex; gap:10px;">
+      <button class="primary" id="login-btn">Se connecter</button>
+    </div>
+    <div class="status" id="login-status"></div>
+
+    <div class="token-help form-box">
+      <strong>Comment obtenir ce token (à faire une seule fois) :</strong>
+      <ol>
+        <li>Va sur <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a> (connecte-toi si besoin).</li>
+        <li><em>Repository access</em> → <strong>Only select repositories</strong> → choisis <code>portfolio</code>.</li>
+        <li><em>Permissions</em> → <strong>Repository permissions</strong> → <strong>Contents</strong> → mets <strong>Read and write</strong>.</li>
+        <li>Clique <strong>Generate token</strong>, copie-le, et colle-le ci-dessus.</li>
+      </ol>
+      <p>Ce token reste uniquement dans <strong>ce navigateur</strong> (stockage local) — il n'est envoyé qu'à l'API GitHub pour enregistrer tes modifications. Ne le colle pas sur un ordinateur public ; tu peux le révoquer à tout moment depuis GitHub.</p>
+    </div>
+  </div>
+
+  <div id="editor-screen" class="hidden">
+    <div class="topbar">
+      <div>
+        <h1 style="margin-bottom:2px;">Panneau d'édition</h1>
+        <p class="small" style="margin:0;">Connecté à <strong id="repo-label"></strong></p>
+      </div>
+      <div class="actions">
+        <a href="https://tristede.github.io/portfolio/" target="_blank" rel="noopener"><button class="ghost" type="button">Voir le site ↗</button></a>
+        <button class="ghost" id="reload-btn" type="button">Recharger depuis GitHub</button>
+        <button class="ghost" id="logout-btn" type="button">Se déconnecter</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Textes du site</h2>
+      <div class="row">
+        <div>
+          <label for="f-role-main">Accroche — partie principale</label>
+          <input type="text" id="f-role-main">
+        </div>
+        <div>
+          <label for="f-role-accent">Accroche — partie colorée</label>
+          <input type="text" id="f-role-accent">
+        </div>
+      </div>
+      <label for="f-bio">Bio (page d'accueil)</label>
+      <textarea id="f-bio"></textarea>
+      <p class="small" style="margin:4px 0 0;">Un retour à la ligne dans le texte devient un vrai saut de ligne affiché.</p>
+
+      <label for="f-about-0">À propos — 1er paragraphe</label>
+      <textarea id="f-about-0"></textarea>
+      <label for="f-about-1">À propos — 2e paragraphe</label>
+      <textarea id="f-about-1"></textarea>
+
+      <div class="row">
+        <div>
+          <label for="f-email">Email de contact</label>
+          <input type="email" id="f-email">
+        </div>
+        <div>
+          <label for="f-linkedin">Lien LinkedIn</label>
+          <input type="url" id="f-linkedin">
+        </div>
+        <div>
+          <label for="f-instagram">Lien Instagram</label>
+          <input type="url" id="f-instagram">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Projet favori</h2>
+      <label for="f-favori">Projet mis en avant en haut de la page d'accueil</label>
+      <select id="f-favori"></select>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h2 style="margin:0;">Projets <span class="small" id="project-count"></span></h2>
+        <button class="primary" id="add-project-btn" type="button">+ Ajouter un projet</button>
+      </div>
+      <p class="small" style="margin:0 0 14px;">★ = mis en avant sur l'accueil (section "Projets mis en avant").</p>
+      <div id="project-list"></div>
+
+      <div class="form-box hidden" id="project-form-box">
+        <h2 id="project-form-title">Ajouter un projet</h2>
+        <div class="row">
+          <div>
+            <label for="pf-title">Titre</label>
+            <input type="text" id="pf-title">
+          </div>
+          <div>
+            <label for="pf-year">Année</label>
+            <input type="number" id="pf-year" value="2025">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="pf-ctx">Catégorie</label>
+            <select id="pf-ctx">
+              <option value="perso">Projets perso</option>
+              <option value="academique">Projets académiques</option>
+              <option value="stage">Stage (sous-section académique)</option>
+            </select>
+          </div>
+          <div>
+            <label for="pf-medium">Médium</label>
+            <select id="pf-medium">
+              <option value="graphisme">Graphisme</option>
+              <option value="video">Vidéo</option>
+              <option value="audio">Audio</option>
+              <option value="web">Site web</option>
+              <option value="social">Réseaux sociaux</option>
+              <option value="event">Événementiel</option>
+              <option value="ecrit">Écrit</option>
+            </select>
+          </div>
+        </div>
+        <label for="pf-tags">Tags (séparés par des virgules)</label>
+        <input type="text" id="pf-tags" placeholder="Graphisme, Affiche">
+        <label for="pf-desc">Description</label>
+        <textarea id="pf-desc"></textarea>
+        <div class="check-row">
+          <input type="checkbox" id="pf-featured">
+          <label for="pf-featured">Mis en avant sur l'accueil</label>
+        </div>
+        <div style="margin-top:16px; display:flex; gap:10px;">
+          <button class="primary" id="pf-save-btn" type="button">Enregistrer ce projet</button>
+          <button class="ghost" id="pf-cancel-btn" type="button">Annuler</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sticky-save">
+      <div class="sticky-save-inner">
+        <span class="small" id="save-hint">Les modifications ci-dessus restent locales tant que tu n'as pas cliqué ici.</span>
+        <button class="primary" id="save-btn" type="button">Enregistrer sur GitHub</button>
+      </div>
+    </div>
+    <div class="status" id="save-status" style="text-align:center;"></div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var REPO_OWNER = 'tristede';
+  var REPO_NAME = 'portfolio';
+  var BRANCH = 'main';
+  var DATA_PATH = 'data.json';
+  var TOKEN_KEY = 'portfolio_admin_pat_v1';
+
+  var state = { site: {}, projects: [] };
+  var currentSha = null;
+  var editingIndex = -1; // -1 = adding new
+
+  function $(id){ return document.getElementById(id); }
+
+  function getToken(){ try { return localStorage.getItem(TOKEN_KEY) || ''; } catch(e){ return ''; } }
+  function setToken(t){ try { localStorage.setItem(TOKEN_KEY, t); } catch(e){} }
+  function clearToken(){ try { localStorage.removeItem(TOKEN_KEY); } catch(e){} }
+
+  function b64ToUtf8(b64){
+    return decodeURIComponent(Array.prototype.map.call(atob(b64), function(c){
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+  }
+  function utf8ToB64(str){
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(_, p1){
+      return String.fromCharCode('0x' + p1);
+    }));
+  }
+
+  function ghRequest(path, options){
+    options = options || {};
+    var token = getToken();
+    var headers = Object.assign({
+      'Authorization': 'Bearer ' + token,
+      'Accept': 'application/vnd.github+json'
+    }, options.headers || {});
+    return fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + path, Object.assign({}, options, { headers: headers }))
+      .then(function(res){
+        if (!res.ok){
+          return res.text().then(function(body){
+            var msg = 'Erreur GitHub (' + res.status + ')';
+            try { var j = JSON.parse(body); if (j.message) msg += ' : ' + j.message; } catch(e){}
+            throw new Error(msg);
+          });
+        }
+        return res.json();
+      });
+  }
+
+  function loadData(){
+    return ghRequest('/contents/' + DATA_PATH + '?ref=' + BRANCH).then(function(file){
+      currentSha = file.sha;
+      return JSON.parse(b64ToUtf8(file.content));
+    });
+  }
+
+  function saveData(data, message){
+    var content = utf8ToB64(JSON.stringify(data, null, 2) + '\n');
+    return ghRequest('/contents/' + DATA_PATH, {
+      method: 'PUT',
+      body: JSON.stringify({ message: message, content: content, sha: currentSha, branch: BRANCH })
+    }).then(function(res){
+      if (res.content && res.content.sha) currentSha = res.content.sha;
+      return res;
+    });
+  }
+
+  function slugify(str){
+    return str.toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'projet';
+  }
+  function uniqueId(base){
+    var id = base, n = 2;
+    var existingIds = state.projects.map(function(p){ return p.id; });
+    while (existingIds.indexOf(id) !== -1 && (editingIndex === -1 || state.projects[editingIndex].id !== id)){
+      id = base + '-' + n; n++;
+    }
+    return id;
+  }
+
+  var CTX_LABEL = { perso: 'Perso', academique: 'Académique', stage: 'Stage' };
+  var MEDIUM_LABEL = { graphisme:'Graphisme', video:'Vidéo', audio:'Audio', web:'Site web', social:'Réseaux sociaux', event:'Événementiel', ecrit:'Écrit' };
+
+  function renderProjectList(){
+    $('project-count').textContent = '(' + state.projects.length + ')';
+    var list = $('project-list');
+    list.innerHTML = '';
+    state.projects.forEach(function(p, i){
+      var row = document.createElement('div');
+      row.className = 'project-item';
+      row.innerHTML =
+        '<div>' +
+          '<div class="title">' + (p.featured ? '<span class="star">★</span>' : '') + escapeHtml(p.title) + '</div>' +
+          '<div class="meta">' + p.year + ' · ' + (CTX_LABEL[p.ctx]||p.ctx) + ' · ' + (MEDIUM_LABEL[p.medium]||p.medium) + '</div>' +
+          '<div class="tags-inline">' + (p.tags||[]).map(function(t){ return '<span>#'+escapeHtml(t)+'</span>'; }).join('') + '</div>' +
+        '</div>' +
+        '<div class="btns">' +
+          '<button class="ghost" data-action="edit" data-i="'+i+'" type="button">Modifier</button>' +
+          '<button class="danger" data-action="delete" data-i="'+i+'" type="button">Supprimer</button>' +
+        '</div>';
+      list.appendChild(row);
+    });
+    list.querySelectorAll('button[data-action="edit"]').forEach(function(b){
+      b.addEventListener('click', function(){ openProjectForm(+b.dataset.i); });
+    });
+    list.querySelectorAll('button[data-action="delete"]').forEach(function(b){
+      b.addEventListener('click', function(){ deleteProject(+b.dataset.i); });
+    });
+    renderFavoriSelect();
+  }
+
+  function renderFavoriSelect(){
+    var sel = $('f-favori');
+    var current = sel.value || state.site.favoriProjectId;
+    sel.innerHTML = state.projects.map(function(p){
+      return '<option value="'+p.id+'">' + escapeHtml(p.title) + ' (' + p.year + ')</option>';
+    }).join('');
+    if (current && state.projects.some(function(p){ return p.id === current; })) sel.value = current;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  function openProjectForm(index){
+    editingIndex = index;
+    var box = $('project-form-box');
+    box.classList.remove('hidden');
+    if (index === -1){
+      $('project-form-title').textContent = 'Ajouter un projet';
+      $('pf-title').value = ''; $('pf-year').value = new Date().getFullYear();
+      $('pf-ctx').value = 'perso'; $('pf-medium').value = 'graphisme';
+      $('pf-tags').value = ''; $('pf-desc').value = ''; $('pf-featured').checked = false;
+    } else {
+      var p = state.projects[index];
+      $('project-form-title').textContent = 'Modifier le projet';
+      $('pf-title').value = p.title; $('pf-year').value = p.year;
+      $('pf-ctx').value = p.ctx; $('pf-medium').value = p.medium;
+      $('pf-tags').value = (p.tags||[]).join(', '); $('pf-desc').value = p.desc || '';
+      $('pf-featured').checked = !!p.featured;
+    }
+    box.scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+
+  function saveProjectForm(){
+    var title = $('pf-title').value.trim();
+    if (!title){ alert('Le titre est obligatoire.'); return; }
+    var p = {
+      id: editingIndex === -1 ? uniqueId(slugify(title)) : state.projects[editingIndex].id,
+      title: title,
+      year: parseInt($('pf-year').value, 10) || new Date().getFullYear(),
+      ctx: $('pf-ctx').value,
+      medium: $('pf-medium').value,
+      tags: $('pf-tags').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean),
+      desc: $('pf-desc').value.trim(),
+      featured: $('pf-featured').checked
+    };
+    if (editingIndex === -1) state.projects.push(p);
+    else state.projects[editingIndex] = p;
+    $('project-form-box').classList.add('hidden');
+    editingIndex = -1;
+    renderProjectList();
+  }
+
+  function deleteProject(index){
+    var p = state.projects[index];
+    if (!confirm('Supprimer "' + p.title + '" ? (à confirmer avec "Enregistrer sur GitHub" ensuite)')) return;
+    state.projects.splice(index, 1);
+    renderProjectList();
+  }
+
+  function fillFormsFromState(){
+    var s = state.site;
+    $('f-role-main').value = s.roleMain || '';
+    $('f-role-accent').value = s.roleAccent || '';
+    $('f-bio').value = s.bio || '';
+    $('f-about-0').value = (s.aboutParagraphs && s.aboutParagraphs[0]) || '';
+    $('f-about-1').value = (s.aboutParagraphs && s.aboutParagraphs[1]) || '';
+    $('f-email').value = s.contactEmail || '';
+    $('f-linkedin').value = s.linkedin || '';
+    $('f-instagram').value = s.instagram || '';
+    renderProjectList();
+  }
+
+  function collectStateFromForms(){
+    state.site.roleMain = $('f-role-main').value.trim();
+    state.site.roleAccent = $('f-role-accent').value.trim();
+    state.site.bio = $('f-bio').value;
+    state.site.aboutParagraphs = [ $('f-about-0').value, $('f-about-1').value ];
+    state.site.contactEmail = $('f-email').value.trim();
+    state.site.linkedin = $('f-linkedin').value.trim();
+    state.site.instagram = $('f-instagram').value.trim();
+    state.site.favoriProjectId = $('f-favori').value;
+  }
+
+  function setStatus(el, text, kind){
+    el.textContent = text;
+    el.className = 'status' + (kind ? ' ' + kind : '');
+  }
+
+  function showEditor(){
+    $('login-screen').classList.add('hidden');
+    $('editor-screen').classList.remove('hidden');
+    $('repo-label').textContent = REPO_OWNER + '/' + REPO_NAME;
+  }
+  function showLogin(){
+    $('editor-screen').classList.add('hidden');
+    $('login-screen').classList.remove('hidden');
+  }
+
+  function connectAndLoad(token){
+    setToken(token);
+    setStatus($('login-status'), 'Connexion…', '');
+    return loadData().then(function(data){
+      state.site = data.site || {};
+      state.projects = data.projects || [];
+      fillFormsFromState();
+      showEditor();
+    }).catch(function(err){
+      setStatus($('login-status'), err.message || 'Échec de connexion — vérifie le token.', 'err');
+    });
+  }
+
+  $('login-btn').addEventListener('click', function(){
+    var token = $('token-input').value.trim();
+    if (!token){ setStatus($('login-status'), 'Colle ton token GitHub d\'abord.', 'err'); return; }
+    connectAndLoad(token);
+  });
+  $('token-input').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('login-btn').click(); });
+
+  $('logout-btn').addEventListener('click', function(){
+    clearToken();
+    showLogin();
+    $('token-input').value = '';
+    setStatus($('login-status'), '', '');
+  });
+
+  $('reload-btn').addEventListener('click', function(){
+    setStatus($('save-status'), 'Rechargement…', '');
+    loadData().then(function(data){
+      state.site = data.site || {};
+      state.projects = data.projects || [];
+      fillFormsFromState();
+      setStatus($('save-status'), 'Recharge depuis GitHub — les modifications non enregistrées ont été perdues.', 'ok');
+    }).catch(function(err){
+      setStatus($('save-status'), err.message, 'err');
+    });
+  });
+
+  $('add-project-btn').addEventListener('click', function(){ openProjectForm(-1); });
+  $('pf-save-btn').addEventListener('click', saveProjectForm);
+  $('pf-cancel-btn').addEventListener('click', function(){
+    $('project-form-box').classList.add('hidden');
+    editingIndex = -1;
+  });
+
+  $('save-btn').addEventListener('click', function(){
+    collectStateFromForms();
+    var btn = $('save-btn');
+    btn.disabled = true;
+    setStatus($('save-status'), 'Enregistrement sur GitHub…', '');
+    saveData({ site: state.site, projects: state.projects }, 'Mise à jour du contenu depuis /admin.html')
+      .then(function(){
+        setStatus($('save-status'), 'Enregistré ✅ — le site se mettra à jour dans 30 à 60 secondes.', 'ok');
+      })
+      .catch(function(err){
+        setStatus($('save-status'), err.message || 'Échec de l\'enregistrement.', 'err');
+      })
+      .then(function(){ btn.disabled = false; });
+  });
+
+  // auto-connect if a token is already stored
+  var existing = getToken();
+  if (existing){
+    $('token-input').value = existing;
+    connectAndLoad(existing);
+  }
+})();
+</script>
+</body>
+</html>

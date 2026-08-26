@@ -5,25 +5,65 @@ Mise en page et glassmorphism inspirés de [bastienokonski.fr](https://bastienok
 (nav flottante en verre, cartes translucides), habillés avec l'identité de ton
 Adobe Portfolio : palette bleu nuit, police manuscrite.
 
+**Tout le contenu (textes, projets, projet favori) se modifie depuis
+[`/admin.html`](admin.html), sans toucher au code — voir la section
+"Éditer le contenu" plus bas.**
+
 ## Structure des pages
 
 - **`index.html`** — l'accueil : titre, bio, 2 boutons, un projet favori mis en
   avant, la sélection "Projets mis en avant" (3 projets), à propos, parcours, contact.
   **Les grilles complètes de projets ne sont plus sur cette page.**
-- **`projets-perso.html`** — les 8 projets perso, accessible via le bouton
+- **`projets-perso.html`** — les projets perso, accessible via le bouton
   "Projets perso" de l'accueil.
-- **`projets-academiques.html`** — les 6 projets académiques, avec **le stage
-  "En Esprit" en sous-section juste en dessous** (6 réalisations) — pas de page
-  ni de bouton séparé pour le stage.
-- **`style.css`** — tout le design, partagé par les 3 pages.
-- **`script.js`** — les données des 20 projets + le rendu des grilles + les icônes,
-  partagé par les 3 pages. Chaque page ne fait que déclarer `data-group="perso"`
-  (ou `academique`, `stage`, `featured`) sur son conteneur — le script filtre
-  automatiquement.
+- **`projets-academiques.html`** — les projets académiques, avec **le stage
+  "En Esprit" en sous-section juste en dessous** — pas de page ni de bouton
+  séparé pour le stage.
+- **`admin.html`** — le panneau d'édition (voir plus bas).
+- **`data.json`** — **tout le contenu du site** : textes (bio, à propos, accroche,
+  contact, réseaux sociaux), projet favori, et la liste des projets. C'est ce
+  fichier que `/admin.html` lit et modifie — tu peux aussi l'éditer à la main si
+  tu préfères (c'est du JSON standard).
+- **`style.css`** — tout le design, partagé par toutes les pages.
+- **`script.js`** — charge `data.json` et se charge de tout le rendu (grilles,
+  icônes, projet favori, textes, effet de décryptage), partagé par toutes les
+  pages. Chaque page ne fait que déclarer `data-group="perso"` (ou `academique`,
+  `stage`, `featured`) sur son conteneur — le script filtre automatiquement.
 
 Le header (nav flottante) et le footer (contact) sont dupliqués tels quels dans
 chaque page — pas de composants partagés, juste du HTML copié-collé volontairement
 pour rester sans build tool.
+
+## Éditer le contenu (sans coder)
+
+Va sur **`https://tristede.github.io/portfolio/admin.html`** — c'est le panneau
+d'édition. Il te permet de :
+
+- modifier les textes (bio, "à propos", l'accroche du haut, l'email de contact,
+  les liens LinkedIn/Instagram) ;
+- choisir le **projet favori** (celui mis en avant tout en haut de l'accueil) ;
+- ajouter, modifier ou supprimer des **projets** (titre, année, catégorie —
+  perso / académique / stage —, médium — graphisme, vidéo, audio, **site web**,
+  réseaux sociaux, événementiel, écrit —, tags, description, et s'il est "mis
+  en avant" sur l'accueil).
+
+Comme le site est hébergé sur GitHub Pages (donc statique, sans serveur), le
+panneau enregistre tes modifications directement sur GitHub via un **token
+d'accès personnel** — pas ton mot de passe de compte, GitHub ne permet plus
+l'accès à son API par mot de passe. La première fois, la page t'explique en
+3 étapes comment générer ce token (2 minutes, à faire une seule fois) :
+
+1. [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
+2. *Repository access* → *Only select repositories* → `portfolio`
+3. *Permissions* → *Contents* → *Read and write*, puis *Generate token*
+
+Colle le token dans `/admin.html` : il reste uniquement dans ton navigateur
+(stockage local), et n'est envoyé qu'à l'API GitHub pour enregistrer tes
+changements. Une fois enregistré, le site public se met à jour tout seul en
+30 à 60 secondes (le temps que GitHub Pages republie).
+
+Ne colle pas ce token sur un ordinateur public ; tu peux le révoquer à tout
+moment depuis GitHub si besoin.
 
 ## Polices — une substitution à connaître
 
@@ -46,9 +86,9 @@ répercutée sur les 4 pages automatiquement.
 
 ## À compléter avant mise en ligne
 
-- [ ] **Email de contact** : remplacer `PLACEHOLDER@email.com` (présent dans le header
-      de chaque page et dans le footer) — utilise un email perso plutôt que ton adresse
-      étudiante ISFSC si possible.
+- [ ] **Email de contact** : remplacer `PLACEHOLDER@email.com` — modifiable depuis
+      `/admin.html` (section "Textes du site") — utilise un email perso plutôt que
+      ton adresse étudiante ISFSC si possible.
 - [ ] **Liens des projets** : les cartes n'ont pas de lien cliquable vers le détail du
       projet (Drive, Behance, YouTube...) — dis-moi si tu veux que j'ajoute ça, projet
       par projet.
@@ -57,19 +97,16 @@ répercutée sur les 4 pages automatiquement.
 - [ ] **CV** : le bouton "CV" pointe vers `cv.pdf` (présent sur les 4 pages) — dépose
       ton CV à jour dans le dossier sous ce nom exact, sinon le bouton mènera à une
       page 404.
-- [ ] **Projet favori** : c'est actuellement "Ilonka Club" — change-le dans `index.html`
-      si un autre projet te représente mieux.
-- [ ] **Projets mis en avant** : la sélection de 3 (Community management: easypermis.be,
-      Réalisation d'un épisode de podcast, Reel/TikTok) est marquée par `featured: true`
-      dans `script.js` — change les projets si besoin (un seul fichier à éditer, se
-      répercute partout).
-- [ ] Les 20 descriptions de projets sont des reformulations courtes à partir des
-      seuls titres — à réécrire avec de vrais détails (contexte, outils, résultat).
+- [ ] **Projet favori** et **projets mis en avant** : modifiables directement depuis
+      `/admin.html`, plus besoin de toucher au code.
+- [ ] Les descriptions de projets sont des reformulations courtes à partir des
+      seuls titres — à réécrire avec de vrais détails (contexte, outils, résultat),
+      également depuis `/admin.html`.
 
 ## Ajouter une vraie image à un projet
 
-Dans `script.js`, cherche le tableau `projects` et ajoute une clé `img` à un projet,
-par exemple :
+Dans `data.json`, ajoute une clé `img` à un projet (l'admin ne gère pas encore
+l'upload d'images, donc ça se fait à la main pour l'instant) :
 
 ```js
 { title: "Ilonka Club", year: 2025, ctx: "perso", medium: "graphisme",
