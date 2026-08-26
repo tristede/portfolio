@@ -294,16 +294,45 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
 .detail-tags .tag{ font-size: 12px; }
 .detail-desc{ font-size: 16px; line-height:1.7; color: var(--text-dim); max-width: 62ch; margin-bottom: 28px; white-space: pre-line; }
 
+/* ---------- Photos "collées au mur" (masking tape, sans cadre polaroid) ----------
+   Inspiré du traitement polaroid d'oasisforest.be, mais on ne garde que le
+   ruban : pas de cadre blanc, l'image est posée directement sur le fond. */
 .detail-gallery{
-  display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;
-  margin-top: 28px;
+  display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 42px 28px;
+  margin-top: 44px;
 }
-.detail-gallery img{
-  width:100%; height:100%; object-fit:cover; border-radius: var(--radius-md);
-  border: 1px solid var(--card-border); aspect-ratio: 4/3;
-  transition: transform .2s ease, border-color .2s ease;
+.photo{
+  position: relative; margin: 0;
+  transition: transform .25s ease, filter .25s ease;
 }
-.detail-gallery img:hover{ transform: scale(1.015); border-color: var(--accent-sky); }
+/* four tape variants + slight rotations so no two photos look stamped alike */
+.photo::before{
+  content: ""; position: absolute; z-index: 2;
+  top: -19px; left: 50%;
+  width: 156px; height: 38px; margin-left: -78px;
+  background: url('images/tape/tape-1.webp') center/100% 100% no-repeat;
+  opacity: 0.94;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+  pointer-events: none;
+}
+.photo-0{ transform: rotate(-1.4deg); }
+.photo-1{ transform: rotate(1.1deg); }
+.photo-2{ transform: rotate(0.7deg); }
+.photo-3{ transform: rotate(-0.9deg); }
+.photo-1::before{ background-image: url('images/tape/tape-2.webp'); transform: rotate(4deg); }
+.photo-2::before{ background-image: url('images/tape/tape-3.webp'); transform: rotate(-6deg); left: 38%; }
+.photo-3::before{ background-image: url('images/tape/tape-4.webp'); transform: rotate(3deg); left: 60%; }
+
+.photo img{
+  width:100%; height:100%; object-fit:cover; aspect-ratio: 4/3;
+  border-radius: 2px;
+  box-shadow: 0 18px 34px -14px rgba(0,0,6,0.8), 0 2px 6px rgba(0,0,6,0.4);
+  display:block;
+}
+/* only photos straighten on hover; videos must stay put under the cursor */
+.detail-gallery .photo:hover{ transform: rotate(0deg) scale(1.02); z-index: 3; }
+.detail-gallery .photo{ cursor: zoom-in; }
 
 /* ---------- Lightbox (full-screen image viewer) ---------- */
 .lightbox{
@@ -336,11 +365,16 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
   .lightbox-close, .lightbox-nav{ width:38px; height:38px; }
   .lightbox-close svg, .lightbox-nav svg{ width:17px; height:17px; }
 }
-.detail-embed{ margin-top: 28px; }
+/* videos get the same taped treatment, minus the zoom cursor and the hover
+   straighten (an iframe you're about to click shouldn't move under the mouse) */
+.detail-embed{ margin-top: 46px; }
 .detail-embed iframe, .detail-embed video{
-  width:100%; aspect-ratio: 16/9; border-radius: var(--radius-md);
-  border: 1px solid var(--card-border); background: #000;
+  width:100%; aspect-ratio: 16/9; border-radius: 2px;
+  border: none; background: #000;
+  box-shadow: 0 18px 34px -14px rgba(0,0,6,0.8), 0 2px 6px rgba(0,0,6,0.4);
+  display:block;
 }
+.detail-embed.photo{ cursor: default; }
 .detail-audio{ margin-top: 28px; }
 .detail-audio audio{ width:100%; }
 .detail-audio iframe{ width:100%; height:166px; border:none; border-radius: var(--radius-md); }

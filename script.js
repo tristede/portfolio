@@ -184,12 +184,18 @@
     var imgs = list.filter(function(a){ return a.type === 'image'; });
     var media = '';
     if (imgs.length){
-      media += '<div class="detail-gallery">' + imgs.map(function(a){
-        return '<img src="' + a.url + '" alt="' + obj.title + '" loading="lazy" draggable="false"' + attrs(a) + '>';
+      // each photo is its own "taped to the wall" figure — the wrapper also
+      // gives the admin editor a host for its per-asset controls.
+      media += '<div class="detail-gallery">' + imgs.map(function(a, n){
+        return '<figure class="photo photo-' + (n % 4) + '"' + attrs(a) + '>' +
+          '<img src="' + a.url + '" alt="' + obj.title + '" loading="lazy" draggable="false">' +
+        '</figure>';
       }).join('') + '</div>';
     }
-    list.forEach(function(a){
-      if (a.type === 'video') media += '<div class="detail-embed"' + attrs(a) + '>' + videoEmbedHTML(a.url) + '</div>';
+    list.forEach(function(a, n){
+      if (a.type === 'video'){
+        media += '<div class="detail-embed photo photo-' + (n % 4) + '"' + attrs(a) + '>' + videoEmbedHTML(a.url) + '</div>';
+      }
       if (a.type === 'audio') media += '<div class="detail-audio"' + attrs(a) + '>' + audioEmbedHTML(a.url) + '</div>';
     });
     return media;

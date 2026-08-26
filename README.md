@@ -203,6 +203,20 @@ protection** : une capture d'écran ou les outils du navigateur récupèrent
 toujours le fichier. Pour des visuels réellement sensibles, mieux vaut un
 filigrane ou une version basse définition.
 
+### Rendu « photos collées au mur »
+
+Images et vidéos sont affichées comme des tirages scotchés sur le fond : pas de
+cadre, une légère rotation, une ombre portée, et un vrai **ruban de masking
+tape** en haut. Le principe vient du traitement polaroid d'oasisforest.be, dont
+on ne garde que le scotch (pas le liseré blanc).
+
+Les rubans sont dans `images/tape/` (`tape-1` à `tape-4.webp`, ~17 Ko chacun,
+découpés depuis un pack de textures et redimensionnés pour le web). Quatre
+variantes tournent automatiquement d'une photo à l'autre, avec des rotations et
+des positions différentes, pour qu'aucune ne paraisse dupliquée. Pour en changer
+ou en ajouter : dépose un PNG/WebP détouré dans ce dossier et modifie les règles
+`.photo::before` / `.photo-1::before`… dans `style.css`.
+
 ### Sous-projets
 
 Un projet peut contenir des **sous-projets** — des sections affichées dans sa
