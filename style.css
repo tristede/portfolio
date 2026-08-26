@@ -360,6 +360,16 @@ footer{ border-top: 1px solid var(--line); padding: 92px 0 40px; position:relati
   font-size: 12px; color: var(--text-faint);
   padding-top: 26px; border-top: 1px solid var(--line);
 }
+.foot-left{ display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+/* discreet — this is a way in for Adam, not a call to action for visitors */
+.admin-link{
+  display:flex; align-items:center; justify-content:center;
+  width:26px; height:26px; border-radius:50%;
+  color: var(--text-faint); opacity:0.4;
+  transition: opacity .2s ease, color .2s ease;
+  flex:none;
+}
+.admin-link:hover{ opacity:1; color: var(--accent-sky); }
 
 @media (max-width: 860px){
   .nav-cards{ grid-template-columns: 1fr; }
