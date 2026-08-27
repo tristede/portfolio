@@ -990,6 +990,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
           (a.type === 'doc' && !(a.pages && a.pages.length) && /\.pdf($|\?|#)/i.test(a.url || '')
             ? '<button class="ghost" data-act="convert" data-i="' + i + '" type="button" title="Convertir en pages">PDF</button>' : '') +
           '<button class="ghost" data-act="size" data-i="' + i + '" type="button" title="Taille : ' + (SIZE_TITLE[a.size || 'md']) + '">' + SIZE_LABEL[a.size || 'md'] + '</button>' +
+          '<button class="ghost" data-act="url" data-i="' + i + '" type="button" title="Changer l\'adresse du contenu">' + ICON.link + '</button>' +
           '<button class="ghost" data-act="toggle" data-i="' + i + '" type="button" title="' + (a.hidden ? 'Afficher' : 'Masquer') + '">' + (a.hidden ? ICON.eyeOff : ICON.eye) + '</button>' +
           '<button class="danger" data-act="del" data-i="' + i + '" type="button" title="Retirer">' + ICON.close + '</button>' +
         '</div>';
@@ -1011,7 +1012,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
             function(){ if (afterChange) afterChange(); });
           return;
         }
-        if (act === 'size') assets[i].size = nextSize(assets[i].size);
+        if (act === 'url'){ if (!editAssetUrl(assets[i])) return; }
+        else if (act === 'size') assets[i].size = nextSize(assets[i].size);
         else if (act === 'toggle') assets[i].hidden = !assets[i].hidden;
         else if (act === 'del'){ if (!confirm('Retirer ce contenu du projet ?')) return; assets.splice(i, 1); }
         else if (act === 'up' && i > 0){ tmp = assets[i-1]; assets[i-1] = assets[i]; assets[i] = tmp; }
@@ -2058,6 +2060,28 @@ body.visual-mode .wrap{ max-width: 1400px; }
     return owner.assets;
   }
 
+  // Changer l'adresse d'un contenu en ligne — vidéo, son, site, document —
+  // sans devoir le retirer puis le remettre. Partagé par les deux vues.
+  // Renvoie true si quelque chose a change.
+  function editAssetUrl(a){
+    var v = prompt('Adresse du contenu (colle un lien ou le bloc <iframe> fourni) :', a.url || '');
+    if (v === null) return false;
+    v = v.trim();
+    // on colle souvent le bloc <iframe …> tout fait plutôt que l'adresse seule
+    var embedded = v.match(/<iframe[^>]+src=["']([^"']+)["']/i);
+    if (embedded) v = embedded[1];
+    if (!v){ alert('Une adresse est nécessaire — pour retirer le contenu, utilise le bouton supprimer.'); return false; }
+    if (v === a.url) return false;
+    // les pages d'un PDF converti appartiennent à l'ANCIEN fichier : les garder
+    // afficherait l'ancien document sous la nouvelle adresse
+    if (a.pages && a.pages.length){
+      delete a.pages;
+      alert('Adresse remplacée. Les pages du PDF précédent ont été retirées — reconvertis avec le bouton « PDF » si le nouveau document en est un.');
+    }
+    a.url = v;
+    return true;
+  }
+
   var pendingUpload = null;
   function visualAddImage(owner, hint){
     pendingUpload = { owner: owner, hint: hint };
@@ -2110,6 +2134,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
         edButton(doc, a.hidden ? 'eyeOff' : 'eye', a.hidden ? 'Afficher sur le site' : 'Masquer du site', false, function(){
           a.hidden = !a.hidden;
           applyAndRefresh();
+        }),
+        edButton(doc, 'link', 'Changer l\'adresse du contenu', false, function(){
+          if (editAssetUrl(a)) applyAndRefresh();
         }),
         edButton(doc, 'close', 'Retirer ce contenu', true, function(){
           if (!confirm('Retirer ce contenu du projet ?')) return;
