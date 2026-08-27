@@ -531,6 +531,50 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
   font-size: 12.5px; font-weight: 600; color: var(--text-dim);
   font-variant-numeric: tabular-nums; min-width: 62px; text-align: center;
 }
+/* =====================================================================
+   LE MUR — une seule règle de disposition pour tous les contenus.
+   Chaque contenu est une tuile dont la LARGEUR vient de sa taille S/M/L, et
+   les tuiles se rangent côte à côte jusqu'à manquer de place. Avant, seules
+   les photos avaient une largeur : tout le reste s'étalait sur 100 % et
+   s'empilait donc en colonne, S/M/L n'ayant aucun effet visible.
+   Les iframes ont besoin d'une hauteur en plus — rien dans leur contenu ne
+   peut la donner, il vient d'un autre domaine.
+   ===================================================================== */
+.detail-gallery > *{ flex: 0 0 auto; margin-left: 0; margin-right: 0; }
+
+/* document paginé (PDF converti) : la largeur commande, pas la hauteur d'écran,
+   sinon une page haute imposerait sa taille à toute la rangée */
+.detail-gallery > .detail-docwrap.size-sm{ width: min(240px, 100%); }
+.detail-gallery > .detail-docwrap.size-md{ width: min(340px, 100%); }
+.detail-gallery > .detail-docwrap.size-lg{ width: min(520px, 100%); }
+.detail-gallery > .detail-docwrap .detail-doc{ margin-top: 0; }
+.detail-gallery > .detail-docwrap .doc-viewer{ max-width: 100%; }
+.detail-gallery > .detail-docwrap .doc-stage{ min-height: 0; max-height: none; }
+.detail-gallery > .detail-docwrap .doc-stage img{ width: 100%; max-height: none; }
+
+/* document en ligne (Google Docs, Office, PDF non converti) : une iframe */
+.detail-gallery > .detail-docwrap.size-sm .detail-doc iframe{ height: 420px; }
+.detail-gallery > .detail-docwrap.size-md .detail-doc iframe{ height: 560px; }
+.detail-gallery > .detail-docwrap.size-lg .detail-doc iframe{ height: 720px; }
+
+/* vidéo */
+.detail-gallery > .detail-embed.size-sm{ width: min(280px, 100%); max-width: none; }
+.detail-gallery > .detail-embed.size-md{ width: min(420px, 100%); max-width: none; }
+.detail-gallery > .detail-embed.size-lg{ width: min(620px, 100%); max-width: none; }
+
+/* son */
+.detail-gallery > .detail-audio.size-sm{ width: min(300px, 100%); max-width: none; }
+.detail-gallery > .detail-audio.size-md{ width: min(420px, 100%); max-width: none; }
+.detail-gallery > .detail-audio.size-lg{ width: min(560px, 100%); max-width: none; }
+
+/* aperçu d'un site */
+.detail-gallery > .detail-webwrap.size-sm{ width: min(320px, 100%); }
+.detail-gallery > .detail-webwrap.size-md{ width: min(480px, 100%); }
+.detail-gallery > .detail-webwrap.size-lg{ width: min(700px, 100%); }
+.detail-gallery > .detail-webwrap .detail-site-embed{ max-width: 100%; margin: 0; }
+.detail-gallery > .detail-webwrap.size-sm iframe{ height: 260px; }
+.detail-gallery > .detail-webwrap.size-md iframe{ height: 380px; }
+.detail-gallery > .detail-webwrap.size-lg iframe{ height: 520px; }
 /* borderless: no frame and no white plate — the viewer sits straight on the
    page background */
 /* Le cadre arrondi était le dernier reste de bordure côté site : supprimé, le

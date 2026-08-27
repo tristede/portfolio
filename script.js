@@ -211,41 +211,41 @@
       return '<' + tag + ' class="asset-caption' + (text ? '' : ' is-empty') + '" data-asset-caption>' +
         text + '</' + tag + '>';
     }
-    // Les contenus sortent DANS L'ORDRE de la liste. Les images qui se suivent
-    // sont regroupées dans une même galerie — c'est ce qui fait le mur de
-    // tirages — mais un document, une vidéo ou un son intercalé coupe la série
-    // et reste à sa place. Auparavant toutes les images passaient d'abord, en
-    // bloc : déplacer un document parmi elles ne changeait rien à l'écran, quoi
-    // qu'on fasse dans l'éditeur.
-    var media = '';
-    var run = [];
-    var photoN = 0;   // continue d'une galerie à l'autre : scotch et inclinaison restent variés
+    var photoN = 0;   // fait varier scotch et inclinaison d'une tuile à l'autre
 
-    function flushRun(){
-      if (!run.length) return;
+    // Un seul mur, une seule règle : quel que soit son type, un contenu est une
+    // tuile dont la LARGEUR vient de sa taille S/M/L. Les tuiles se rangent
+    // côte à côte et passent à la ligne quand la place manque. Auparavant seules
+    // les photos suivaient cette règle ; tout le reste s'empilait en colonne,
+    // et S/M/L n'avait aucun effet sur un document en ligne.
+    function wallItemHTML(a){
+      var n = photoN++ % 4;
+      if (a.type === 'doc'){
+        return '<div class="detail-docwrap' + sizeClass(a) + '"' + attrs(a) + '>' +
+          docEmbedHTML(a.url, a.pages) + captionHTML(a) + '</div>';
+      }
+      if (a.type === 'video'){
+        return '<div class="detail-embed photo photo-' + n + sizeClass(a) + '"' + attrs(a) + '>' +
+          videoEmbedHTML(a.url) + captionHTML(a) + '</div>';
+      }
+      if (a.type === 'audio'){
+        return '<div class="detail-audio' + sizeClass(a) + '"' + attrs(a) + '>' +
+          audioEmbedHTML(a.url) + captionHTML(a) + '</div>';
+      }
+      if (a.type === 'web'){
+        return '<div class="detail-webwrap' + sizeClass(a) + '"' + attrs(a) + '>' +
+          websiteEmbedHTML(a.url) + captionHTML(a) + '</div>';
+      }
       // each photo is its own "taped to the wall" figure — the wrapper also
       // gives the admin editor a host for its per-asset controls.
-      media += '<div class="detail-gallery">' + run.map(function(a){
-        return '<figure class="photo photo-' + (photoN++ % 4) + sizeClass(a) + '"' + attrs(a) + '>' +
-          '<img src="' + a.url + '" alt="' + obj.title + '" loading="lazy" draggable="false">' +
-          captionHTML(a, 'figcaption') +
-        '</figure>';
-      }).join('') + '</div>';
-      run = [];
+      return '<figure class="photo photo-' + n + sizeClass(a) + '"' + attrs(a) + '>' +
+        '<img src="' + a.url + '" alt="' + obj.title + '" loading="lazy" draggable="false">' +
+        captionHTML(a, 'figcaption') +
+      '</figure>';
     }
 
-    list.forEach(function(a){
-      if (a.type === 'image'){ run.push(a); return; }
-      flushRun();
-      if (a.type === 'video'){
-        media += '<div class="detail-embed photo photo-' + (photoN++ % 4) + sizeClass(a) + '"' + attrs(a) + '>' + videoEmbedHTML(a.url) + captionHTML(a) + '</div>';
-      }
-      if (a.type === 'audio') media += '<div class="detail-audio' + sizeClass(a) + '"' + attrs(a) + '>' + audioEmbedHTML(a.url) + captionHTML(a) + '</div>';
-      if (a.type === 'web') media += '<div class="detail-webwrap' + sizeClass(a) + '"' + attrs(a) + '>' + websiteEmbedHTML(a.url) + captionHTML(a) + '</div>';
-      if (a.type === 'doc') media += '<div class="detail-docwrap' + sizeClass(a) + '"' + attrs(a) + '>' + docEmbedHTML(a.url, a.pages) + captionHTML(a) + '</div>';
-    });
-    flushRun();
-    return media;
+    if (!list.length) return '';
+    return '<div class="detail-gallery">' + list.map(wallItemHTML).join('') + '</div>';
   }
 
   // live preview of an external site the project links to — many sites block
