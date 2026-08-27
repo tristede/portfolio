@@ -538,7 +538,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // dix minutes dans une version perimee sans que rien ne le signale — une
   // fonction annoncee comme livree parait alors simplement absente. Le panneau
   // compare donc ce qu'il execute a ce que le serveur sert, et le dit.
-  var ADMIN_BUILD = '2026-08-27-a';
+  var ADMIN_BUILD = '2026-08-27-b';
   (function watchAdminVersion(){
     setTimeout(function(){
       fetch('admin.html', { cache: 'no-store' })
@@ -1674,6 +1674,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
       pushUploaded(currentAssets, paths);
       renderProjectAssets();
       refreshThumbOptions();
+      publishAfterUpload();
     });
 
   wireImageUploadInput('spf-images-upload', 'spf-images-upload-status',
@@ -1681,13 +1682,14 @@ body.visual-mode .wrap{ max-width: 1400px; }
     function(paths){
       pushUploaded(currentSubAssets, paths);
       renderSubAssets();
+      publishAfterUpload();
     });
 
   // dedicated thumbnail image: uploaded like any other, but stored only in
   // `thumb` so it never shows up among the project's visible contents.
   wireImageUploadInput('pf-thumb-upload', 'pf-thumb-upload-status',
     function(){ return ($('pf-title').value.trim() || 'projet') + '-miniature'; },
-    function(paths){ refreshThumbOptions(paths[0]); });
+    function(paths){ refreshThumbOptions(paths[0]); publishAfterUpload(); });
 
   $('pf-thumb').addEventListener('change', renderThumbPreview);
   $('pf-thumb-upload-btn').addEventListener('click', function(){ $('pf-thumb-upload').click(); });
@@ -1793,6 +1795,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
         say('Envoyé (' + results.length + ' document' + (results.length > 1 ? 's' : '') +
             (pageTotal ? ', ' + pageTotal + ' page' + (pageTotal > 1 ? 's' : '') : '') + ')', 'ok');
         target.rerender();
+        publishAfterUpload();
       });
     }).catch(function(err){
       say('Échec de l\'envoi : ' + err.message, 'err');
@@ -1844,15 +1847,15 @@ body.visual-mode .wrap{ max-width: 1400px; }
       });
   }
 
-  $('save-btn').addEventListener('click', function(){
-    if (!applyOpenForms()) return;   // saisie invalide : ne rien publier
+  function publishState(){
+    if (!applyOpenForms()) return Promise.resolve(false);  // saisie invalide : ne rien publier
     collectStateFromForms();
     var btn = $('save-btn');
     var payload = { site: state.site, projects: state.projects };
     var expected = JSON.stringify(payload, null, 2) + '\n';
     btn.disabled = true;
     setStatus($('save-status'), 'Enregistrement sur GitHub…', '');
-    saveData(payload, 'Mise à jour du contenu depuis /admin.html')
+    return saveData(payload, 'Mise à jour du contenu depuis /admin.html')
       .then(function(){
         setStatus($('save-status'), 'Enregistré. Publication en cours…', '');
         btn.disabled = false;            // on peut continuer à travailler pendant la publication
@@ -1861,13 +1864,27 @@ body.visual-mode .wrap{ max-width: 1400px; }
             ? 'En ligne — le site affiche cette version.'
             : 'Enregistré, mais la publication tarde. Recharge le site dans une minute.',
             live ? 'ok' : '');
+          return true;
         });
       })
       .catch(function(err){
         setStatus($('save-status'), err.message || 'Échec de l\'enregistrement.', 'err');
         btn.disabled = false;
+        return false;
       });
-  });
+  }
+
+  // Un envoi commite DEJA le fichier sur GitHub. Laisser son affectation en
+  // memoire cree un etat a moitie ecrit : l'image existe dans le depot, rien ne
+  // la designe, et un simple rechargement perd l'affectation sans un mot — c'est
+  // ainsi qu'une miniature a ete refaite trois fois, et que des fichiers sont
+  // restes orphelins. Un envoi enregistre donc dans la foulee.
+  function publishAfterUpload(){
+    setStatus($('save-status'), 'Envoi terminé — enregistrement…', '');
+    return publishState();
+  }
+
+  $('save-btn').addEventListener('click', function(){ publishState(); });
 
   // =====================================================================
   // Visual (WYSIWYG) editing view
@@ -2912,6 +2929,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
         paths.forEach(function(u){ arr.push({ type: 'image', url: u, hidden: false }); });
       }
       applyAndRefresh();
+      publishAfterUpload();
     }).catch(function(err){
       alert('Échec de l\'envoi : ' + err.message);
       openVisual(visualNav.page, visualNav.projectId);
