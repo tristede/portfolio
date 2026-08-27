@@ -55,8 +55,8 @@
       {
         "id": "stage",
         "page": "academique",
-        "kicker": "Stage — En Esprit",
-        "title": "Stage de deuxième",
+        "kicker": "Stage de 2e année",
+        "title": "Stage chez En Esprit",
         "desc": "Réalisations produites durant mon stage chez En Esprit."
       }
     ]
@@ -383,7 +383,21 @@
       ],
       "desc": "Design d'une carte de visite pour le projet Echo Nexus.",
       "featured": false,
-      "thumb": "images/carte-de-visite-echo-nexus-miniature-1787840494032-0.webp"
+      "thumb": "images/carte-de-visite-echo-nexus-miniature-1787840494032-0.webp",
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/carte-de-visite-echo-nexus-1787864765477-0.webp",
+          "hidden": false,
+          "size": "lg",
+          "pos": {
+            "x": 249,
+            "y": 0,
+            "w": 764
+          }
+        }
+      ],
+      "subProjects": []
     },
     {
       "id": "episode-podcast",
@@ -396,7 +410,9 @@
         "Podcast"
       ],
       "desc": "Enregistrement, montage et mixage d'un épisode de podcast.",
-      "featured": false
+      "featured": false,
+      "assets": [],
+      "subProjects": []
     },
     {
       "id": "projet-evenementiel-cinematek",
