@@ -211,26 +211,40 @@
       return '<' + tag + ' class="asset-caption' + (text ? '' : ' is-empty') + '" data-asset-caption>' +
         text + '</' + tag + '>';
     }
-    var imgs = list.filter(function(a){ return a.type === 'image'; });
+    // Les contenus sortent DANS L'ORDRE de la liste. Les images qui se suivent
+    // sont regroupées dans une même galerie — c'est ce qui fait le mur de
+    // tirages — mais un document, une vidéo ou un son intercalé coupe la série
+    // et reste à sa place. Auparavant toutes les images passaient d'abord, en
+    // bloc : déplacer un document parmi elles ne changeait rien à l'écran, quoi
+    // qu'on fasse dans l'éditeur.
     var media = '';
-    if (imgs.length){
+    var run = [];
+    var photoN = 0;   // continue d'une galerie à l'autre : scotch et inclinaison restent variés
+
+    function flushRun(){
+      if (!run.length) return;
       // each photo is its own "taped to the wall" figure — the wrapper also
       // gives the admin editor a host for its per-asset controls.
-      media += '<div class="detail-gallery">' + imgs.map(function(a, n){
-        return '<figure class="photo photo-' + (n % 4) + sizeClass(a) + '"' + attrs(a) + '>' +
+      media += '<div class="detail-gallery">' + run.map(function(a){
+        return '<figure class="photo photo-' + (photoN++ % 4) + sizeClass(a) + '"' + attrs(a) + '>' +
           '<img src="' + a.url + '" alt="' + obj.title + '" loading="lazy" draggable="false">' +
           captionHTML(a, 'figcaption') +
         '</figure>';
       }).join('') + '</div>';
+      run = [];
     }
-    list.forEach(function(a, n){
+
+    list.forEach(function(a){
+      if (a.type === 'image'){ run.push(a); return; }
+      flushRun();
       if (a.type === 'video'){
-        media += '<div class="detail-embed photo photo-' + (n % 4) + sizeClass(a) + '"' + attrs(a) + '>' + videoEmbedHTML(a.url) + captionHTML(a) + '</div>';
+        media += '<div class="detail-embed photo photo-' + (photoN++ % 4) + sizeClass(a) + '"' + attrs(a) + '>' + videoEmbedHTML(a.url) + captionHTML(a) + '</div>';
       }
       if (a.type === 'audio') media += '<div class="detail-audio' + sizeClass(a) + '"' + attrs(a) + '>' + audioEmbedHTML(a.url) + captionHTML(a) + '</div>';
       if (a.type === 'web') media += '<div class="detail-webwrap' + sizeClass(a) + '"' + attrs(a) + '>' + websiteEmbedHTML(a.url) + captionHTML(a) + '</div>';
       if (a.type === 'doc') media += '<div class="detail-docwrap' + sizeClass(a) + '"' + attrs(a) + '>' + docEmbedHTML(a.url, a.pages) + captionHTML(a) + '</div>';
     });
+    flushRun();
     return media;
   }
 
