@@ -154,6 +154,14 @@ button{ display:inline-flex; align-items:center; justify-content:center; gap:7px
 .carousel-cell-btns button{ padding:2px; width:16px; height:16px; border-radius:4px; }
 .carousel-cell-btns button svg{ width:11px; height:11px; }
 
+.stale-admin{
+  position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:999;
+  max-width:min(680px, calc(100vw - 32px));
+  padding:11px 18px; border-radius:999px;
+  background:rgba(255,178,127,0.16); border:1px solid rgba(255,178,127,0.55);
+  color:#ffd9bd; font-size:13.5px; font-weight:600; text-align:center;
+  backdrop-filter:blur(12px);
+}
 .asset-caption-input{
   margin-top:5px; width:100%; max-width:340px;
   padding:5px 8px; font:inherit; font-size:12.5px;
@@ -417,6 +425,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
               <button class="ghost" id="pf-add-doc-btn" type="button">+ Document</button>
               <button class="ghost" id="pf-add-doclink-btn" type="button">+ Doc en ligne</button>
               <button class="ghost" id="pf-add-carousel-btn" type="button">+ Carrousel</button>
+              <button class="ghost" id="pf-add-text-btn" type="button">+ Texte</button>
             </div>
           </div>
           <p class="small" style="margin:0 0 12px;">Images, vidéos et audio affichés sur la page détail. L'œil masque un contenu sans le supprimer.</p>
@@ -479,6 +488,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
                 <button class="ghost" id="spf-add-doc-btn" type="button">+ Document</button>
                 <button class="ghost" id="spf-add-doclink-btn" type="button">+ Doc en ligne</button>
               <button class="ghost" id="spf-add-carousel-btn" type="button">+ Carrousel</button>
+              <button class="ghost" id="spf-add-text-btn" type="button">+ Texte</button>
               </div>
             </div>
             <input type="file" id="spf-images-upload" accept="image/*" multiple class="hidden">
@@ -523,6 +533,27 @@ body.visual-mode .wrap{ max-width: 1400px; }
   var BRANCH = 'main';
   var DATA_PATH = 'data.json';
   var TOKEN_KEY = 'portfolio_admin_pat_v1';
+
+  // GitHub Pages sert admin.html avec max-age=600 : on peut donc travailler
+  // dix minutes dans une version perimee sans que rien ne le signale — une
+  // fonction annoncee comme livree parait alors simplement absente. Le panneau
+  // compare donc ce qu'il execute a ce que le serveur sert, et le dit.
+  var ADMIN_BUILD = '2026-08-27-a';
+  (function watchAdminVersion(){
+    setTimeout(function(){
+      fetch('admin.html', { cache: 'no-store' })
+        .then(function(r){ return r.text(); })
+        .then(function(fresh){
+          var m = fresh.match(/var ADMIN_BUILD = '([^']+)'/);
+          if (!m || m[1] === ADMIN_BUILD) return;
+          var bar = document.createElement('div');
+          bar.className = 'stale-admin';
+          bar.textContent = 'Une version plus recente du panneau est en ligne. Recharge avec Cmd+Shift+R — sinon tu travailles sur l\'ancienne.';
+          document.body.appendChild(bar);
+        })
+        .catch(function(){});
+    }, 1500);
+  })();
 
   // ---- "Se connecter avec GitHub" (OAuth via a self-hosted sveltia-cms-auth
   // Cloudflare Worker — see README). The worker holds its own GITHUB_CLIENT_ID
@@ -639,7 +670,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
   }
 
   // entries : [{ path, mode, type, sha }], des blobs déjà créés.
-  function commitEntriesNow(entries, message, attempt){
+  function commitEntriesNow(entries, message, attempt, lastTree){
     attempt = attempt || 0;
     return ghRequest('/git/ref/heads/' + BRANCH)
       .then(function(ref){
@@ -664,6 +695,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
             });
           })
           .then(function(newCommit){
+            lastTree = newCommit.tree && newCommit.tree.sha;
             return ghRequest('/git/refs/heads/' + BRANCH, {
               method: 'PATCH',
               body: JSON.stringify({ sha: newCommit.sha, force: amend })
@@ -675,20 +707,34 @@ body.visual-mode .wrap{ max-width: 1400px; }
         });
       })
       .catch(function(err){
-        // La file écarte les courses avec nous-mêmes ; reste celles avec
-        // l'extérieur — un commit poussé depuis ailleurs entre notre lecture et
-        // notre écriture. On recommence alors sur le nouveau sommet ; les blobs,
-        // eux, restent valides.
         var raced = /fast forward|422|409/i.test(err.message || '');
-        if (raced && attempt < 5){
-          sessionCommitSha = null; // ce qui est au-dessus n'est plus à nous
-          // rappel direct, SANS repasser par la file : on y est déjà, et s'y
-          // remettre attendrait la fin de la tâche courante, donc soi-même
-          var wait = 350 * (attempt + 1) + Math.floor(Math.random() * 250);
-          return new Promise(function(r){ setTimeout(r, wait); })
-            .then(function(){ return commitEntriesNow(entries, message, attempt + 1); });
-        }
-        throw err;
+        if (!raced) throw err;
+
+        // Avant de reessayer ou d'echouer : notre ecriture a-t-elle deja abouti ?
+        // Un rejet peut arriver APRES que la reference ait bouge comme on le
+        // voulait. Annoncer un echec pousse alors a refaire le geste, et c'est
+        // ainsi qu'une meme image se retrouve commitee deux fois.
+        return ghRequest('/git/ref/heads/' + BRANCH)
+          .then(function(ref){ return ghRequest('/git/commits/' + ref.object.sha); })
+          .then(function(tip){
+            if (lastTree && tip.tree && tip.tree.sha === lastTree){
+              sessionCommitSha = tip.sha;
+              return tip;   // c'etait deja fait : ne pas alarmer, ne pas refaire
+            }
+            // La file ecarte les courses avec nous-memes ; reste celles avec
+            // l'exterieur — un commit pousse depuis ailleurs entre notre lecture
+            // et notre ecriture. On recommence sur le nouveau sommet ; les
+            // blobs, eux, restent valides.
+            if (attempt < 5){
+              sessionCommitSha = null; // ce qui est au-dessus n'est plus a nous
+              // rappel direct, SANS repasser par la file : on y est deja, et s'y
+              // remettre attendrait la fin de la tache courante, donc soi-meme
+              var wait = 350 * (attempt + 1) + Math.floor(Math.random() * 250);
+              return new Promise(function(r){ setTimeout(r, wait); })
+                .then(function(){ return commitEntriesNow(entries, message, attempt + 1, lastTree); });
+            }
+            throw err;
+          });
       });
   }
 
@@ -992,8 +1038,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
     return out;
   }
 
-  var ASSET_LABEL = { image: 'Image', video: 'Vidéo', audio: 'Audio', web: 'Site web', doc: 'Document', carousel: 'Carrousel' };
-  var ASSET_ICON = { video: ICON.play, audio: ICON.music, web: ICON.globe, doc: ICON.file, carousel: ICON.image };
+  var ASSET_LABEL = { image: 'Image', video: 'Vidéo', audio: 'Audio', web: 'Site web', doc: 'Document', carousel: 'Carrousel', text: 'Texte' };
+  var ASSET_ICON = { video: ICON.play, audio: ICON.music, web: ICON.globe, doc: ICON.file, carousel: ICON.image, text: ICON.file };
   // three preset display sizes; the button cycles S -> M -> L
   var SIZE_ORDER = ['sm', 'md', 'lg'];
   var SIZE_LABEL = { sm: 'S', md: 'M', lg: 'L' };
@@ -1024,7 +1070,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
               (a.hidden ? ' · masqué' : '') + '</div>' +
             (a.type === 'carousel'
               ? '<div class="carousel-strip" data-strip-i="' + i + '"></div>'
-              : '<div class="asset-url">' + escapeHtml(a.url) + '</div>') +
+              : a.type === 'text'
+                ? '<div class="asset-url">' + escapeHtml((a.text || '').slice(0, 60) || '(texte vide — écris-le dans la vue visuelle)') + '</div>'
+                : '<div class="asset-url">' + escapeHtml(a.url) + '</div>') +
             // écrit directement dans l'asset à la frappe : re-rendre la liste
             // à chaque touche ferait perdre le focus au champ
             '<input class="asset-caption-input" type="text" data-caption-i="' + i + '"' +
@@ -1037,7 +1085,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
           (a.type === 'doc' && !(a.pages && a.pages.length) && /\.pdf($|\?|#)/i.test(a.url || '')
             ? '<button class="ghost" data-act="convert" data-i="' + i + '" type="button" title="Convertir en pages">PDF</button>' : '') +
           '<button class="ghost" data-act="size" data-i="' + i + '" type="button" title="Taille : ' + (SIZE_TITLE[a.size || 'md']) + '">' + SIZE_LABEL[a.size || 'md'] + '</button>' +
-          (a.type === 'carousel' ? '' :
+          (a.type === 'carousel' || a.type === 'text' ? '' :
             '<button class="ghost" data-act="url" data-i="' + i + '" type="button" title="Changer l\'adresse du contenu">' + ICON.link + '</button>') +
           '<button class="ghost" data-act="toggle" data-i="' + i + '" type="button" title="' + (a.hidden ? 'Afficher' : 'Masquer') + '">' + (a.hidden ? ICON.eyeOff : ICON.eye) + '</button>' +
           '<button class="danger" data-act="del" data-i="' + i + '" type="button" title="Retirer">' + ICON.close + '</button>' +
@@ -1648,6 +1696,10 @@ body.visual-mode .wrap{ max-width: 1400px; }
   $('pf-add-carousel-btn').addEventListener('click', function(){
     nextUploadIsCarousel = true; $('pf-images-upload').click();
   });
+  $('pf-add-text-btn').addEventListener('click', function(){
+    currentAssets.push({ type: 'text', text: '', hidden: false, size: 'md' });
+    renderProjectAssets();
+  });
   $('pf-add-video-btn').addEventListener('click', function(){ promptAsset('video', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); }); });
   $('pf-add-audio-btn').addEventListener('click', function(){ promptAsset('audio', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); }); });
 
@@ -1663,6 +1715,10 @@ body.visual-mode .wrap{ max-width: 1400px; }
   $('spf-add-image-btn').addEventListener('click', function(){ $('spf-images-upload').click(); });
   $('spf-add-carousel-btn').addEventListener('click', function(){
     nextUploadIsCarousel = true; $('spf-images-upload').click();
+  });
+  $('spf-add-text-btn').addEventListener('click', function(){
+    currentSubAssets.push({ type: 'text', text: '', hidden: false, size: 'md' });
+    renderSubAssets();
   });
   $('spf-add-video-btn').addEventListener('click', function(){ promptAsset('video', currentSubAssets, renderSubAssets); });
   $('spf-add-audio-btn').addEventListener('click', function(){ promptAsset('audio', currentSubAssets, renderSubAssets); });
@@ -1886,6 +1942,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
         '.detail-gallery > [data-asset-index]:hover .ed-resize, .ed-placing .ed-resize{ opacity:1; }' +
         // une affiche placee a la main se signale discretement
         '.detail-gallery > [data-pos]{ box-shadow:0 0 0 1px rgba(255,178,127,0.45); }' +
+        '.asset-text[data-edit]{ outline:1px dashed rgba(255,255,255,0.22); outline-offset:6px; border-radius:3px; min-height:3em; }' +
+        '.asset-text.is-empty::before{ content:"Écris ton texte ici"; opacity:.5; font-style:italic; }' +
+        '.asset-text.is-empty:focus::before{ content:none; }' +
         '.asset-caption.is-empty::before{ content:"Ajouter une légende"; opacity:.5; font-style:italic; }' +
         '.asset-caption.is-empty:focus::before{ content:none; }' +
         '.asset-caption[data-edit]{ outline:1px dashed rgba(255,255,255,0.22); outline-offset:3px; border-radius:3px; min-height:1em; }' +
@@ -2413,6 +2472,19 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
       wireFreePlacement(doc, node, a, assets);
 
+      // Le corps d'un bloc de texte s'écrit au clic, comme tous les textes du
+      // site. Rendu même vide en mode édition, sinon il n'y aurait rien à
+      // cliquer pour commencer à écrire.
+      var body = node.querySelector('[data-asset-text]');
+      if (body){
+        bindEditable(body,
+          function(){ return a.text || ''; },
+          function(v){
+            a.text = v;
+            body.classList.toggle('is-empty', !v.trim());
+          }, true);
+      }
+
       // La légende s'édite au clic, comme les autres textes du site. script.js
       // la rend même vide en mode édition, justement pour qu'il y ait quelque
       // chose à cliquer ; le site public, lui, n'affiche que celles remplies.
@@ -2460,7 +2532,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
         }) : null),
         // un carrousel porte des `urls`, pas une `url` : ses photos se gèrent
         // par ses propres boutons, pas par cette adresse unique
-        (a.type === 'carousel' ? null : edButton(doc, 'link', 'Changer l\'adresse du contenu', false, function(){
+        (a.type === 'carousel' || a.type === 'text' ? null : edButton(doc, 'link', 'Changer l\'adresse du contenu', false, function(){
           if (editAssetUrl(a)) applyAndRefresh();
         })),
         edButton(doc, 'close', 'Retirer ce contenu', true, function(){
@@ -2549,6 +2621,10 @@ body.visual-mode .wrap{ max-width: 1400px; }
         var url = prompt('Lien du document (PDF, Google Docs/Slides, Word…) :', '');
         if (!url) return;
         ensureAssets(owner).push({ type: 'doc', url: url.trim(), hidden: false });
+        applyAndRefresh();
+      }],
+      ['+ Texte', function(){
+        ensureAssets(owner).push({ type: 'text', text: '', hidden: false, size: 'md' });
         applyAndRefresh();
       }],
       // plusieurs photos envoyées d'un coup deviennent UN contenu, pas N

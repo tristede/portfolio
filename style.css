@@ -591,6 +591,17 @@ section.projects-section{
 .detail-gallery > .detail-docwrap.size-md .detail-doc iframe{ height: 560px; }
 .detail-gallery > .detail-docwrap.size-lg .detail-doc iframe{ height: 720px; }
 
+/* bloc de texte : un contenu du mur, pour commenter une affiche à côté d'elle */
+.detail-gallery > .detail-textwrap.size-sm{ width: min(260px, 100%); }
+.detail-gallery > .detail-textwrap.size-md{ width: min(380px, 100%); }
+.detail-gallery > .detail-textwrap.size-lg{ width: min(560px, 100%); }
+.asset-text{
+  /* white-space garde les sauts de ligne saisis sans avoir à écrire de balises */
+  white-space: pre-wrap;
+  font-size: 15px; line-height: 1.6;
+  color: var(--text-dim);
+}
+
 /* vidéo */
 .detail-gallery > .detail-embed.size-sm{ width: min(280px, 100%); max-width: none; }
 .detail-gallery > .detail-embed.size-md{ width: min(420px, 100%); max-width: none; }

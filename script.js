@@ -71,7 +71,9 @@
     // un carrousel porte `urls` et non `url` : ne garder que ce qui a une `url`
     // le faisait disparaître entièrement
     var all = assetsOf(obj).filter(function(a){
-      return a && (a.url || (a.urls && a.urls.length));
+      // un texte n'a ni `url` ni `urls` : ne garder que ce qui pointe vers un
+      // fichier le ferait disparaitre, comme c'etait arrive au carrousel
+      return a && (a.url || (a.urls && a.urls.length) || a.type === 'text');
     });
     return window.__EDIT_MODE__ ? all : all.filter(function(a){ return !a.hidden; });
   }
@@ -258,6 +260,18 @@
       if (a.type === 'web'){
         return '<div class="detail-webwrap' + sizeClass(a) + '"' + attrs(a) + '>' +
           websiteEmbedHTML(a.url) + captionHTML(a) + '</div>';
+      }
+      // Un bloc de texte est une tuile du mur comme une autre : on peut le
+      // placer, le dimensionner et le glisser a cote d'une affiche pour la
+      // commenter. Les sauts de ligne saisis sont conserves.
+      if (a.type === 'text'){
+        var body = String(a.text || '');
+        if (!body.trim() && !window.__EDIT_MODE__) return '';
+        return '<div class="detail-textwrap' + sizeClass(a) + '"' + attrs(a) + '>' +
+          '<div class="asset-text' + (body.trim() ? '' : ' is-empty') + '" data-asset-text>' +
+            body +
+          '</div>' + captionHTML(a) +
+        '</div>';
       }
       // each photo is its own "taped to the wall" figure — the wrapper also
       // gives the admin editor a host for its per-asset controls.
