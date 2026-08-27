@@ -620,8 +620,26 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // donc six reconstructions de GitHub Pages.
   var sessionCommitSha = null;
 
+  // Toutes les écritures passent par cette file. Deux envois lancés de près —
+  // une miniature pendant que des images finissent de partir, un enregistrement
+  // pendant un envoi — lisaient le MÊME sommet, et le second se faisait rejeter
+  // (« Update is not a fast forward »). Réessayer ne faisait que rejouer la
+  // course ; les mettre à la queue leu leu la supprime. Seul le commit est
+  // sérialisé : l'envoi des blobs, lui, reste parallèle.
+  var writeQueue = Promise.resolve();
+  function queueWrite(run){
+    // `then(run, run)` : l'échec d'une écriture ne doit pas bloquer les suivantes
+    var task = writeQueue.then(run, run);
+    writeQueue = task.catch(function(){});
+    return task;
+  }
+
+  function commitEntries(entries, message){
+    return queueWrite(function(){ return commitEntriesNow(entries, message, 0); });
+  }
+
   // entries : [{ path, mode, type, sha }], des blobs déjà créés.
-  function commitEntries(entries, message, attempt){
+  function commitEntriesNow(entries, message, attempt){
     attempt = attempt || 0;
     return ghRequest('/git/ref/heads/' + BRANCH)
       .then(function(ref){
@@ -657,13 +675,18 @@ body.visual-mode .wrap{ max-width: 1400px; }
         });
       })
       .catch(function(err){
-        // le sommet a bougé entre notre lecture et notre écriture : on
-        // recommence sur le nouveau sommet. Les blobs restent valides.
+        // La file écarte les courses avec nous-mêmes ; reste celles avec
+        // l'extérieur — un commit poussé depuis ailleurs entre notre lecture et
+        // notre écriture. On recommence alors sur le nouveau sommet ; les blobs,
+        // eux, restent valides.
         var raced = /fast forward|422|409/i.test(err.message || '');
-        if (raced && attempt < 4){
+        if (raced && attempt < 5){
           sessionCommitSha = null; // ce qui est au-dessus n'est plus à nous
-          return new Promise(function(r){ setTimeout(r, 400 * (attempt + 1)); })
-            .then(function(){ return commitEntries(entries, message, attempt + 1); });
+          // rappel direct, SANS repasser par la file : on y est déjà, et s'y
+          // remettre attendrait la fin de la tâche courante, donc soi-même
+          var wait = 350 * (attempt + 1) + Math.floor(Math.random() * 250);
+          return new Promise(function(r){ setTimeout(r, wait); })
+            .then(function(){ return commitEntriesNow(entries, message, attempt + 1); });
         }
         throw err;
       });
