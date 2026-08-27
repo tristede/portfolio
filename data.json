@@ -256,6 +256,12 @@
         },
         {
           "type": "image",
+          "url": "images/projet-360-dei-belgique-1787830564823-0.webp",
+          "hidden": false,
+          "size": "lg"
+        },
+        {
+          "type": "image",
           "url": "images/projet-360-dei-belgique-1787780479365-0.webp",
           "hidden": false
         }
