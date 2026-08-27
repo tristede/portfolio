@@ -1875,6 +1875,10 @@ body.visual-mode .wrap{ max-width: 1400px; }
         '.ed-add:hover{ background:rgba(70,80,255,0.4); border-style:solid; }' +
         // une légende vide n'a rien à afficher : dans l'éditeur elle doit
         // quand même se voir et s\'attraper, sinon impossible de l\'écrire
+        // glisser-deposer : ce qu'on deplace s'efface, ce qui accueille se marque
+        '[data-asset-index]{ cursor:grab; }' +
+        '.ed-dragging{ opacity:.35; cursor:grabbing; }' +
+        '.ed-dragover{ outline:2px dashed rgba(140,180,255,0.9); outline-offset:6px; border-radius:4px; }' +
         '.asset-caption.is-empty::before{ content:"Ajouter une légende"; opacity:.5; font-style:italic; }' +
         '.asset-caption.is-empty:focus::before{ content:none; }' +
         '.asset-caption[data-edit]{ outline:1px dashed rgba(255,255,255,0.22); outline-offset:3px; border-radius:3px; min-height:1em; }' +
@@ -2195,6 +2199,37 @@ body.visual-mode .wrap{ max-width: 1400px; }
       var i = +node.getAttribute('data-asset-index');
       var a = assets[i];
       if (!a) return;
+
+      // Réordonner en glissant plutôt qu'en cliquant « avant / après » autant de
+      // fois qu'il y a de places à franchir. Les boutons restent : au clavier,
+      // et sur tactile, le glisser n'existe pas.
+      node.setAttribute('draggable', 'true');
+      node.addEventListener('dragstart', function(e){
+        e.dataTransfer.setData('text/plain', String(i));
+        e.dataTransfer.effectAllowed = 'move';
+        node.classList.add('ed-dragging');
+      });
+      node.addEventListener('dragend', function(){
+        node.classList.remove('ed-dragging');
+        scope.querySelectorAll('.ed-dragover').forEach(function(n){ n.classList.remove('ed-dragover'); });
+      });
+      node.addEventListener('dragover', function(e){
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        node.classList.add('ed-dragover');
+      });
+      node.addEventListener('dragleave', function(){ node.classList.remove('ed-dragover'); });
+      node.addEventListener('drop', function(e){
+        e.preventDefault();
+        node.classList.remove('ed-dragover');
+        var from = parseInt(e.dataTransfer.getData('text/plain'), 10);
+        if (isNaN(from) || from === i) return;
+        // retirer d'abord, insérer ensuite : l'index de destination se lit sur
+        // le tableau une fois l'élément sorti, sinon on décale d'un cran
+        var moved = assets.splice(from, 1)[0];
+        assets.splice(from < i ? i - 1 : i, 0, moved);
+        applyAndRefresh();
+      });
 
       // La légende s'édite au clic, comme les autres textes du site. script.js
       // la rend même vide en mode édition, justement pour qu'il y ait quelque
