@@ -622,6 +622,21 @@ section.projects-section{
 .detail-gallery > .detail-webwrap.size-lg iframe{ height: 520px; }
 /* borderless: no frame and no white plate — the viewer sits straight on the
    page background */
+/* Un document en ligne est scotché au mur comme tout le reste. Le ruban se pose
+   sur le bloc et non sur l'iframe : une iframe ne peut porter de ::before, son
+   contenu venant d'un autre domaine. */
+.detail-doc.is-embed{ position: relative; }
+.detail-doc.is-embed::before{
+  content: ""; position: absolute; z-index: 2;
+  top: -19px; left: 50%;
+  width: 156px; height: 38px; margin-left: -78px;
+  background: url('images/tape/tape-3.webp') center/100% 100% no-repeat;
+  opacity: 0.94;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+  transform: rotate(2deg);
+  pointer-events: none;
+}
+
 /* Le cadre arrondi était le dernier reste de bordure côté site : supprimé, le
    document affleure. Ce qu'on ne peut PAS retirer, c'est la page blanche et les
    marges de Google : l'iframe vient d'un autre domaine, aucune règle d'ici ne

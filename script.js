@@ -373,7 +373,10 @@
     }
     // Pas de mention sous le document ni de lien de repli : rien ne doit inviter
     // le visiteur à quitter le portfolio, comme pour le lecteur de PDF.
-    return '<div class="detail-doc">' +
+    // `is-embed` distingue ce cas du lecteur paginé : les deux sont des
+    // `.detail-doc`, mais seul celui-ci est une intégration, et il lui faut son
+    // propre scotch — le lecteur paginé tient le sien de `.doc-viewer`.
+    return '<div class="detail-doc is-embed">' +
       '<iframe src="' + src + '" title="Document" loading="lazy"></iframe>' +
     '</div>';
   }
