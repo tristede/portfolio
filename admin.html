@@ -538,7 +538,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // dix minutes dans une version perimee sans que rien ne le signale — une
   // fonction annoncee comme livree parait alors simplement absente. Le panneau
   // compare donc ce qu'il execute a ce que le serveur sert, et le dit.
-  var ADMIN_BUILD = '2026-08-27-b';
+  var ADMIN_BUILD = '2026-08-27-c';
   (function watchAdminVersion(){
     setTimeout(function(){
       fetch('admin.html', { cache: 'no-store' })
@@ -725,15 +725,20 @@ body.visual-mode .wrap{ max-width: 1400px; }
             // l'exterieur — un commit pousse depuis ailleurs entre notre lecture
             // et notre ecriture. On recommence sur le nouveau sommet ; les
             // blobs, eux, restent valides.
-            if (attempt < 5){
+            // La fenetre a couvrir est celle d'une poussee faite ailleurs
+            // pendant qu'on ecrivait — depuis un autre onglet, ou depuis un
+            // terminal. Quelques secondes suffisent, mais il en faut vraiment
+            // quelques-unes : cinq essais rapides pouvaient encore echouer.
+            if (attempt < 8){
               sessionCommitSha = null; // ce qui est au-dessus n'est plus a nous
               // rappel direct, SANS repasser par la file : on y est deja, et s'y
               // remettre attendrait la fin de la tache courante, donc soi-meme
-              var wait = 350 * (attempt + 1) + Math.floor(Math.random() * 250);
+              var wait = Math.min(1600, 300 * (attempt + 1)) + Math.floor(Math.random() * 400);
               return new Promise(function(r){ setTimeout(r, wait); })
                 .then(function(){ return commitEntriesNow(entries, message, attempt + 1, lastTree); });
             }
-            throw err;
+            throw new Error(err.message +
+              '\n\nUne autre ecriture a pris la main pendant l\'envoi. Rien n\'est perdu : reclique.');
           });
       });
   }
