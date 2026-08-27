@@ -538,7 +538,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // dix minutes dans une version perimee sans que rien ne le signale — une
   // fonction annoncee comme livree parait alors simplement absente. Le panneau
   // compare donc ce qu'il execute a ce que le serveur sert, et le dit.
-  var ADMIN_BUILD = '2026-08-27-d';
+  var ADMIN_BUILD = '2026-08-28-a';
   (function watchAdminVersion(){
     setTimeout(function(){
       fetch('admin.html', { cache: 'no-store' })
@@ -1178,15 +1178,30 @@ body.visual-mode .wrap{ max-width: 1400px; }
   }
 
   var ASSET_PROMPT = {
-    video: 'Lien vidéo (YouTube, Vimeo ou fichier .mp4) :',
+    video: 'Lien vidéo — YouTube, Vimeo, TikTok (adresse ou bloc d\'intégration), ou fichier .mp4 :',
     audio: 'Lien audio (SoundCloud ou fichier .mp3/.wav) :',
     web: 'Adresse du site à intégrer (https://…) :',
     doc: 'Lien du document (PDF, Google Docs/Slides, Word…) :'
   };
+  // TikTok fournit un <blockquote> de plusieurs milliers de caracteres, avec le
+  // texte de la legende et un script. Le garder tel quel gonflerait data.json et
+  // y ferait entrer du balisage tiers : on n'en retient que l'adresse
+  // d'integration. Le site sait lire les deux formes, mais autant stocker la
+  // propre. Rendu inchange pour tout le reste.
+  function normalizeAssetUrl(value){
+    var v = String(value || '').trim();
+    var iframe = v.match(/<iframe[^>]+src=["']([^"']+)["']/i);
+    if (iframe) return iframe[1];
+    var tik = v.match(/data-video-id=["'](\d+)["']/) ||
+              v.match(/tiktok\.com\/(?:@[\w.-]+\/video|embed(?:\/v2)?)\/(\d+)/);
+    if (tik) return 'https://www.tiktok.com/embed/v2/' + tik[1];
+    return v;
+  }
+
   function promptAsset(type, assets, rerender){
     var url = prompt(ASSET_PROMPT[type] || 'Adresse :', '');
     if (!url) return;
-    assets.push({ type: type, url: url.trim(), hidden: false });
+    assets.push({ type: type, url: normalizeAssetUrl(url), hidden: false });
     rerender();
   }
 
@@ -2368,10 +2383,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
   function editAssetUrl(a){
     var v = prompt('Adresse du contenu (colle un lien ou le bloc <iframe> fourni) :', a.url || '');
     if (v === null) return false;
-    v = v.trim();
-    // on colle souvent le bloc <iframe …> tout fait plutôt que l'adresse seule
-    var embedded = v.match(/<iframe[^>]+src=["']([^"']+)["']/i);
-    if (embedded) v = embedded[1];
+    v = normalizeAssetUrl(v);
     if (!v){ alert('Une adresse est nécessaire — pour retirer le contenu, utilise le bouton supprimer.'); return false; }
     if (v === a.url) return false;
     // les pages d'un PDF converti appartiennent à l'ANCIEN fichier : les garder
@@ -2623,9 +2635,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
     [
       ['+ Image', function(){ visualAddImage(owner, hint); }],
       ['+ Vidéo', function(){
-        var url = prompt('Lien vidéo (YouTube, Vimeo ou fichier .mp4) :', '');
+        var url = prompt('Lien vidéo — YouTube, Vimeo, TikTok (adresse ou bloc d\'intégration), ou fichier .mp4 :', '');
         if (!url) return;
-        ensureAssets(owner).push({ type: 'video', url: url.trim(), hidden: false });
+        ensureAssets(owner).push({ type: 'video', url: normalizeAssetUrl(url), hidden: false });
         applyAndRefresh();
       }],
       ['+ Audio', function(){

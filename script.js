@@ -177,7 +177,23 @@
 
   // parses a YouTube/Vimeo URL into an embeddable iframe; anything else
   // (direct .mp4/.webm link) falls back to a plain <video> tag.
+  // TikTok ne donne pas une adresse mais un <blockquote> accompagne d'un script.
+  // Ce script n'a pas sa place ici : il injecterait du code tiers dans la page.
+  // On extrait donc l'identifiant — `data-video-id` s'il est la, sinon celui du
+  // lien — et on integre par l'iframe officielle, qui se suffit a elle-meme.
+  // Coller le bloc entier fonctionne ainsi, comme l'adresse seule.
+  function tiktokId(url){
+    var m = String(url || '').match(/data-video-id=["'](\d+)["']/) ||
+            String(url || '').match(/tiktok\.com\/(?:@[\w.-]+\/video|embed(?:\/v2)?)\/(\d+)/);
+    return m ? m[1] : null;
+  }
+
   function videoEmbedHTML(url){
+    var tk = tiktokId(url) ? [null, tiktokId(url)] : null;
+    if (tk){
+      return '<iframe class="tiktok-embed-frame" src="https://www.tiktok.com/embed/v2/' + tk[1] + '" ' +
+        'title="Vidéo TikTok" allow="encrypted-media;" allowfullscreen loading="lazy"></iframe>';
+    }
     var yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{6,})/);
     if (yt){
       return '<iframe src="https://www.youtube.com/embed/' + yt[1] + '" title="Vidéo du projet" ' +
@@ -250,7 +266,10 @@
           pagedViewerHTML(shots, 'Photo') + captionHTML(a) + '</div>';
       }
       if (a.type === 'video'){
-        return '<div class="detail-embed photo photo-' + n + sizeClass(a) + '"' + attrs(a) + '>' +
+        // le format vertical de TikTok demande une largeur a lui : la classe le
+        // signale au style, qui ne peut pas deviner ce que contient l'iframe
+        var tik = tiktokId(a.url) ? ' has-tiktok' : '';
+        return '<div class="detail-embed photo photo-' + n + tik + sizeClass(a) + '"' + attrs(a) + '>' +
           videoEmbedHTML(a.url) + captionHTML(a) + '</div>';
       }
       if (a.type === 'audio'){

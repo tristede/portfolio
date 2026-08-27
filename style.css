@@ -463,6 +463,19 @@ section.projects-section{
   box-shadow: 0 18px 34px -14px rgba(0,0,6,0.8), 0 2px 6px rgba(0,0,6,0.4);
   display:block;
 }
+/* Une vidéo TikTok est verticale, et son cadre officiel ajoute en-tête, légende
+   et lien musical sous la vidéo : le 16/9 des autres la couperait. Le rapport
+   retenu laisse la place à ce bandeau. TikTok impose par ailleurs une largeur
+   entre 325 et 605 px — au-delà, l'intégration se contente de rester centrée. */
+.detail-embed iframe.tiktok-embed-frame{
+  aspect-ratio: 9 / 16.6;
+  max-width: 605px; min-width: 325px;
+  background: #000;
+}
+.detail-gallery > .detail-embed.has-tiktok.size-sm{ width: min(325px, 100%); }
+.detail-gallery > .detail-embed.has-tiktok.size-md{ width: min(440px, 100%); }
+.detail-gallery > .detail-embed.has-tiktok.size-lg{ width: min(605px, 100%); }
+
 .detail-embed.photo{ cursor: default; }
 .detail-audio{ margin-top: 28px; }
 .detail-audio audio{ width:100%; }
