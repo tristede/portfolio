@@ -136,6 +136,14 @@ button{ display:inline-flex; align-items:center; justify-content:center; gap:7px
   font-size:12px; color: var(--text-dim);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 340px;
 }
+.asset-caption-input{
+  margin-top:5px; width:100%; max-width:340px;
+  padding:5px 8px; font:inherit; font-size:12.5px;
+  color: var(--text); background: rgba(255,255,255,0.04);
+  border:1px solid var(--line); border-radius:6px;
+}
+.asset-caption-input::placeholder{ color: var(--text-faint); font-style:italic; }
+.asset-caption-input:focus{ outline:none; border-color: var(--accent-sky); }
 
 /* ---------- Visual (WYSIWYG) editing view ---------- */
 .view-switch{
@@ -970,6 +978,10 @@ body.visual-mode .wrap{ max-width: 1400px; }
           '<div style="min-width:0;">' +
             '<div class="meta">' + ASSET_LABEL[a.type] + (a.hidden ? ' · masqué' : '') + '</div>' +
             '<div class="asset-url">' + escapeHtml(a.url) + '</div>' +
+            // écrit directement dans l'asset à la frappe : re-rendre la liste
+            // à chaque touche ferait perdre le focus au champ
+            '<input class="asset-caption-input" type="text" data-caption-i="' + i + '"' +
+              ' placeholder="Légende (facultatif)" value="' + escapeHtml(a.caption || '') + '">' +
           '</div>' +
         '</div>' +
         '<div class="btns">' +
@@ -982,6 +994,13 @@ body.visual-mode .wrap{ max-width: 1400px; }
           '<button class="danger" data-act="del" data-i="' + i + '" type="button" title="Retirer">' + ICON.close + '</button>' +
         '</div>';
       list.appendChild(row);
+    });
+    list.querySelectorAll('input[data-caption-i]').forEach(function(input){
+      input.addEventListener('input', function(){
+        var a = assets[+input.dataset.captionI];
+        var v = input.value.trim();
+        if (v) a.caption = v; else delete a.caption;
+      });
     });
     list.querySelectorAll('button[data-act]').forEach(function(b){
       b.addEventListener('click', function(){
@@ -1753,6 +1772,12 @@ body.visual-mode .wrap{ max-width: 1400px; }
         '.ed-add{ font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; color:#fff;' +
           'background:rgba(70,80,255,0.22); border:1px dashed rgba(127,196,255,0.7); border-radius:10px; padding:9px 16px; }' +
         '.ed-add:hover{ background:rgba(70,80,255,0.4); border-style:solid; }' +
+        // une légende vide n'a rien à afficher : dans l'éditeur elle doit
+        // quand même se voir et s\'attraper, sinon impossible de l\'écrire
+        '.asset-caption.is-empty::before{ content:"Ajouter une légende"; opacity:.5; font-style:italic; }' +
+        '.asset-caption.is-empty:focus::before{ content:none; }' +
+        '.asset-caption[data-edit]{ outline:1px dashed rgba(255,255,255,0.22); outline-offset:3px; border-radius:3px; min-height:1em; }' +
+        '.asset-caption[data-edit]:focus{ outline:1px solid rgba(120,140,255,0.85); }' +
       '</style>';
     // the project detail page reads its id from the query string, which an
     // srcdoc frame doesn't have — so hand it over explicitly instead.
@@ -2045,6 +2070,19 @@ body.visual-mode .wrap{ max-width: 1400px; }
       var i = +node.getAttribute('data-asset-index');
       var a = assets[i];
       if (!a) return;
+
+      // La légende s'édite au clic, comme les autres textes du site. script.js
+      // la rend même vide en mode édition, justement pour qu'il y ait quelque
+      // chose à cliquer ; le site public, lui, n'affiche que celles remplies.
+      var cap = node.querySelector('[data-asset-caption]');
+      if (cap){
+        bindEditable(cap,
+          function(){ return a.caption || ''; },
+          function(v){
+            if (v) a.caption = v; else delete a.caption;
+            cap.classList.toggle('is-empty', !v);
+          }, true);
+      }
 
       // an <img> can't host children — wrap it so the tools have a container
       var host = node;

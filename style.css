@@ -447,6 +447,20 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
   width:100%; height: 520px; border: 1px solid var(--card-border); border-radius: var(--radius-md);
   background: #fff;
 }
+/* Légende sous un contenu. Sur un tirage scotché elle tient dans la largeur
+   fixe de la photo ; ailleurs elle se cale sous le bloc. Volontairement
+   discrète : elle précise, elle ne commente pas par-dessus l'image. */
+.asset-caption{
+  margin: 9px 0 0;
+  font-size: 12.5px; line-height: 1.45;
+  color: var(--text-dim);
+  text-align: center;
+  text-wrap: balance;
+}
+.detail-audio > .asset-caption,
+.detail-webwrap > .asset-caption,
+.detail-docwrap > .asset-caption{ margin-top: 12px; }
+
 .detail-embed-caption{ font-size: 12.5px; color: var(--text-faint); margin-top: 8px; }
 .detail-embed-caption a{ color: var(--accent-sky); }
 

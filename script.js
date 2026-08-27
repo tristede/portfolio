@@ -201,6 +201,16 @@
     }
     // three preset widths per asset; medium is the default
     function sizeClass(a){ return ' size-' + (a.size || 'md'); }
+    // Légende facultative sous un contenu. Sur le site, elle n'existe que si
+    // elle a quelque chose à dire ; dans l'éditeur, elle est toujours là, même
+    // vide, parce que c'est elle qu'on clique pour l'écrire.
+    function captionHTML(a, tag){
+      var text = (a.caption || '').trim();
+      if (!text && !window.__EDIT_MODE__) return '';
+      tag = tag || 'p';
+      return '<' + tag + ' class="asset-caption' + (text ? '' : ' is-empty') + '" data-asset-caption>' +
+        text + '</' + tag + '>';
+    }
     var imgs = list.filter(function(a){ return a.type === 'image'; });
     var media = '';
     if (imgs.length){
@@ -209,16 +219,17 @@
       media += '<div class="detail-gallery">' + imgs.map(function(a, n){
         return '<figure class="photo photo-' + (n % 4) + sizeClass(a) + '"' + attrs(a) + '>' +
           '<img src="' + a.url + '" alt="' + obj.title + '" loading="lazy" draggable="false">' +
+          captionHTML(a, 'figcaption') +
         '</figure>';
       }).join('') + '</div>';
     }
     list.forEach(function(a, n){
       if (a.type === 'video'){
-        media += '<div class="detail-embed photo photo-' + (n % 4) + sizeClass(a) + '"' + attrs(a) + '>' + videoEmbedHTML(a.url) + '</div>';
+        media += '<div class="detail-embed photo photo-' + (n % 4) + sizeClass(a) + '"' + attrs(a) + '>' + videoEmbedHTML(a.url) + captionHTML(a) + '</div>';
       }
-      if (a.type === 'audio') media += '<div class="detail-audio' + sizeClass(a) + '"' + attrs(a) + '>' + audioEmbedHTML(a.url) + '</div>';
-      if (a.type === 'web') media += '<div class="detail-webwrap' + sizeClass(a) + '"' + attrs(a) + '>' + websiteEmbedHTML(a.url) + '</div>';
-      if (a.type === 'doc') media += '<div class="detail-docwrap' + sizeClass(a) + '"' + attrs(a) + '>' + docEmbedHTML(a.url, a.pages) + '</div>';
+      if (a.type === 'audio') media += '<div class="detail-audio' + sizeClass(a) + '"' + attrs(a) + '>' + audioEmbedHTML(a.url) + captionHTML(a) + '</div>';
+      if (a.type === 'web') media += '<div class="detail-webwrap' + sizeClass(a) + '"' + attrs(a) + '>' + websiteEmbedHTML(a.url) + captionHTML(a) + '</div>';
+      if (a.type === 'doc') media += '<div class="detail-docwrap' + sizeClass(a) + '"' + attrs(a) + '>' + docEmbedHTML(a.url, a.pages) + captionHTML(a) + '</div>';
     });
     return media;
   }
