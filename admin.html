@@ -903,9 +903,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
     box.scrollIntoView({ behavior:'smooth', block:'center' });
   }
 
+  // renvoie true si le formulaire a bien été appliqué à l'état — « Enregistrer
+  // sur GitHub » s'en sert pour ne pas publier en laissant une saisie de côté
   function saveSubProjectForm(){
     var title = $('spf-title').value.trim();
-    if (!title){ alert('Le titre de la section est obligatoire.'); return; }
+    if (!title){ alert('Le titre de la section est obligatoire.'); return false; }
     var sp = {
       title: title,
       medium: $('spf-medium').value,
@@ -918,6 +920,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
     $('subproject-form-box').classList.add('hidden');
     subEditingIndex = -1;
     renderSubProjectList();
+    return true;
   }
 
   // the thumbnail dropdown is populated from whatever is currently listed in
@@ -1182,9 +1185,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
     box.scrollIntoView({ behavior:'smooth', block:'center' });
   }
 
+  // renvoie true si le formulaire a bien été appliqué à l'état — voir
+  // saveSubProjectForm pour la raison
   function saveProjectForm(){
     var title = $('pf-title').value.trim();
-    if (!title){ alert('Le titre est obligatoire.'); return; }
+    if (!title){ alert('Le titre est obligatoire.'); return false; }
     var p = {
       id: editingIndex === -1 ? uniqueId(slugify(title)) : state.projects[editingIndex].id,
       title: title,
@@ -1206,6 +1211,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
     $('project-form-box').classList.add('hidden');
     editingIndex = -1;
     renderProjectList();
+    return true;
   }
 
   function deleteProject(index){
@@ -1228,6 +1234,22 @@ body.visual-mode .wrap{ max-width: 1400px; }
     if (!Array.isArray(state.site.timeline)) state.site.timeline = [];
     renderTimelineList();
     renderProjectList();
+  }
+
+  // Un formulaire encore ouvert contient une saisie qui n'est PAS dans l'état :
+  // « Enregistrer ce projet » est ce qui l'y verse. Publier sans passer par là
+  // jetait la saisie en silence — changer la miniature puis cliquer directement
+  // « Enregistrer sur GitHub » ne publiait rien. On applique donc les
+  // formulaires ouverts avant de publier, du plus imbriqué au moins imbriqué.
+  // Renvoie false si une validation echoue : il ne faut alors rien publier.
+  function applyOpenForms(){
+    if (!$('subproject-form-box').classList.contains('hidden')){
+      if (saveSubProjectForm() === false) return false;
+    }
+    if (!$('project-form-box').classList.contains('hidden')){
+      if (saveProjectForm() === false) return false;
+    }
+    return true;
   }
 
   function collectStateFromForms(){
@@ -1647,6 +1669,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
   }
 
   $('save-btn').addEventListener('click', function(){
+    if (!applyOpenForms()) return;   // saisie invalide : ne rien publier
     collectStateFromForms();
     var btn = $('save-btn');
     var payload = { site: state.site, projects: state.projects };
