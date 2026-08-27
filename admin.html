@@ -1875,10 +1875,17 @@ body.visual-mode .wrap{ max-width: 1400px; }
         '.ed-add:hover{ background:rgba(70,80,255,0.4); border-style:solid; }' +
         // une légende vide n'a rien à afficher : dans l'éditeur elle doit
         // quand même se voir et s\'attraper, sinon impossible de l\'écrire
-        // glisser-deposer : ce qu'on deplace s'efface, ce qui accueille se marque
-        '[data-asset-index]{ cursor:grab; }' +
-        '.ed-dragging{ opacity:.35; cursor:grabbing; }' +
-        '.ed-dragover{ outline:2px dashed rgba(140,180,255,0.9); outline-offset:6px; border-radius:4px; }' +
+        // placement libre : on attrape l'affiche, on la pose ou on veut
+        '.detail-gallery > [data-asset-index]{ cursor:grab; }' +
+        '.ed-placing{ cursor:grabbing; opacity:.85; z-index:20; }' +
+        '.ed-placing, .detail-gallery > [data-asset-index]:hover{ outline:1px solid rgba(140,180,255,0.55); outline-offset:5px; }' +
+        // poignee de redimensionnement, en bas a droite
+        '.ed-resize{ position:absolute; right:-7px; bottom:-7px; width:16px; height:16px; z-index:21;' +
+          ' border-radius:50%; background:rgba(70,80,255,0.95); border:2px solid #fff;' +
+          ' cursor:nwse-resize; opacity:0; transition:opacity .15s ease; }' +
+        '.detail-gallery > [data-asset-index]:hover .ed-resize, .ed-placing .ed-resize{ opacity:1; }' +
+        // une affiche placee a la main se signale discretement
+        '.detail-gallery > [data-pos]{ box-shadow:0 0 0 1px rgba(255,178,127,0.45); }' +
         '.asset-caption.is-empty::before{ content:"Ajouter une légende"; opacity:.5; font-style:italic; }' +
         '.asset-caption.is-empty:focus::before{ content:none; }' +
         '.asset-caption[data-edit]{ outline:1px dashed rgba(255,255,255,0.22); outline-offset:3px; border-radius:3px; min-height:1em; }' +
@@ -2246,7 +2253,12 @@ body.visual-mode .wrap{ max-width: 1400px; }
   }
 
   // any structural change re-renders the frame so the site reflects it at once
+  // Chaque modification reconstruit l'iframe. Sans memoriser le defilement, on
+  // repart du haut de la page a chaque geste : impossible de composer.
+  var visualScroll = 0;
   function applyAndRefresh(){
+    var frame = $('visual-frame');
+    try { visualScroll = frame.contentWindow.scrollY || 0; } catch(e){ visualScroll = 0; }
     markDirty();
     openVisual(visualNav.page, visualNav.projectId);
   }
@@ -2286,6 +2298,112 @@ body.visual-mode .wrap{ max-width: 1400px; }
     $('visual-image-upload').click();
   }
 
+  // ---- Placement libre ------------------------------------------------------
+  // Une affiche qu'on glisse retient sa position : elle ne sera plus jamais
+  // rangee automatiquement. Celles qu'on n'a jamais touchees continuent de se
+  // placer seules dans ce qui reste — c'est ce qui evite d'avoir a composer un
+  // projet entier pour pouvoir en deplacer une.
+  var SNAP = 8;   // aimantation, en pixels de composition
+
+  // L'echelle est celle que script.js vient d'appliquer : il la depose sur la
+  // galerie. La recalculer ici ferait diverger les deux au moindre changement de
+  // regle, et un geste de souris se traduirait par une position fausse.
+  function galleryScale(gallery){
+    var s = parseFloat(gallery.getAttribute('data-scale'));
+    return (isFinite(s) && s > 0) ? s : 1;
+  }
+
+  // Les positions decident de ce qu'on lit en premier ; l'ordre du tableau doit
+  // les suivre, sinon l'empilement sur mobile et la vue liste racontent autre
+  // chose que la composition.
+  function sortByReadingOrder(gallery, assets){
+    var order = {};
+    gallery.querySelectorAll('[data-asset-index]').forEach(function(n){
+      order[n.getAttribute('data-asset-index')] = n.offsetTop * 10000 + n.offsetLeft;
+    });
+    var keyed = assets.map(function(a, i){ return { a: a, k: order[i], i: i }; });
+    keyed.sort(function(p, q){
+      if (p.k === undefined || q.k === undefined) return p.i - q.i;
+      return p.k - q.k;
+    });
+    var sorted = keyed.map(function(x){ return x.a; });
+    assets.length = 0;
+    Array.prototype.push.apply(assets, sorted);
+  }
+
+  function wireFreePlacement(doc, node, a, assets){
+    var gallery = node.parentNode;
+    if (!gallery || !gallery.classList.contains('detail-gallery')) return;
+    var win = doc.defaultView;
+
+    var handle = doc.createElement('div');
+    handle.className = 'ed-resize';
+    handle.title = 'Redimensionner';
+    node.appendChild(handle);
+
+    function beginDrag(e, mode){
+      if (e.button) return;
+      e.preventDefault(); e.stopPropagation();
+      var scale = galleryScale(gallery);
+      var startX = e.clientX, startY = e.clientY;
+      // offsetLeft/Top/Width et non getBoundingClientRect : les affiches sont
+      // legerement pivotees, et le rect englobant d'un element tourne est plus
+      // large que lui. Mesure apres mesure, la difference derivait.
+      var baseX = node.offsetLeft / scale;
+      var baseY = node.offsetTop / scale;
+      var baseW = node.offsetWidth / scale;
+
+      // aretes des autres affiches, pour l'aimantation
+      var edgesX = [0], edgesY = [0];
+      gallery.querySelectorAll('[data-asset-index]').forEach(function(other){
+        if (other === node) return;
+        edgesX.push(other.offsetLeft / scale, (other.offsetLeft + other.offsetWidth) / scale);
+        edgesY.push(other.offsetTop / scale, (other.offsetTop + other.offsetHeight) / scale);
+      });
+      function snap(v, edges){
+        for (var i = 0; i < edges.length; i++){
+          if (Math.abs(v - edges[i]) < SNAP) return edges[i];
+        }
+        return v;
+      }
+
+      node.classList.add('ed-placing');
+      function onMove(ev){
+        var dx = (ev.clientX - startX) / scale;
+        var dy = (ev.clientY - startY) / scale;
+        if (mode === 'move'){
+          var x = snap(Math.max(0, baseX + dx), edgesX);
+          var y = snap(Math.max(0, baseY + dy), edgesY);
+          node.style.left = (x * scale) + 'px';
+          node.style.top = (y * scale) + 'px';
+          node.__pos = { x: Math.round(x), y: Math.round(y), w: Math.round(baseW) };
+        } else {
+          var w = Math.max(80, snap(baseW + dx, edgesX.map(function(v){ return v - baseX; })));
+          node.style.width = (w * scale) + 'px';
+          node.__pos = { x: Math.round(baseX), y: Math.round(baseY), w: Math.round(w) };
+        }
+      }
+      function onUp(){
+        win.removeEventListener('mousemove', onMove);
+        win.removeEventListener('mouseup', onUp);
+        node.classList.remove('ed-placing');
+        if (!node.__pos) return;
+        a.pos = node.__pos;
+        sortByReadingOrder(gallery, assets);
+        applyAndRefresh();
+      }
+      win.addEventListener('mousemove', onMove);
+      win.addEventListener('mouseup', onUp);
+    }
+
+    node.addEventListener('mousedown', function(e){
+      // les commandes et les textes editables gardent leur clic
+      if (e.target.closest('.ed-btn, .ed-tools, .ed-resize, [contenteditable]')) return;
+      beginDrag(e, 'move');
+    });
+    handle.addEventListener('mousedown', function(e){ beginDrag(e, 'resize'); });
+  }
+
   function wireAssetControls(doc, scope, owner, hint){
     var assets = ensureAssets(owner);
     scope.querySelectorAll('[data-asset-index]').forEach(function(node){
@@ -2293,36 +2411,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
       var a = assets[i];
       if (!a) return;
 
-      // Réordonner en glissant plutôt qu'en cliquant « avant / après » autant de
-      // fois qu'il y a de places à franchir. Les boutons restent : au clavier,
-      // et sur tactile, le glisser n'existe pas.
-      node.setAttribute('draggable', 'true');
-      node.addEventListener('dragstart', function(e){
-        e.dataTransfer.setData('text/plain', String(i));
-        e.dataTransfer.effectAllowed = 'move';
-        node.classList.add('ed-dragging');
-      });
-      node.addEventListener('dragend', function(){
-        node.classList.remove('ed-dragging');
-        scope.querySelectorAll('.ed-dragover').forEach(function(n){ n.classList.remove('ed-dragover'); });
-      });
-      node.addEventListener('dragover', function(e){
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        node.classList.add('ed-dragover');
-      });
-      node.addEventListener('dragleave', function(){ node.classList.remove('ed-dragover'); });
-      node.addEventListener('drop', function(e){
-        e.preventDefault();
-        node.classList.remove('ed-dragover');
-        var from = parseInt(e.dataTransfer.getData('text/plain'), 10);
-        if (isNaN(from) || from === i) return;
-        // retirer d'abord, insérer ensuite : l'index de destination se lit sur
-        // le tableau une fois l'élément sorti, sinon on décale d'un cran
-        var moved = assets.splice(from, 1)[0];
-        assets.splice(from < i ? i - 1 : i, 0, moved);
-        applyAndRefresh();
-      });
+      wireFreePlacement(doc, node, a, assets);
 
       // La légende s'édite au clic, comme les autres textes du site. script.js
       // la rend même vide en mode édition, justement pour qu'il y ait quelque
@@ -2364,6 +2453,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
           a.hidden = !a.hidden;
           applyAndRefresh();
         }),
+        // rendre au rangement automatique ce qu'on a place a la main
+        (a.pos ? edButton(doc, 'sliders', 'Replacer automatiquement (annule le placement à la main)', false, function(){
+          delete a.pos;
+          applyAndRefresh();
+        }) : null),
         // un carrousel porte des `urls`, pas une `url` : ses photos se gèrent
         // par ses propres boutons, pas par cette adresse unique
         (a.type === 'carousel' ? null : edButton(doc, 'link', 'Changer l\'adresse du contenu', false, function(){
@@ -2689,6 +2783,14 @@ body.visual-mode .wrap{ max-width: 1400px; }
             var sectionsHost = doc.querySelector('[data-sections-page]');
             if (sectionsHost) wireSectionEditing(doc, sectionsHost.getAttribute('data-sections-page'));
             wireCardEditing(doc);
+          }
+          // rendre le defilement apres le placement, sinon la page n'est pas
+          // encore assez haute pour qu'il s'applique
+          if (visualScroll){
+            try { frame.contentWindow.scrollTo(0, visualScroll); } catch(e){}
+            setTimeout(function(){
+              try { frame.contentWindow.scrollTo(0, visualScroll); } catch(e){}
+            }, 120);
           }
         })();
       };

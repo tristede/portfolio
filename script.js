@@ -207,7 +207,12 @@
     // the index within the *full* list is what the editor needs to act on
     function attrs(a){
       var i = all.indexOf(a);
-      return ' data-asset-index="' + i + '"' + (a.hidden ? ' data-asset-hidden="1"' : '');
+      // `pos` : position choisie a la main, en pixels de composition (REF_WIDTH).
+      // Absente, le contenu se range tout seul dans la place restante.
+      var p = a.pos;
+      var pinned = (p && isFinite(p.x) && isFinite(p.y) && isFinite(p.w))
+        ? ' data-pos="' + p.x + ',' + p.y + ',' + p.w + '"' : '';
+      return ' data-asset-index="' + i + '"' + pinned + (a.hidden ? ' data-asset-hidden="1"' : '');
     }
     // three preset widths per asset; medium is the default
     function sizeClass(a){ return ' size-' + (a.size || 'md'); }
@@ -432,6 +437,19 @@
   // cherche l'endroit le plus haut où il tient, de gauche à droite. C'est le
   // remplissage qu'on attend d'un vrai mur d'affiches.
   var GAP_X = 38, GAP_Y = 46, STEP = 4;   // STEP : finesse du calcul, en pixels
+  // Pas de largeur de reference figee : une position est enregistree en pixels
+  // reels. Le mur ne se met a l'echelle que si la composition ne rentre pas —
+  // sinon ce que l'on compose n'est pas ce que voit l'ecran d'a cote, et
+  // epingler la premiere affiche la ferait changer de taille sans raison.
+  var MIN_CANVAS = 900;   // en dessous, la composition devient illisible : on empile
+
+  function readPos(el){
+    var raw = el.getAttribute('data-pos');
+    if (!raw) return null;
+    var n = raw.split(',').map(Number);
+    if (n.length < 3 || n.some(isNaN)) return null;
+    return { x: n[0], y: n[1], w: n[2] };
+  }
 
   function packWall(gallery){
     var items = Array.prototype.slice.call(gallery.children);
@@ -439,46 +457,104 @@
 
     // mesurer en flux naturel : les largeurs viennent des tailles S/M/L
     gallery.classList.remove('is-packed');
-    items.forEach(function(el){ el.style.left = el.style.top = ''; });
+    items.forEach(function(el){
+      el.style.left = el.style.top = el.style.width = '';
+    });
 
     var style = getComputedStyle(gallery);
     var width = gallery.clientWidth
       - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-    var boxes = items.map(function(el){
-      return { el: el, w: el.offsetWidth, h: el.offsetHeight,
-               off: parseFloat(getComputedStyle(el).marginTop) || 0 };
+
+    var anyPinned = items.some(function(el){ return !!readPos(el); });
+    // Sous MIN_CANVAS la composition devient trop petite pour se lire : on rend
+    // la main au flux naturel, qui empile dans l'ordre des contenus.
+    if (anyPinned && width < MIN_CANVAS) return;
+
+    // La composition ne se reduit que si elle deborde. Tant qu'elle rentre,
+    // l'echelle vaut 1 et rien ne change de taille — ni en composant, ni en
+    // epinglant la premiere affiche.
+    var reach = 0;
+    items.forEach(function(el){
+      var p = readPos(el);
+      if (p && p.x + p.w > reach) reach = p.x + p.w;
     });
+    var scale = (anyPinned && reach > width) ? width / reach : 1;
 
-    // une seule colonne : le flux naturel fait déjà l'affaire, et empiler
-    // à la main priverait le mobile de sa mise en page fluide
-    var widest = Math.max.apply(null, boxes.map(function(b){ return b.w; }));
-    if (width < widest * 2 + GAP_X){ return; }
+    // Les elements epingles prennent d'abord leur place ; les autres se rangent
+    // ensuite dans ce qui reste. C'est ce qui permet d'ajouter une photo sans
+    // avoir a la placer, sans jamais deranger une composition faite a la main.
+    var pinned = [], loose = [];
+    items.forEach(function(el){
+      var pos = readPos(el);
+      if (pos){
+        el.style.width = (pos.w * scale) + 'px';
+        pinned.push({ el: el, x: pos.x * scale, y: pos.y * scale, w: pos.w * scale });
+      } else {
+        loose.push({ el: el, off: parseFloat(getComputedStyle(el).marginTop) || 0 });
+      }
+    });
+    // l'editeur a besoin de la meme echelle pour convertir un geste de souris en
+    // position enregistree : la lui faire deviner reintroduirait l'ecart
+    gallery.setAttribute('data-scale', scale);
 
-    var cols = Math.max(1, Math.ceil(width / STEP));
-    var sky = new Array(cols);
-    for (var i = 0; i < cols; i++) sky[i] = 0;
+    if (!anyPinned){
+      // une seule colonne : le flux naturel fait deja l'affaire, et empiler
+      // a la main priverait le mobile de sa mise en page fluide
+      var widest = Math.max.apply(null, loose.map(function(b){ return b.el.offsetWidth; }));
+      if (width < widest * 2 + GAP_X) return;
+    }
 
-    var placed = [], usedRight = 0, usedBottom = 0;
-    boxes.forEach(function(b){
-      var span = Math.max(1, Math.ceil((b.w + GAP_X) / STEP));
+    // En mode toile, TOUT est a l'echelle de la composition — y compris ce qui
+    // n'a pas ete place a la main. Sans ca une affiche epinglee et sa voisine
+    // automatique ne seraient pas dans le meme repere, et deplacer la seconde
+    // changerait sa taille au passage.
+    if (anyPinned && scale !== 1){
+      loose.forEach(function(b){ b.el.style.width = (b.el.offsetWidth * scale) + 'px'; });
+    }
+
+    // les hauteurs se lisent apres avoir fixe les largeurs
+    pinned.forEach(function(p){ p.h = p.el.offsetHeight; });
+    loose.forEach(function(b){ b.w = b.el.offsetWidth; b.h = b.el.offsetHeight; });
+
+    var rects = pinned.map(function(p){ return { x: p.x, y: p.y, w: p.w, h: p.h }; });
+    function collides(x, y, w, h){
+      for (var i = 0; i < rects.length; i++){
+        var r = rects[i];
+        if (x < r.x + r.w + GAP_X && r.x < x + w + GAP_X &&
+            y < r.y + r.h + GAP_Y && r.y < y + h + GAP_Y) return true;
+      }
+      return false;
+    }
+
+    var placed = pinned.map(function(p){ return { el: p.el, left: p.x, top: p.y }; });
+    loose.forEach(function(b){
+      // hauteurs candidates : le haut, et le bas de chaque element deja pose —
+      // une place libre commence toujours juste sous quelque chose
+      var ys = [0];
+      rects.forEach(function(r){ ys.push(r.y + r.h + GAP_Y); });
+      ys.sort(function(a, c){ return a - c; });
       var bestX = 0, bestY = Infinity;
-      var limit = Math.max(0, cols - Math.ceil(b.w / STEP));
-      for (var x = 0; x <= limit; x++){
-        var y = 0;
-        for (var k = x; k < Math.min(cols, x + span); k++) if (sky[k] > y) y = sky[k];
-        if (y < bestY - 0.5){ bestY = y; bestX = x; }
+      for (var yi = 0; yi < ys.length && bestY === Infinity; yi++){
+        for (var x = 0; x + b.w <= width; x += STEP){
+          if (!collides(x, ys[yi], b.w, b.h)){ bestX = x; bestY = ys[yi]; break; }
+        }
       }
-      var left = bestX * STEP, top = bestY + b.off;
-      placed.push({ el: b.el, left: left, top: top });
-      for (var k2 = bestX; k2 < Math.min(cols, bestX + span); k2++){
-        sky[k2] = top + b.h + GAP_Y;
-      }
-      if (left + b.w > usedRight) usedRight = left + b.w;
-      if (top + b.h > usedBottom) usedBottom = top + b.h;
+      if (bestY === Infinity){ bestY = Math.max.apply(null, ys); bestX = 0; }
+      var top = bestY + b.off;
+      placed.push({ el: b.el, left: bestX, top: top });
+      rects.push({ x: bestX, y: top, w: b.w, h: b.h });
     });
 
-    // le mur reste centré, comme lorsqu'il était en flex
-    var shift = Math.max(0, (width - usedRight) / 2);
+    var usedRight = 0, usedBottom = 0;
+    rects.forEach(function(r){
+      if (r.x + r.w > usedRight) usedRight = r.x + r.w;
+      if (r.y + r.h > usedBottom) usedBottom = r.y + r.h;
+    });
+
+    // Un mur libre reste calé à gauche : recentrer déplacerait une composition
+    // dès qu'on ajoute un contenu ailleurs. Le mur automatique, lui, se centre
+    // comme avant.
+    var shift = anyPinned ? 0 : Math.max(0, (width - usedRight) / 2);
     gallery.classList.add('is-packed');
     placed.forEach(function(p){
       p.el.style.left = (p.left + shift) + 'px';
