@@ -540,7 +540,6 @@ body.visual-mode .wrap{ max-width: 1400px; }
   var OAUTH_SCOPE = 'public_repo';
 
   var state = { site: {}, projects: [] };
-  var currentSha = null;
   var editingIndex = -1; // -1 = adding new
 
   function $(id){ return document.getElementById(id); }
@@ -582,32 +581,73 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
   function loadData(){
     return ghRequest('/contents/' + DATA_PATH + '?ref=' + BRANCH).then(function(file){
-      currentSha = file.sha;
       return JSON.parse(b64ToUtf8(file.content));
     });
   }
 
-  function saveData(data, message, isRetry){
-    var content = utf8ToB64(JSON.stringify(data, null, 2) + '\n');
-    return ghRequest('/contents/' + DATA_PATH, {
-      method: 'PUT',
-      body: JSON.stringify({ message: message, content: content, sha: currentSha, branch: BRANCH })
-    }).then(function(res){
-      if (res.content && res.content.sha) currentSha = res.content.sha;
-      return res;
-    }).catch(function(err){
-      // our copy of data.json's sha is stale (an upload or another save moved
-      // the branch) — re-read it and write again. What we send is the editor's
-      // own state, so nothing of the user's work is lost.
-      var stale = /409|422|does not match|fast forward/i.test(err.message || '');
-      if (stale && !isRetry){
-        return ghRequest('/contents/' + DATA_PATH + '?ref=' + BRANCH)
-          .then(function(file){
-            currentSha = file.sha;
-            return saveData(data, message, true);
+  // Le sommet de branche que CETTE session d'édition a créé. Tant qu'il est
+  // encore le sommet, l'écriture suivante le REMPLACE au lieu de s'empiler
+  // dessus : même contenu, un seul commit. C'est ce qui évite qu'une session de
+  // travail — un envoi d'image puis cinq enregistrements — produise six commits,
+  // donc six reconstructions de GitHub Pages.
+  var sessionCommitSha = null;
+
+  // entries : [{ path, mode, type, sha }], des blobs déjà créés.
+  function commitEntries(entries, message, attempt){
+    attempt = attempt || 0;
+    return ghRequest('/git/ref/heads/' + BRANCH)
+      .then(function(ref){
+        var tipSha = ref.object.sha;
+        return ghRequest('/git/commits/' + tipSha).then(function(tip){
+          // On n'amende QUE notre propre commit, et seulement s'il est encore
+          // le sommet. Tout autre commit au-dessus signifie que quelqu'un a
+          // poussé entre-temps : on ne réécrit jamais le travail d'un autre.
+          var amend = (tipSha === sessionCommitSha && tip.parents && tip.parents.length === 1);
+          var parent = amend ? tip.parents[0].sha : tipSha;
+          // base_tree reste l'arbre du sommet, amendement ou non : il porte
+          // déjà les fichiers envoyés plus tôt dans la session, qui doivent
+          // survivre au remplacement du commit.
+          return ghRequest('/git/trees', {
+            method: 'POST',
+            body: JSON.stringify({ base_tree: tip.tree.sha, tree: entries })
+          })
+          .then(function(tree){
+            return ghRequest('/git/commits', {
+              method: 'POST',
+              body: JSON.stringify({ message: message, tree: tree.sha, parents: [parent] })
+            });
+          })
+          .then(function(newCommit){
+            return ghRequest('/git/refs/heads/' + BRANCH, {
+              method: 'PATCH',
+              body: JSON.stringify({ sha: newCommit.sha, force: amend })
+            }).then(function(){
+              sessionCommitSha = newCommit.sha;
+              return newCommit;
+            });
           });
-      }
-      throw err;
+        });
+      })
+      .catch(function(err){
+        // le sommet a bougé entre notre lecture et notre écriture : on
+        // recommence sur le nouveau sommet. Les blobs restent valides.
+        var raced = /fast forward|422|409/i.test(err.message || '');
+        if (raced && attempt < 4){
+          sessionCommitSha = null; // ce qui est au-dessus n'est plus à nous
+          return new Promise(function(r){ setTimeout(r, 400 * (attempt + 1)); })
+            .then(function(){ return commitEntries(entries, message, attempt + 1); });
+        }
+        throw err;
+      });
+  }
+
+  function saveData(data, message){
+    var content = utf8ToB64(JSON.stringify(data, null, 2) + '\n');
+    return ghRequest('/git/blobs', {
+      method: 'POST',
+      body: JSON.stringify({ content: content, encoding: 'base64' })
+    }).then(function(blob){
+      return commitEntries([{ path: DATA_PATH, mode: '100644', type: 'blob', sha: blob.sha }], message);
     });
   }
 
@@ -705,52 +745,14 @@ body.visual-mode .wrap{ max-width: 1400px; }
     var lanes = [];
     for (var k = 0; k < Math.min(4, total); k++) lanes.push(worker());
 
-    // Between reading the branch tip and moving it, someone else may have
-    // pushed (another save, another upload, a commit from elsewhere). GitHub
-    // then rejects the update as "not a fast forward" — so re-read the tip and
-    // rebuild the commit on top of it. The blobs stay valid, only the parent
-    // and base tree change.
-    function commitOnTip(attempt){
-      return ghRequest('/git/ref/heads/' + BRANCH)
-        .then(function(ref){
-          var headSha = ref.object.sha;
-          return ghRequest('/git/commits/' + headSha).then(function(commit){
-            return ghRequest('/git/trees', {
-              method: 'POST',
-              body: JSON.stringify({ base_tree: commit.tree.sha, tree: entries })
-            }).then(function(tree){
-              return ghRequest('/git/commits', {
-                method: 'POST',
-                body: JSON.stringify({
-                  message: 'Ajoute ' + total + ' ' + (isDoc ? 'document' : 'image') + (total > 1 ? 's' : '') + ' (' + slug + ')',
-                  tree: tree.sha, parents: [headSha]
-                })
-              });
-            });
-          });
-        })
-        .then(function(newCommit){
-          return ghRequest('/git/refs/heads/' + BRANCH, {
-            method: 'PATCH',
-            body: JSON.stringify({ sha: newCommit.sha })
-          });
-        })
-        .catch(function(err){
-          var raced = /fast forward|422|409/i.test(err.message || '');
-          if (raced && attempt < 4){
-            report('commit');
-            // small backoff, then rebase this batch onto the new tip
-            return new Promise(function(r){ setTimeout(r, 400 * (attempt + 1)); })
-              .then(function(){ return commitOnTip(attempt + 1); });
-          }
-          throw err;
-        });
-    }
-
+    // Le commit passe par commitEntries, comme l'enregistrement : c'est ce qui
+    // permet à l'envoi et aux enregistrements qui suivent de se fondre dans un
+    // seul commit au lieu de s'empiler.
     return Promise.all(lanes)
       .then(function(){
         report('commit');
-        return commitOnTip(0);
+        return commitEntries(entries,
+          'Ajoute ' + total + ' ' + (isDoc ? 'document' : 'image') + (total > 1 ? 's' : '') + ' (' + slug + ')');
       })
       .then(function(){
         // data.json now sits on a newer commit; its blob sha is unchanged, so
@@ -1621,19 +1623,51 @@ body.visual-mode .wrap{ max-width: 1400px; }
     timelineEditingIndex = -1;
   });
 
+  // GitHub Pages reconstruit le site de son côté : « enregistré » ne veut pas
+  // dire « visible ». Plutôt que d'annoncer un délai au jugé, on interroge le
+  // fichier réellement publié jusqu'à ce qu'il corresponde à ce qu'on vient
+  // d'écrire. `cache: 'no-cache'` force la revalidation, sinon on relirait
+  // pendant dix minutes la copie en cache (max-age=600).
+  function waitUntilLive(expected, startedAt){
+    startedAt = startedAt || Date.now();
+    var elapsed = Math.round((Date.now() - startedAt) / 1000);
+    if (elapsed > 240) return Promise.resolve(false);
+    if (elapsed > 3){
+      setStatus($('save-status'), 'Enregistré. Publication en cours… (' + elapsed + ' s)', '');
+    }
+    return fetch('data.json?t=' + Date.now(), { cache: 'no-cache' })
+      .then(function(res){ return res.text(); })
+      .then(function(txt){ return txt.trim() === expected.trim(); })
+      .catch(function(){ return false; })
+      .then(function(live){
+        if (live) return true;
+        return new Promise(function(r){ setTimeout(r, 4000); })
+          .then(function(){ return waitUntilLive(expected, startedAt); });
+      });
+  }
+
   $('save-btn').addEventListener('click', function(){
     collectStateFromForms();
     var btn = $('save-btn');
+    var payload = { site: state.site, projects: state.projects };
+    var expected = JSON.stringify(payload, null, 2) + '\n';
     btn.disabled = true;
     setStatus($('save-status'), 'Enregistrement sur GitHub…', '');
-    saveData({ site: state.site, projects: state.projects }, 'Mise à jour du contenu depuis /admin.html')
+    saveData(payload, 'Mise à jour du contenu depuis /admin.html')
       .then(function(){
-        setStatus($('save-status'), 'Enregistré — le site se mettra à jour dans 30 à 60 secondes.', 'ok');
+        setStatus($('save-status'), 'Enregistré. Publication en cours…', '');
+        btn.disabled = false;            // on peut continuer à travailler pendant la publication
+        return waitUntilLive(expected).then(function(live){
+          setStatus($('save-status'), live
+            ? 'En ligne — le site affiche cette version.'
+            : 'Enregistré, mais la publication tarde. Recharge le site dans une minute.',
+            live ? 'ok' : '');
+        });
       })
       .catch(function(err){
         setStatus($('save-status'), err.message || 'Échec de l\'enregistrement.', 'err');
-      })
-      .then(function(){ btn.disabled = false; });
+        btn.disabled = false;
+      });
   });
 
   // =====================================================================
