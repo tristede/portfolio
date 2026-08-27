@@ -333,13 +333,25 @@ section.projects-section{
 .detail-gallery{
   margin-left: calc(50% - 50vw + var(--sbw, 0px) / 2);
   margin-right: calc(50% - 50vw + var(--sbw, 0px) / 2);
-  padding: 0 clamp(18px, 4vw, 60px);
+  /* Le mur doit prendre la largeur de l'écran : 60 px de marge de chaque côté
+     retiraient 120 px au placement, assez pour renvoyer une affiche à la ligne
+     et creuser un vide derrière elle. */
+  padding: 0 clamp(16px, 2.4vw, 36px);
   margin-top: 56px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
   gap: 46px 38px;
+}
+/* Mur de posters : chaque élément est placé par script.js à l'endroit le plus
+   haut où il tient, pour que rien ne laisse de vide derrière lui. Le flux flex
+   ci-dessus reste la mise en page de repli — colonne unique sur mobile, et
+   affichage correct si le script ne s'exécute pas. */
+.detail-gallery.is-packed{ display: block; position: relative; }
+.detail-gallery.is-packed > *{
+  position: absolute; top: 0; left: 0;
+  margin: 0;   /* les décalages verticaux sont repris dans le calcul */
 }
 .photo{
   position: relative;

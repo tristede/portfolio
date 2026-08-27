@@ -409,6 +409,102 @@
 
     initDocViewers(container);
     initLightbox(container);
+    initWall(container);
+  }
+
+  // ---- Le mur de posters ----------------------------------------------------
+  // En flex, une rangée est aussi haute que son plus grand élément : une photo
+  // courte ne peut pas remonter à côté d'un document haut, ce qui creuse de
+  // grands vides. Aucune propriété CSS ne fait mieux ici — `columns`, qui serait
+  // le réflexe, crée un contexte de fragmentation qui rogne le scotch sur Safari
+  // et casse l'affichage sur Firefox (bug déjà rencontré, ne pas y revenir).
+  //
+  // On place donc chaque élément soi-même, en gardant sa largeur fixe : on
+  // cherche l'endroit le plus haut où il tient, de gauche à droite. C'est le
+  // remplissage qu'on attend d'un vrai mur d'affiches.
+  var GAP_X = 38, GAP_Y = 46, STEP = 4;   // STEP : finesse du calcul, en pixels
+
+  function packWall(gallery){
+    var items = Array.prototype.slice.call(gallery.children);
+    if (!items.length) return;
+
+    // mesurer en flux naturel : les largeurs viennent des tailles S/M/L
+    gallery.classList.remove('is-packed');
+    items.forEach(function(el){ el.style.left = el.style.top = ''; });
+
+    var style = getComputedStyle(gallery);
+    var width = gallery.clientWidth
+      - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    var boxes = items.map(function(el){
+      return { el: el, w: el.offsetWidth, h: el.offsetHeight,
+               off: parseFloat(getComputedStyle(el).marginTop) || 0 };
+    });
+
+    // une seule colonne : le flux naturel fait déjà l'affaire, et empiler
+    // à la main priverait le mobile de sa mise en page fluide
+    var widest = Math.max.apply(null, boxes.map(function(b){ return b.w; }));
+    if (width < widest * 2 + GAP_X){ return; }
+
+    var cols = Math.max(1, Math.ceil(width / STEP));
+    var sky = new Array(cols);
+    for (var i = 0; i < cols; i++) sky[i] = 0;
+
+    var placed = [], usedRight = 0, usedBottom = 0;
+    boxes.forEach(function(b){
+      var span = Math.max(1, Math.ceil((b.w + GAP_X) / STEP));
+      var bestX = 0, bestY = Infinity;
+      var limit = Math.max(0, cols - Math.ceil(b.w / STEP));
+      for (var x = 0; x <= limit; x++){
+        var y = 0;
+        for (var k = x; k < Math.min(cols, x + span); k++) if (sky[k] > y) y = sky[k];
+        if (y < bestY - 0.5){ bestY = y; bestX = x; }
+      }
+      var left = bestX * STEP, top = bestY + b.off;
+      placed.push({ el: b.el, left: left, top: top });
+      for (var k2 = bestX; k2 < Math.min(cols, bestX + span); k2++){
+        sky[k2] = top + b.h + GAP_Y;
+      }
+      if (left + b.w > usedRight) usedRight = left + b.w;
+      if (top + b.h > usedBottom) usedBottom = top + b.h;
+    });
+
+    // le mur reste centré, comme lorsqu'il était en flex
+    var shift = Math.max(0, (width - usedRight) / 2);
+    gallery.classList.add('is-packed');
+    placed.forEach(function(p){
+      p.el.style.left = (p.left + shift) + 'px';
+      p.el.style.top = p.top + 'px';
+    });
+    gallery.style.height = usedBottom + 'px';
+  }
+
+  function initWall(scope){
+    scope.querySelectorAll('.detail-gallery').forEach(function(gallery){
+      var pending = null;
+      function repack(){
+        clearTimeout(pending);
+        pending = setTimeout(function(){ packWall(gallery); }, 60);
+      }
+      repack();
+
+      // Une image qui arrive, une page de PDF qu'on tourne, une police qui se
+      // charge : tout cela change une hauteur, donc le placement.
+      // L'observateur de tailles couvre les trois — replacer ne change aucune
+      // taille, il n'y a donc pas de boucle.
+      if (window.ResizeObserver){
+        var ro = new ResizeObserver(repack);
+        Array.prototype.forEach.call(gallery.children, function(el){ ro.observe(el); });
+      }
+      // Et par-dessus, l'événement `load` de chaque image. C'est redondant une
+      // fois les images en cache, mais c'est le premier affichage — images
+      // encore vides, donc hautes de zéro — qui produisait un mur tassé et des
+      // affiches superposées. Mieux vaut deux déclencheurs qu'un silence.
+      Array.prototype.forEach.call(gallery.querySelectorAll('img'), function(im){
+        if (!im.complete) im.addEventListener('load', repack, { once: true });
+      });
+      window.addEventListener('resize', repack);
+      window.addEventListener('load', repack);
+    });
   }
 
   // Paged document viewer: one page shown at a time, images preloaded lazily
