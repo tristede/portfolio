@@ -260,7 +260,31 @@
       ],
       "desc": "Réalisation d'un reportage vidéo de bout en bout.",
       "featured": true,
-      "thumb": "images/production-d-un-reportage-video-miniature-1787835136197-0.webp"
+      "thumb": "images/production-d-un-reportage-video-miniature-1787835136197-0.webp",
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/production-d-un-reportage-video-1787864379342-0.webp",
+          "hidden": false,
+          "pos": {
+            "x": 53,
+            "y": 29,
+            "w": 594
+          },
+          "caption": "Timeline du projet"
+        },
+        {
+          "type": "video",
+          "url": "https://youtu.be/73Ggp19Jdec?t=919",
+          "hidden": false,
+          "pos": {
+            "x": 575,
+            "y": 97,
+            "w": 714
+          }
+        }
+      ],
+      "subProjects": []
     },
     {
       "id": "projet-360-dei-belgique",
