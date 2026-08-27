@@ -111,7 +111,13 @@ Vocabulaire : `subProjects` s'appelle **« sections »** dans l'interface.
   Un bouton « PDF » permet de convertir les documents envoyés avant cette
   fonctionnalité.
   Le lecteur est **borderless** : ni bordure, ni fond, ni marge intérieure — la
-  page repose directement sur le fond du site, contrôles centrés dessous.
+  page repose directement sur le fond du site. Les commandes sont **en
+  surimpression sur la page** : flèches sur les bords gauche et droite, plein
+  écran en bas à droite ; seul l'indicateur de page reste sous le document.
+  Elles vivent dans `.doc-stage`, qui épouse la page (`width: fit-content`) —
+  s'en remettre à `.doc-viewer` les collerait aux bords du lecteur, bien plus
+  large que le document. Elles restent masquées jusqu'à la classe `is-ready`,
+  posée au chargement de la page : avant, la scène ne fait aucune largeur.
   Un document qui affiche encore un cadre gris n'est donc **pas** converti :
   vérifier que son asset a bien un tableau `pages`.
   Le lecteur porte un ruban de masking tape, comme les photos : il se cale sur

@@ -474,6 +474,10 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
 }
 .doc-viewer:focus-visible{ outline: 2px solid var(--accent-sky); outline-offset: 3px; }
 .doc-stage{
+  position: relative;
+  /* fit-content pour que la scène épouse la page : les commandes se calent sur
+     les bords du document, pas sur ceux du lecteur, qui est bien plus large. */
+  width: fit-content; margin-left: auto; margin-right: auto;
   display: flex; align-items: flex-start; justify-content: center;
   min-height: 320px; max-height: 70vh; padding: 0;
 }
@@ -481,23 +485,34 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
   max-width: 100%; max-height: 66vh; width: auto; height: auto;
   border-radius: 3px; box-shadow: 0 12px 26px -14px rgba(0,0,6,0.9);
 }
+/* seul l'indicateur de page reste sous le document */
 .doc-bar{
-  display: flex; align-items: center; justify-content: center; gap: 14px;
-  padding: 14px 2px 0; border-top: 0; background: transparent;
-}
-.doc-nav{
-  width: 32px; height: 32px; flex: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; border: 1px solid var(--line-strong);
-  background: transparent; color: var(--text);
-  transition: background .15s ease, border-color .15s ease, opacity .15s ease;
+  padding: 12px 2px 0; border-top: 0; background: transparent;
 }
+/* En surimpression sur la page : flèches sur les bords, plein écran en bas à
+   droite. Le fond translucide n'est pas un cadre — sans lui les icônes
+   disparaissent sur une page claire. Masqués tant que la page n'a pas ses
+   dimensions, sinon ils se posent sur une scène encore large de zéro. */
+.doc-nav{
+  position: absolute; z-index: 3;
+  width: 34px; height: 34px; flex: none; cursor: pointer;
+  visibility: hidden;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: 0;
+  background: rgba(6,9,32,0.66); color: #fff;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 18px -10px rgba(0,0,6,0.95);
+  transition: background .15s ease, opacity .15s ease;
+}
+.doc-viewer.is-ready .doc-nav{ visibility: visible; }
+.doc-prev{ left: 12px; top: 50%; margin-top: -17px; }
+.doc-next{ right: 12px; top: 50%; margin-top: -17px; }
+.doc-full{ right: 12px; bottom: 12px; }
 .doc-nav svg{ width: 16px; height: 16px; }
-.doc-nav:hover:not(:disabled){ background: var(--accent); border-color: var(--accent-sky); }
+.doc-nav:hover:not(:disabled){ background: var(--accent); }
 .doc-nav:disabled{ opacity: .35; cursor: default; }
-/* le plein écran n'est pas une navigation : un peu d'air le détache du couple
-   précédent/suivant */
-.doc-full{ margin-left: 6px; }
 .doc-count{
   font-size: 12.5px; font-weight: 600; color: var(--text-dim);
   font-variant-numeric: tabular-nums; min-width: 62px; text-align: center;

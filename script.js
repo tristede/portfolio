@@ -245,15 +245,15 @@
       // one self-contained viewer: a single page on screen at a time, with our
       // own controls — never a stack of every page.
       return '<div class="detail-doc doc-viewer" data-doc-pages="' + encodeURIComponent(JSON.stringify(pages)) + '">' +
+        // les commandes vivent DANS la scène : c'est elle qui épouse la page,
+        // alors que le lecteur, lui, occupe toute la largeur disponible
         '<div class="doc-stage">' +
           '<img src="' + pages[0] + '" alt="Page 1" draggable="false">' +
-        '</div>' +
-        '<div class="doc-bar">' +
           '<button class="doc-nav doc-prev" type="button" aria-label="Page précédente">' + UI_ICON.prev + '</button>' +
-          '<span class="doc-count">1 / ' + pages.length + '</span>' +
           '<button class="doc-nav doc-next" type="button" aria-label="Page suivante">' + UI_ICON.next + '</button>' +
           '<button class="doc-nav doc-full" type="button" aria-label="Afficher en plein écran">' + UI_ICON.expand + '</button>' +
         '</div>' +
+        '<div class="doc-bar"><span class="doc-count">1 / ' + pages.length + '</span></div>' +
       '</div>';
     }
 
@@ -391,6 +391,10 @@
 
       v.tabIndex = 0;
       show(0);
+
+      function markReady(){ v.classList.add('is-ready'); }
+      if (img.complete && img.naturalWidth) markReady();
+      else img.addEventListener('load', markReady, { once: true });
     });
   }
 
