@@ -455,12 +455,26 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
    compact viewer with our own controls, identical in every browser. */
 .doc-viewer{
   /* borderless: no frame, no plate — the page sits straight on the background */
+  position: relative;
   max-width: 720px; margin-left: auto; margin-right: auto;
   border: 0; background: transparent;
 }
+/* scotché au mur comme les photos. Le ruban se cale sur le haut du lecteur,
+   qui est aussi le haut de la page : .doc-stage aligne son image en flex-start
+   précisément pour que les deux ne se désolidarisent jamais. */
+.doc-viewer::before{
+  content: ""; position: absolute; z-index: 2;
+  top: -19px; left: 50%;
+  width: 156px; height: 38px; margin-left: -78px;
+  background: url('images/tape/tape-1.webp') center/100% 100% no-repeat;
+  opacity: 0.94;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+  transform: rotate(-2.5deg);
+  pointer-events: none;
+}
 .doc-viewer:focus-visible{ outline: 2px solid var(--accent-sky); outline-offset: 3px; }
 .doc-stage{
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: flex-start; justify-content: center;
   min-height: 320px; max-height: 70vh; padding: 0;
 }
 .doc-stage img{
