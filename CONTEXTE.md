@@ -38,6 +38,7 @@ images/                    visuels (WebP) + images/tape/ (4 rubans de masking ta
 docs/                      PDF envoyés depuis l'admin
 _artifact_preview.html     généré, gitignoré — sert uniquement à publier l'Artifact
 tools/build_preview.py     génère le fichier ci-dessus
+tools/pdfpages.swift       convertit un PDF en images, hors navigateur
 ```
 
 Header et footer sont copiés-collés dans chaque page (choix assumé : pas de build).
@@ -113,6 +114,9 @@ Vocabulaire : `subProjects` s'appelle **« sections »** dans l'interface.
   page repose directement sur le fond du site, contrôles centrés dessous.
   Un document qui affiche encore un cadre gris n'est donc **pas** converti :
   vérifier que son asset a bien un tableau `pages`.
+  Le lecteur porte un ruban de masking tape, comme les photos : il se cale sur
+  le haut du lecteur, et `.doc-stage` aligne son image en `flex-start` pour que
+  le haut de la page coïncide toujours avec lui.
   Les pages s'ouvrent en plein écran comme les photos (clic sur la page ou
   bouton dédié), et la pagination faite dans la visionneuse est reportée dans
   le lecteur. **Aucun lien ne sort du portfolio** : Adam ne veut pas que le
@@ -170,6 +174,13 @@ a bougé entre-temps (erreur 422 « not a fast forward »).
 - **`confirm()` avant `input.click()`** empêche l'ouverture du sélecteur de
   fichiers (la modale consomme l'activation utilisateur). Déjà corrigé, ne pas
   réintroduire.
+- **Filet clair d'1 px** en haut d'une page de PDF rastérisée : le convertisseur
+  remplit le bitmap en blanc avant de dessiner la page, et un arrondi d'un
+  demi-pixel laisse ce fond affleurer sur une rangée — invisible sur une page
+  blanche, très visible sur un fond sombre. `tools/pdfpages.swift` déborde donc
+  le dessin d'1 px sur les quatre bords. Se vérifie en mesurant, pas à l'œil :
+  dessiner l'image dans un `<canvas>` et comparer la moyenne de la rangée 0 à
+  celle de la rangée 1.
 - **`</script>` littéral** dans une chaîne JS coupe le bloc `<script>` de
   `admin.html` : toujours écrire `<\/script>`.
 - **Interception des liens** dans l'iframe de l'éditeur : ignorer les clics sur
