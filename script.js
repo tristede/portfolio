@@ -361,12 +361,15 @@
 
   function subProjectsHTML(list){
     if (!list || !list.length) return '';
+    // Pas de titre « Sections » sur le site : « section » est le vocabulaire de
+    // l'éditeur, pas celui du visiteur. Ce qu'il doit voir, c'est le titre que
+    // la section porte — « Multipage stratégique » — et c'est donc lui qu'on met
+    // en avant.
     return '<div class="detail-subprojects">' +
-      '<h2 class="detail-sub-heading">Sections</h2>' +
       list.map(function(sp){
         return '<div class="subproject">' +
           (sp.medium ? '<span class="tag">' + (mediumLabel[sp.medium] || sp.medium) + '</span>' : '') +
-          '<h3>' + sp.title + '</h3>' +
+          '<h2 class="subproject-title">' + sp.title + '</h2>' +
           (sp.desc ? '<p class="detail-desc">' + sp.desc + '</p>' : '') +
           (sp.link ? '<a class="pill-btn" href="' + sp.link + '" target="_blank" rel="noopener">Voir ' + UI_ICON.external + '</a>' : '') +
           mediaBlocksHTML(sp) +

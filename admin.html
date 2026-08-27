@@ -2368,6 +2368,13 @@ body.visual-mode .wrap{ max-width: 1400px; }
     var metaRow = doc.querySelector('.detail-meta-row');
     if (metaRow){
       edTools(doc, metaRow, [
+        // La miniature ne se choisissait qu'en cliquant l'étoile d'une image
+        // existante : un projet qui n'a encore aucune image n'avait donc aucun
+        // moyen d'en recevoir une depuis sa page.
+        edButton(doc, 'image', 'Changer la miniature (envoyer une image)', false, function(){
+          pendingUpload = { owner: p, hint: p.title + '-miniature', thumbOnly: true };
+          $('visual-image-upload').click();
+        }),
         edButton(doc, 'tag', 'Modifier les tags', false, function(){
           var v = prompt('Tags, séparés par des virgules :', (p.tags || []).join(', '));
           if (v === null) return;

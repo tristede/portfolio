@@ -238,9 +238,11 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
    de respirer avant le titre suivant, les cartes n'en ont pas besoin apres.
    A 84px de chaque cote, les 168px de vide donnaient l'impression que la
    page s'arretait la. */
+/* Ni trait ni grand vide entre les sections : ce sont des parties d'une meme
+   page, pas des pages separees. Le titre suffit a marquer le changement. */
 section.projects-section{
-  padding: clamp(52px, 6vw, 76px) 0 clamp(34px, 4vw, 50px);
-  border-top: 1px solid var(--line); position:relative; z-index:1;
+  padding: clamp(34px, 3.6vw, 48px) 0 clamp(20px, 2.4vw, 30px);
+  position:relative; z-index:1;
 }
 .section-head{ margin-bottom: 40px; max-width: 640px; }
 .section-head .kicker{ color: var(--text-faint); font-size:13px; font-weight:600; letter-spacing:0.04em; margin-bottom:10px; display:block; }
@@ -623,12 +625,12 @@ section.projects-section{
 @media (max-width: 700px){ .detail-doc iframe{ height: 460px; } }
 @media (max-width: 700px){ .detail-site-embed iframe{ height: 380px; } }
 
-.detail-subprojects{ margin-top: 44px; padding-top: 32px; border-top: 1px solid var(--line); }
-.detail-sub-heading{ font-size: 20px; margin-bottom: 20px; }
-.subproject{
-  padding: 22px 0; border-top: 1px solid var(--line);
-}
-.subproject:first-of-type{ border-top:none; padding-top:0; }
+.detail-subprojects{ margin-top: 34px; }
+/* Le titre de la section est ce que voit le visiteur : c'est lui qui porte
+   le niveau, pas un intitule « Sections » qui n'existe que dans l'editeur. */
+.subproject-title{ font-size: clamp(20px, 2.2vw, 25px); margin-bottom: 6px; }
+.subproject{ padding: 26px 0 0; }
+.subproject:first-of-type{ padding-top: 0; }
 .subproject h3{ font-family: var(--font-display); font-size: 18px; margin: 8px 0 8px; }
 .subproject .detail-desc{ font-size: 14.5px; margin-bottom: 14px; }
 .subproject .detail-gallery{ margin-top: 14px; }
