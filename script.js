@@ -256,8 +256,14 @@
       }
       // each photo is its own "taped to the wall" figure — the wrapper also
       // gives the admin editor a host for its per-asset controls.
+      // Pas de `loading="lazy"` ici, et c'est volontaire : le mur a besoin de la
+      // hauteur reelle de chaque image pour placer les suivantes. Une image
+      // differee mesure zero, le mur se calcule donc ecrase, et l'image placee
+      // dans ce mur ecrase ne declenche jamais son chargement — chacune attend
+      // l'autre, et plus rien ne s'affiche. `decoding="async"` garde le decodage
+      // hors du fil principal, sans differer la requete.
       return '<figure class="photo photo-' + n + sizeClass(a) + '"' + attrs(a) + '>' +
-        '<img src="' + a.url + '" alt="' + obj.title + '" loading="lazy" draggable="false">' +
+        '<img src="' + a.url + '" alt="' + obj.title + '" decoding="async" draggable="false">' +
         captionHTML(a, 'figcaption') +
       '</figure>';
     }
