@@ -366,7 +366,21 @@
           "url": "https://docs.google.com/document/d/e/2PACX-1vTYKJySMkgsxDHJtsHlcqAw3R4OdHJ7pKAgIIK6ibIPfU1WZtr92o04bLXakzMtV4qLgIR5Z12EbAgn/pub",
           "hidden": false,
           "caption": "Article long, réalisé dans le cadre du projet \"Feuille verte\", encadré par Julie Nicosie. J'ai interviewé M. David Bol, fondateur de l'ISIT-BE.",
-          "size": "sm"
+          "size": "lg"
+        },
+        {
+          "type": "doc",
+          "url": "https://docs.google.com/document/d/e/2PACX-1vQsn2XagQwd6QKsJSUsv_3X_myQzpPFhR8gzOiXMBU_-FBcrKtq0-UlH9rK_Dwzzv0EFnHccMM15YIe/pub",
+          "hidden": false,
+          "size": "lg",
+          "caption": "Article court réalisé dans le cadre du cours d'écriture journalistique, encadré par Bernard Buchel. J'ai interviewé un jeune des quartiers difficiles d'Anderlecht."
+        },
+        {
+          "type": "doc",
+          "url": "https://docs.google.com/document/d/e/2PACX-1vTYKJySMkgsxDHJtsHlcqAw3R4OdHJ7pKAgIIK6ibIPfU1WZtr92o04bLXakzMtV4qLgIR5Z12EbAgn/pub",
+          "hidden": false,
+          "size": "lg",
+          "caption": "Article court réalisé dans le cadre du cours d'écriture journalistique, encadré par Bernard Buchel. J'ai interviewé le fondateur de Team Oasis Forest, club de futsal évoluant en ligue belge."
         }
       ],
       "subProjects": []
