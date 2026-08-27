@@ -293,8 +293,11 @@
 
   // Documents: PDFs embed natively in every modern browser; Google Docs/Slides/
   // Sheets have a /preview form; Office files have no native embed, so they get
-  // routed through Microsoft's public viewer. A direct link always sits below,
-  // because any of these can be blocked or unavailable.
+  // routed through Microsoft's public viewer.
+  // Aucun lien de repli sous l'intégration : le visiteur ne doit pas être invité
+  // à quitter le portfolio. La contrepartie est assumée — si l'hébergeur refuse
+  // l'intégration, le cadre reste vide. La parade est de convertir le document
+  // en pages avec le bouton « PDF », qui ne dépend alors plus de personne.
   function docEmbedHTML(url, pages){
     // Converted at upload: show the pages as plain images. No browser PDF
     // viewer means no toolbar we can't style, and the same look everywhere.
@@ -306,7 +309,7 @@
     if (embedded) url = embedded[1];
 
     var lower = url.toLowerCase();
-    var src = null, note = '';
+    var src = null;
 
     // Lien « Publier sur le web » : /<type>/d/e/<jeton>/pub. À tester AVANT la
     // forme /d/<id>, dont la capture ramasserait le « e » du chemin et
@@ -330,7 +333,6 @@
       src = url + (url.indexOf('#') === -1 ? '#toolbar=0&navpanes=0&scrollbar=0&view=FitH' : '');
     } else if (/\.(docx?|pptx?|xlsx?)($|\?|#)/.test(lower)){
       src = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(url);
-      note = 'Aperçu fourni par le visualiseur Office de Microsoft.';
     }
 
     if (!src){
@@ -338,10 +340,10 @@
         '<a class="btn btn-primary" href="' + url + '" target="_blank" rel="noopener">Ouvrir le document ' + UI_ICON.external + '</a>' +
       '</div>';
     }
+    // Pas de mention sous le document ni de lien de repli : rien ne doit inviter
+    // le visiteur à quitter le portfolio, comme pour le lecteur de PDF.
     return '<div class="detail-doc">' +
       '<iframe src="' + src + '" title="Document" loading="lazy"></iframe>' +
-      '<p class="detail-embed-caption">' + (note ? note + ' ' : '') +
-        'Si rien ne s\'affiche, <a href="' + url + '" target="_blank" rel="noopener">ouvre le document directement ' + UI_ICON.external + '</a>.</p>' +
     '</div>';
   }
 
