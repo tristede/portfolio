@@ -538,7 +538,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // dix minutes dans une version perimee sans que rien ne le signale — une
   // fonction annoncee comme livree parait alors simplement absente. Le panneau
   // compare donc ce qu'il execute a ce que le serveur sert, et le dit.
-  var ADMIN_BUILD = '2026-08-27-c';
+  var ADMIN_BUILD = '2026-08-27-d';
   (function watchAdminVersion(){
     setTimeout(function(){
       fetch('admin.html', { cache: 'no-store' })
@@ -672,9 +672,20 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // entries : [{ path, mode, type, sha }], des blobs déjà créés.
   function commitEntriesNow(entries, message, attempt, lastTree){
     attempt = attempt || 0;
-    return ghRequest('/git/ref/heads/' + BRANCH)
-      .then(function(ref){
-        var tipSha = ref.object.sha;
+    // Quand c'est NOUS qui venons de deplacer la reference, on sait ou elle est.
+    // La redemander a GitHub dans la foulee renvoie souvent la valeur d'avant :
+    // la lecture est servie par un cache qui n'a pas encore rattrape l'ecriture.
+    // On construisait alors sur un parent perime, et la reference refusait de
+    // bouger — huit fois de suite, puisque chaque tentative relisait de meme.
+    // Au premier essai on fait donc confiance a ce qu'on a ecrit ; des le
+    // premier echec on relit pour de bon, ce qui couvre une poussee exterieure.
+    var tipRead = (sessionCommitSha && attempt === 0)
+      ? Promise.resolve(sessionCommitSha)
+      : ghRequest('/git/ref/heads/' + BRANCH).then(function(ref){ return ref.object.sha; });
+
+    return tipRead
+      .then(function(tipSha){
+        // un commit se lit par son empreinte : immuable, donc jamais perime
         return ghRequest('/git/commits/' + tipSha).then(function(tip){
           // On n'amende QUE notre propre commit, et seulement s'il est encore
           // le sommet. Tout autre commit au-dessus signifie que quelqu'un a
