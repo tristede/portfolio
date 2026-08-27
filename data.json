@@ -36,6 +36,29 @@
         "desc": "Stage de deuxième année : montage vidéo, community management, création de contenu.",
         "current": false
       }
+    ],
+    "sections": [
+      {
+        "id": "perso",
+        "page": "perso",
+        "kicker": "01 — Perso",
+        "title": "Projets perso",
+        "desc": "Des projets menés en dehors du cadre scolaire, par envie de créer."
+      },
+      {
+        "id": "academique",
+        "page": "academique",
+        "kicker": "02 — Académique",
+        "title": "Projets académiques",
+        "desc": "Travaux réalisés dans le cadre de ma formation en communication."
+      },
+      {
+        "id": "stage",
+        "page": "academique",
+        "kicker": "Stage — En Esprit",
+        "title": "Stage de deuxième",
+        "desc": "Réalisations produites durant mon stage chez En Esprit."
+      }
     ]
   },
   "projects": [

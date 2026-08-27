@@ -23,17 +23,12 @@
 </header>
 
 <main>
-  <section class="projects-section" style="border-top:none;">
-    <div class="wrap">
-      <a class="pill-btn back-link" href="index.html"><svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg> Accueil</a>
-      <div class="section-head">
-        <span class="kicker">01 — Perso</span>
-        <h1>Projets <span class="grad-text">perso</span></h1>
-        <p>Des projets menés en dehors du cadre scolaire, par envie de créer.</p>
-      </div>
-      <div class="grid" data-group="perso"></div>
-    </div>
-  </section>
+  <div class="wrap" style="padding-top:34px;">
+    <a class="pill-btn back-link" href="index.html"><svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg> Accueil</a>
+  </div>
+  <!-- Les sections sont ecrites dans data.json et rendues par script.js :
+       c'est ce qui permet de les creer et de les renommer depuis /admin.html -->
+  <div data-sections-page="perso"></div>
 </main>
 
 <footer id="contact">

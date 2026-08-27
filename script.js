@@ -654,6 +654,51 @@
     });
   }
 
+  // Les sections principales viennent des données, plus du HTML : c'est ce qui
+  // permet de les créer, renommer et réordonner depuis le panneau. Chaque page
+  // de grille porte un conteneur `data-sections-page`, et reçoit les sections
+  // qui lui sont affectées.
+  var DEFAULT_SECTIONS = [
+    { id: 'perso', page: 'perso', kicker: '01 — Perso', title: 'Projets perso', desc: '' },
+    { id: 'academique', page: 'academique', kicker: '02 — Académique', title: 'Projets académiques', desc: '' },
+    { id: 'stage', page: 'academique', kicker: 'Stage — En Esprit', title: 'Stage de deuxième', desc: '' }
+  ];
+
+  function sectionsOf(site){
+    var list = site && Array.isArray(site.sections) ? site.sections : null;
+    return (list && list.length) ? list : DEFAULT_SECTIONS;
+  }
+
+  // Le dégradé portait sur un mot choisi à la main dans le HTML. Le titre étant
+  // désormais du texte libre, c'est le dernier mot qui le reçoit : on garde
+  // l'effet sans demander de balises à qui écrit le titre.
+  function titleWithAccent(title){
+    var words = String(title || '').trim().split(/\s+/);
+    if (words.length < 2) return '<span class="grad-text">' + (words[0] || '') + '</span>';
+    var last = words.pop();
+    return words.join(' ') + ' <span class="grad-text">' + last + '</span>';
+  }
+
+  function renderSections(site){
+    var sections = sectionsOf(site);
+    document.querySelectorAll('[data-sections-page]').forEach(function(host){
+      var page = host.getAttribute('data-sections-page');
+      var mine = sections.filter(function(s){ return (s.page || 'perso') === page; });
+      host.innerHTML = mine.map(function(s, n){
+        return '<section class="projects-section" id="' + s.id + '" data-section-id="' + s.id + '">' +
+          '<div class="wrap">' +
+            '<div class="section-head' + (n ? ' sub' : '') + '">' +
+              '<span class="kicker" data-section-kicker>' + (s.kicker || '') + '</span>' +
+              (n ? '<h2' : '<h1') + ' data-section-title>' + titleWithAccent(s.title) + (n ? '</h2>' : '</h1>') +
+              '<p data-section-desc>' + (s.desc || '') + '</p>' +
+            '</div>' +
+            '<div class="grid" data-group="' + s.id + '"></div>' +
+          '</div>' +
+        '</section>';
+      }).join('');
+    });
+  }
+
   function renderGrids(projects){
     var shown = window.__EDIT_MODE__ ? projects : projects.filter(function(p){ return !p.hidden; });
     document.querySelectorAll('.grid[data-group]').forEach(function(grid){
@@ -865,6 +910,7 @@
       applySiteTexts(site);
       applyFavori(site, projects);
       renderTimeline(site.timeline);
+      renderSections(site);   // avant renderGrids : c'est lui qui cree les grilles
       renderGrids(projects);
       renderProjectDetail(site, projects);
       initScramble();

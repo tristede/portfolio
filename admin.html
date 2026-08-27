@@ -2036,6 +2036,99 @@ body.visual-mode .wrap{ max-width: 1400px; }
     return state.projects[idx] || null;
   }
 
+  // ---- Sections principales -------------------------------------------------
+  // Elles vivent dans data.json, comme les sections d'un projet, et s'editent de
+  // la meme facon : titre et texte au clic, boutons au survol.
+  function siteSections(){
+    if (!Array.isArray(state.site.sections) || !state.site.sections.length){
+      state.site.sections = [
+        { id: 'perso', page: 'perso', kicker: '01 — Perso', title: 'Projets perso', desc: '' },
+        { id: 'academique', page: 'academique', kicker: '02 — Académique', title: 'Projets académiques', desc: '' },
+        { id: 'stage', page: 'academique', kicker: 'Stage — En Esprit', title: 'Stage de deuxième', desc: '' }
+      ];
+    }
+    return state.site.sections;
+  }
+
+  function wireSectionEditing(doc, page){
+    var all = siteSections();
+    // l'ordre affiche est celui des sections de CETTE page ; deplacer doit agir
+    // sur le tableau complet, d'ou le passage par les index reels
+    var onPage = all.filter(function(s){ return (s.page || 'perso') === page; });
+
+    doc.querySelectorAll('[data-section-id]').forEach(function(node){
+      var id = node.getAttribute('data-section-id');
+      var s = all.filter(function(x){ return x.id === id; })[0];
+      if (!s) return;
+      var rank = onPage.indexOf(s);
+
+      bindEditable(node.querySelector('[data-section-kicker]'),
+        function(){ return s.kicker || ''; }, function(v){ s.kicker = v; });
+      bindEditable(node.querySelector('[data-section-title]'),
+        function(){ return s.title || ''; }, function(v){ s.title = v; });
+      bindEditable(node.querySelector('[data-section-desc]'),
+        function(){ return s.desc || ''; }, function(v){ s.desc = v; }, true);
+
+      function swapWith(other){
+        var i = all.indexOf(s), j = all.indexOf(other);
+        var tmp = all[i]; all[i] = all[j]; all[j] = tmp;
+        applyAndRefresh();
+      }
+
+      var head = node.querySelector('.section-head');
+      edTools(doc, head, [
+        rank > 0 ? edButton(doc, 'up', 'Remonter la section', false, function(){ swapWith(onPage[rank - 1]); }) : null,
+        rank < onPage.length - 1 ? edButton(doc, 'down', 'Descendre la section', false, function(){ swapWith(onPage[rank + 1]); }) : null,
+        edButton(doc, 'close', 'Supprimer la section', true, function(){
+          var orphelins = state.projects.filter(function(p){ return p.ctx === s.id; });
+          var autres = all.filter(function(x){ return x !== s; });
+          if (!autres.length){ alert('C\'est la dernière section — il en faut au moins une.'); return; }
+          // de preference une section de la MEME page : un projet academique
+          // n'a rien a faire dans les projets perso parce qu'ils viennent en
+          // premier dans le tableau
+          var memePage = autres.filter(function(x){ return (x.page || 'perso') === (s.page || 'perso'); });
+          autres = memePage.length ? memePage : autres;
+          // Ne jamais laisser des projets sans section : ils deviendraient
+          // invisibles partout, sans que rien ne le signale.
+          var msg = orphelins.length
+            ? 'Supprimer « ' + s.title + ' » ?\n\n' + orphelins.length + ' projet(s) s\'y trouvent : ils seront déplacés vers « ' + autres[0].title +' ».'
+            : 'Supprimer la section « ' + s.title + ' » ?';
+          if (!confirm(msg)) return;
+          orphelins.forEach(function(p){ p.ctx = autres[0].id; });
+          all.splice(all.indexOf(s), 1);
+          applyAndRefresh();
+        })
+      ]);
+    });
+
+    // ajouter une section en bas de la page courante
+    var host = doc.querySelector('[data-sections-page]');
+    if (host){
+      var bar = doc.createElement('div');
+      bar.className = 'ed-addbar';
+      bar.style.margin = '0 auto 40px';
+      bar.style.maxWidth = '1120px';
+      bar.style.padding = '0 28px';
+      var b = doc.createElement('button');
+      b.type = 'button';
+      b.className = 'ed-add';
+      b.textContent = '+ Nouvelle section principale';
+      b.addEventListener('click', function(e){
+        e.preventDefault(); e.stopPropagation();
+        var title = prompt('Titre de la nouvelle section :', '');
+        if (!title || !title.trim()) return;
+        title = title.trim();
+        var base = slugify(title) || 'section';
+        var id = base, n = 2;
+        while (all.some(function(x){ return x.id === id; })){ id = base + '-' + (n++); }
+        all.push({ id: id, page: page, kicker: '', title: title, desc: '' });
+        applyAndRefresh();
+      });
+      bar.appendChild(b);
+      host.appendChild(bar);
+    }
+  }
+
   function wireCardEditing(doc){
     doc.querySelectorAll('.card').forEach(function(card){
       var href = card.getAttribute('href') || '';
@@ -2424,12 +2517,15 @@ body.visual-mode .wrap{ max-width: 1400px; }
           var k = keys[parseInt(raw, 10) - 1];
           if (k){ p.medium = k; applyAndRefresh(); }
         }),
-        edButton(doc, 'folder', 'Changer la catégorie', false, function(){
-          var keys = ['perso', 'academique', 'stage'];
-          var raw = prompt('Catégorie :\n\n1. Projets perso\n2. Projets académiques\n3. Stage\n\nNuméro :', '');
+        // la liste vient des sections, qui sont desormais modifiables : la figer
+        // ici rendrait toute section creee inatteignable
+        edButton(doc, 'folder', 'Déplacer vers une autre section', false, function(){
+          var secs = siteSections();
+          var lines = secs.map(function(s, n){ return (n + 1) + '. ' + s.title; }).join('\n');
+          var raw = prompt('Section du projet :\n\n' + lines + '\n\nNuméro :', '');
           if (!raw) return;
-          var k = keys[parseInt(raw, 10) - 1];
-          if (k){ p.ctx = k; applyAndRefresh(); }
+          var s = secs[parseInt(raw, 10) - 1];
+          if (s){ p.ctx = s.id; applyAndRefresh(); }
         }),
         edButton(doc, 'link', 'Lien externe (site à visiter)', false, function(){
           var v = prompt('Lien externe du projet (laisse vide pour retirer) :', p.link || '');
@@ -2590,6 +2686,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
           if (page === 'projet.html') wireDetailEditing(doc, projectId);
           else {
             if (page === 'index.html') wireHomeEditing(doc);
+            var sectionsHost = doc.querySelector('[data-sections-page]');
+            if (sectionsHost) wireSectionEditing(doc, sectionsHost.getAttribute('data-sections-page'));
             wireCardEditing(doc);
           }
         })();
