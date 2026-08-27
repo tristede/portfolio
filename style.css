@@ -481,15 +481,13 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
 .doc-nav svg{ width: 16px; height: 16px; }
 .doc-nav:hover:not(:disabled){ background: var(--accent); border-color: var(--accent-sky); }
 .doc-nav:disabled{ opacity: .35; cursor: default; }
+/* le plein écran n'est pas une navigation : un peu d'air le détache du couple
+   précédent/suivant */
+.doc-full{ margin-left: 6px; }
 .doc-count{
   font-size: 12.5px; font-weight: 600; color: var(--text-dim);
   font-variant-numeric: tabular-nums; min-width: 62px; text-align: center;
 }
-.doc-open{
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 12.5px; font-weight: 600; color: var(--accent-sky);
-}
-.doc-open:hover{ text-decoration: underline; }
 /* borderless: no frame and no white plate — the viewer sits straight on the
    page background */
 .detail-doc iframe{

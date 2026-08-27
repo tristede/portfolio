@@ -24,7 +24,8 @@
     next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
     arrowRight: '<svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
     arrowLeft: '<svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>',
-    external: '<svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 16L18 6M9.5 6H18v8.5"/></svg>'
+    external: '<svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 16L18 6M9.5 6H18v8.5"/></svg>',
+    expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg>'
   };
 
   var icons = {
@@ -251,7 +252,7 @@
           '<button class="doc-nav doc-prev" type="button" aria-label="Page précédente">' + UI_ICON.prev + '</button>' +
           '<span class="doc-count">1 / ' + pages.length + '</span>' +
           '<button class="doc-nav doc-next" type="button" aria-label="Page suivante">' + UI_ICON.next + '</button>' +
-          '<a class="doc-open" href="' + url + '" target="_blank" rel="noopener">Ouvrir le PDF ' + UI_ICON.external + '</a>' +
+          '<button class="doc-nav doc-full" type="button" aria-label="Afficher en plein écran">' + UI_ICON.expand + '</button>' +
         '</div>' +
       '</div>';
     }
@@ -354,6 +355,7 @@
       var count = v.querySelector('.doc-count');
       var prev = v.querySelector('.doc-prev');
       var next = v.querySelector('.doc-next');
+      var full = v.querySelector('.doc-full');
       var i = 0;
 
       function show(n){
@@ -373,34 +375,48 @@
         if (e.key === 'ArrowLeft') show(i - 1);
         if (e.key === 'ArrowRight') show(i + 1);
       });
+
+      // Pages open full-screen exactly like a photo. Paging inside the overlay
+      // reports back through `show`, so closing it leaves the reader on the
+      // page you stopped at rather than snapping back. The button matters as
+      // much as the click: on touch there is no cursor to hint at it.
+      if (!window.__EDIT_MODE__){
+        var openFull = function(){ lightbox().open(pages, i, show); };
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', openFull);
+        if (full) full.addEventListener('click', openFull);
+      } else if (full){
+        full.remove();
+      }
+
       v.tabIndex = 0;
       show(0);
     });
   }
 
-  // Click any gallery image to view it full-screen. Right-click, dragging and
-  // the long-press "save image" menu are suppressed inside the viewer — this
-  // discourages casual copying, it is NOT real protection (a screenshot or the
-  // browser's dev tools still get the file).
-  function initLightbox(scope){
-    // in the editor a click on an image belongs to the editing controls
-    if (window.__EDIT_MODE__) return;
-    var gallery = scope.querySelectorAll('.detail-gallery img');
-    if (!gallery.length) return;
+  // Full-screen viewer, shared by the galleries and the document reader: one
+  // overlay for the whole page, built the first time something needs it.
+  // Right-click, dragging and the long-press "save image" menu are suppressed
+  // inside it — this discourages casual copying, it is NOT real protection
+  // (a screenshot or the browser's dev tools still get the file).
+  var lightboxAPI = null;
+  function lightbox(){
+    if (lightboxAPI) return lightboxAPI;
 
     var box = document.createElement('div');
     box.className = 'lightbox';
     box.setAttribute('aria-hidden', 'true');
     box.innerHTML =
       '<button class="lightbox-close" type="button" aria-label="Fermer">' + UI_ICON.close + '</button>' +
-      '<button class="lightbox-nav lightbox-prev" type="button" aria-label="Image précédente">' + UI_ICON.prev + '</button>' +
+      '<button class="lightbox-nav lightbox-prev" type="button" aria-label="Précédent">' + UI_ICON.prev + '</button>' +
       '<img alt="" draggable="false">' +
-      '<button class="lightbox-nav lightbox-next" type="button" aria-label="Image suivante">' + UI_ICON.next + '</button>';
+      '<button class="lightbox-nav lightbox-next" type="button" aria-label="Suivant">' + UI_ICON.next + '</button>';
     document.body.appendChild(box);
 
     var imgEl = box.querySelector('img');
-    var srcs = Array.prototype.map.call(gallery, function(im){ return im.getAttribute('src'); });
+    var srcs = [];
     var index = 0;
+    var onChange = null;
 
     function show(i){
       index = (i + srcs.length) % srcs.length;
@@ -408,14 +424,14 @@
       var multiple = srcs.length > 1;
       box.querySelector('.lightbox-prev').style.display = multiple ? '' : 'none';
       box.querySelector('.lightbox-next').style.display = multiple ? '' : 'none';
+      if (onChange) onChange(index);
     }
-    function open(i){ show(i); box.classList.add('is-open'); box.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; }
-    function close(){ box.classList.remove('is-open'); box.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
-
-    gallery.forEach(function(im, i){
-      im.style.cursor = 'zoom-in';
-      im.addEventListener('click', function(){ open(i); });
-    });
+    function close(){
+      box.classList.remove('is-open');
+      box.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      onChange = null;
+    }
 
     box.querySelector('.lightbox-close').addEventListener('click', close);
     box.querySelector('.lightbox-prev').addEventListener('click', function(e){ e.stopPropagation(); show(index - 1); });
@@ -428,6 +444,33 @@
       if (e.key === 'Escape') close();
       if (e.key === 'ArrowLeft') show(index - 1);
       if (e.key === 'ArrowRight') show(index + 1);
+    });
+
+    lightboxAPI = {
+      open: function(list, start, sync){
+        srcs = list;
+        onChange = null;              // the opening frame is not a page change
+        show(start || 0);
+        onChange = sync || null;
+        box.classList.add('is-open');
+        box.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+    };
+    return lightboxAPI;
+  }
+
+  // Click any gallery image to view it full-screen.
+  function initLightbox(scope){
+    // in the editor a click on an image belongs to the editing controls
+    if (window.__EDIT_MODE__) return;
+    var gallery = scope.querySelectorAll('.detail-gallery img');
+    if (!gallery.length) return;
+
+    var srcs = Array.prototype.map.call(gallery, function(im){ return im.getAttribute('src'); });
+    gallery.forEach(function(im, i){
+      im.style.cursor = 'zoom-in';
+      im.addEventListener('click', function(){ lightbox().open(srcs, i); });
     });
   }
 
@@ -623,9 +666,14 @@
   // edited from /admin.html without touching any code. When a preview embeds
   // the data inline (window.__SITE_DATA__ — see the artifact build step),
   // that's used instead of fetching the sibling file. ----
+  // `cache: 'no-cache'` = revalider systematiquement, pas « ne pas mettre en
+  // cache ». GitHub Pages sert data.json avec max-age=600 : sans ca, un
+  // navigateur garde jusqu'a 10 minutes le contenu d'avant l'enregistrement
+  // depuis l'admin. Le fichier porte un ETag, donc la revalidation renvoie
+  // presque toujours un 304 vide.
   var loadSiteData = window.__SITE_DATA__
     ? Promise.resolve(window.__SITE_DATA__)
-    : fetch('data.json').then(function(res){ return res.json(); });
+    : fetch('data.json', { cache: 'no-cache' }).then(function(res){ return res.json(); });
 
   loadSiteData
     .then(function(data){

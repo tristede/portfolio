@@ -108,11 +108,17 @@ Vocabulaire : `subProjects` s'appelle **« sections »** dans l'interface.
   chaque navigateur impose sa propre barre d'outils PDF, impossible à styler —
   et son fond gris entoure la page sans qu'aucune règle CSS ne puisse l'atteindre.
   Un bouton « PDF » permet de convertir les documents envoyés avant cette
-  fonctionnalité. Le fichier original reste téléchargeable.
+  fonctionnalité.
   Le lecteur est **borderless** : ni bordure, ni fond, ni marge intérieure — la
   page repose directement sur le fond du site, contrôles centrés dessous.
   Un document qui affiche encore un cadre gris n'est donc **pas** converti :
   vérifier que son asset a bien un tableau `pages`.
+  Les pages s'ouvrent en plein écran comme les photos (clic sur la page ou
+  bouton dédié), et la pagination faite dans la visionneuse est reportée dans
+  le lecteur. **Aucun lien ne sort du portfolio** : Adam ne veut pas que le
+  visiteur quitte le site, donc le PDF d'origine n'est plus proposé au
+  téléchargement — le fichier reste dans `docs/` mais n'est plus atteignable
+  depuis les pages.
 - **Fond** : texture topographique (`images/bg-hor.webp` / `bg-vert.webp` selon
   l'orientation) à 55 % par-dessus le dégradé. **Pas de parallax** — testé puis
   retiré, ça donnait mal à la tête.
@@ -152,8 +158,13 @@ a bougé entre-temps (erreur 422 « not a fast forward »).
 
 ## Pièges connus
 
-- **Cache** : GitHub Pages sert `style.css`/`admin.html` avec `max-age=600`.
-  Un changement invisible côté Adam est presque toujours du cache → `Cmd+Shift+R`.
+- **Cache** : GitHub Pages sert tout avec `max-age=600`. Un changement
+  invisible côté Adam est presque toujours du cache → `Cmd+Shift+R`.
+  `data.json` est l'exception : il est chargé en `fetch(..., { cache: 'no-cache' })`
+  pour être revalidé à chaque visite, sinon un contenu enregistré depuis l'admin
+  peut rester invisible jusqu'à 10 minutes. Firefox et ses dérivés (Zen) sont les
+  plus tenaces là-dessus ; le symptôme typique est un navigateur qui montre
+  l'ancienne version quand un autre montre déjà la nouvelle.
 - **`prefers-reduced-motion`** dans le navigateur de test reflète le réglage
   macOS réel d'Adam. Des animations « invisibles » ont déjà été causées par ça.
 - **`confirm()` avant `input.click()`** empêche l'ouverture du sélecteur de
