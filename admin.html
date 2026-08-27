@@ -136,6 +136,24 @@ button{ display:inline-flex; align-items:center; justify-content:center; gap:7px
   font-size:12px; color: var(--text-dim);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 340px;
 }
+.carousel-strip{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; max-width:340px; }
+.carousel-cell{
+  position:relative; width:54px; height:54px; border-radius:6px; overflow:hidden;
+  border:1px solid var(--line); flex:none;
+}
+.carousel-cell img{ width:100%; height:100%; object-fit:cover; display:block; }
+.carousel-cell-n{
+  position:absolute; left:3px; bottom:2px; font-size:10px; font-weight:700;
+  color:#fff; text-shadow:0 1px 3px rgba(0,0,0,0.9);
+}
+.carousel-cell-btns{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:2px;
+  background:rgba(6,9,32,0.72); opacity:0; transition:opacity .15s ease;
+}
+.carousel-cell:hover .carousel-cell-btns{ opacity:1; }
+.carousel-cell-btns button{ padding:2px; width:16px; height:16px; border-radius:4px; }
+.carousel-cell-btns button svg{ width:11px; height:11px; }
+
 .asset-caption-input{
   margin-top:5px; width:100%; max-width:340px;
   padding:5px 8px; font:inherit; font-size:12.5px;
@@ -398,6 +416,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
               <button class="ghost" id="pf-add-web-btn" type="button">+ Site web</button>
               <button class="ghost" id="pf-add-doc-btn" type="button">+ Document</button>
               <button class="ghost" id="pf-add-doclink-btn" type="button">+ Doc en ligne</button>
+              <button class="ghost" id="pf-add-carousel-btn" type="button">+ Carrousel</button>
             </div>
           </div>
           <p class="small" style="margin:0 0 12px;">Images, vidéos et audio affichés sur la page détail. L'œil masque un contenu sans le supprimer.</p>
@@ -459,6 +478,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
                 <button class="ghost" id="spf-add-web-btn" type="button">+ Site web</button>
                 <button class="ghost" id="spf-add-doc-btn" type="button">+ Document</button>
                 <button class="ghost" id="spf-add-doclink-btn" type="button">+ Doc en ligne</button>
+              <button class="ghost" id="spf-add-carousel-btn" type="button">+ Carrousel</button>
               </div>
             </div>
             <input type="file" id="spf-images-upload" accept="image/*" multiple class="hidden">
@@ -949,8 +969,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
     return out;
   }
 
-  var ASSET_LABEL = { image: 'Image', video: 'Vidéo', audio: 'Audio', web: 'Site web', doc: 'Document' };
-  var ASSET_ICON = { video: ICON.play, audio: ICON.music, web: ICON.globe, doc: ICON.file };
+  var ASSET_LABEL = { image: 'Image', video: 'Vidéo', audio: 'Audio', web: 'Site web', doc: 'Document', carousel: 'Carrousel' };
+  var ASSET_ICON = { video: ICON.play, audio: ICON.music, web: ICON.globe, doc: ICON.file, carousel: ICON.image };
   // three preset display sizes; the button cycles S -> M -> L
   var SIZE_ORDER = ['sm', 'md', 'lg'];
   var SIZE_LABEL = { sm: 'S', md: 'M', lg: 'L' };
@@ -976,8 +996,12 @@ body.visual-mode .wrap{ max-width: 1400px; }
             ? '<img src="' + escapeHtml(a.url) + '" alt="" style="width:64px; height:44px; object-fit:cover; border-radius:6px; border:1px solid var(--line); flex:none;">'
             : '<span class="asset-badge">' + (ASSET_ICON[a.type] || ICON.file) + '</span>') +
           '<div style="min-width:0;">' +
-            '<div class="meta">' + ASSET_LABEL[a.type] + (a.hidden ? ' · masqué' : '') + '</div>' +
-            '<div class="asset-url">' + escapeHtml(a.url) + '</div>' +
+            '<div class="meta">' + ASSET_LABEL[a.type] +
+              (a.type === 'carousel' ? ' · ' + (a.urls || []).length + ' photo' + ((a.urls || []).length > 1 ? 's' : '') : '') +
+              (a.hidden ? ' · masqué' : '') + '</div>' +
+            (a.type === 'carousel'
+              ? '<div class="carousel-strip" data-strip-i="' + i + '"></div>'
+              : '<div class="asset-url">' + escapeHtml(a.url) + '</div>') +
             // écrit directement dans l'asset à la frappe : re-rendre la liste
             // à chaque touche ferait perdre le focus au champ
             '<input class="asset-caption-input" type="text" data-caption-i="' + i + '"' +
@@ -990,12 +1014,45 @@ body.visual-mode .wrap{ max-width: 1400px; }
           (a.type === 'doc' && !(a.pages && a.pages.length) && /\.pdf($|\?|#)/i.test(a.url || '')
             ? '<button class="ghost" data-act="convert" data-i="' + i + '" type="button" title="Convertir en pages">PDF</button>' : '') +
           '<button class="ghost" data-act="size" data-i="' + i + '" type="button" title="Taille : ' + (SIZE_TITLE[a.size || 'md']) + '">' + SIZE_LABEL[a.size || 'md'] + '</button>' +
-          '<button class="ghost" data-act="url" data-i="' + i + '" type="button" title="Changer l\'adresse du contenu">' + ICON.link + '</button>' +
+          (a.type === 'carousel' ? '' :
+            '<button class="ghost" data-act="url" data-i="' + i + '" type="button" title="Changer l\'adresse du contenu">' + ICON.link + '</button>') +
           '<button class="ghost" data-act="toggle" data-i="' + i + '" type="button" title="' + (a.hidden ? 'Afficher' : 'Masquer') + '">' + (a.hidden ? ICON.eyeOff : ICON.eye) + '</button>' +
           '<button class="danger" data-act="del" data-i="' + i + '" type="button" title="Retirer">' + ICON.close + '</button>' +
         '</div>';
       list.appendChild(row);
     });
+    // Bande de vignettes d'un carrousel : c'est ici qu'on ordonne les photos et
+    // qu'on en retire, la vue liste ayant la place que la surimpression n'a pas.
+    list.querySelectorAll('.carousel-strip').forEach(function(strip){
+      var a = assets[+strip.dataset.stripI];
+      (a.urls || []).forEach(function(u, k){
+        var cell = document.createElement('div');
+        cell.className = 'carousel-cell';
+        cell.innerHTML =
+          '<img src="' + escapeHtml(u) + '" alt="">' +
+          '<div class="carousel-cell-btns">' +
+            '<button class="ghost" data-c="up" type="button"' + (k === 0 ? ' disabled' : '') + ' title="Avancer">' + ICON.up + '</button>' +
+            '<button class="ghost" data-c="down" type="button"' + (k === a.urls.length - 1 ? ' disabled' : '') + ' title="Reculer">' + ICON.down + '</button>' +
+            '<button class="danger" data-c="del" type="button" title="Retirer cette photo">' + ICON.close + '</button>' +
+          '</div>' +
+          '<span class="carousel-cell-n">' + (k + 1) + '</span>';
+        cell.querySelectorAll('button[data-c]').forEach(function(b){
+          b.addEventListener('click', function(){
+            var act = b.dataset.c, tmp;
+            if (act === 'del'){
+              if (a.urls.length <= 1){ alert('Dernière photo du carrousel — retire le carrousel entier.'); return; }
+              if (!confirm('Retirer la photo ' + (k + 1) + ' du carrousel ?')) return;
+              a.urls.splice(k, 1);
+            }
+            else if (act === 'up' && k > 0){ tmp = a.urls[k-1]; a.urls[k-1] = a.urls[k]; a.urls[k] = tmp; }
+            else if (act === 'down' && k < a.urls.length - 1){ tmp = a.urls[k+1]; a.urls[k+1] = a.urls[k]; a.urls[k] = tmp; }
+            if (afterChange) afterChange();
+          });
+        });
+        strip.appendChild(cell);
+      });
+    });
+
     list.querySelectorAll('input[data-caption-i]').forEach(function(input){
       input.addEventListener('input', function(){
         var a = assets[+input.dataset.captionI];
@@ -1527,10 +1584,23 @@ body.visual-mode .wrap{ max-width: 1400px; }
     });
   }
 
+  // Le même sélecteur de fichiers sert aux images séparées et au carrousel :
+  // seul ce drapeau, posé juste avant l'ouverture, décide de ce qu'on fabrique.
+  var nextUploadIsCarousel = false;
+
+  function pushUploaded(arr, paths){
+    if (nextUploadIsCarousel){
+      nextUploadIsCarousel = false;
+      arr.push({ type: 'carousel', urls: paths, hidden: false });
+    } else {
+      paths.forEach(function(p){ arr.push({ type: 'image', url: p, hidden: false }); });
+    }
+  }
+
   wireImageUploadInput('pf-images-upload', 'pf-images-upload-status',
     function(){ return $('pf-title').value.trim(); },
     function(paths){
-      paths.forEach(function(p){ currentAssets.push({ type: 'image', url: p, hidden: false }); });
+      pushUploaded(currentAssets, paths);
       renderProjectAssets();
       refreshThumbOptions();
     });
@@ -1538,7 +1608,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
   wireImageUploadInput('spf-images-upload', 'spf-images-upload-status',
     function(){ return ($('pf-title').value.trim() || 'projet') + '-' + $('spf-title').value.trim(); },
     function(paths){
-      paths.forEach(function(p){ currentSubAssets.push({ type: 'image', url: p, hidden: false }); });
+      pushUploaded(currentSubAssets, paths);
       renderSubAssets();
     });
 
@@ -1552,6 +1622,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
   $('pf-thumb-upload-btn').addEventListener('click', function(){ $('pf-thumb-upload').click(); });
 
   $('pf-add-image-btn').addEventListener('click', function(){ $('pf-images-upload').click(); });
+  $('pf-add-carousel-btn').addEventListener('click', function(){
+    nextUploadIsCarousel = true; $('pf-images-upload').click();
+  });
   $('pf-add-video-btn').addEventListener('click', function(){ promptAsset('video', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); }); });
   $('pf-add-audio-btn').addEventListener('click', function(){ promptAsset('audio', currentAssets, function(){ renderProjectAssets(); refreshThumbOptions(); }); });
 
@@ -1565,6 +1638,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
   });
 
   $('spf-add-image-btn').addEventListener('click', function(){ $('spf-images-upload').click(); });
+  $('spf-add-carousel-btn').addEventListener('click', function(){
+    nextUploadIsCarousel = true; $('spf-images-upload').click();
+  });
   $('spf-add-video-btn').addEventListener('click', function(){ promptAsset('video', currentSubAssets, renderSubAssets); });
   $('spf-add-audio-btn').addEventListener('click', function(){ promptAsset('audio', currentSubAssets, renderSubAssets); });
   $('spf-add-web-btn').addEventListener('click', function(){ promptAsset('web', currentSubAssets, renderSubAssets); });
@@ -2035,7 +2111,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
     host.classList.add('ed-host');
     var wrap = doc.createElement('div');
     wrap.className = 'ed-tools';
-    buttons.forEach(function(b){ wrap.appendChild(b); });
+    // un bouton peut être null : certaines actions n'ont pas de sens sur tous
+    // les types de contenu (l'adresse unique d'un carrousel, par exemple)
+    buttons.filter(Boolean).forEach(function(b){ wrap.appendChild(b); });
     host.appendChild(wrap);
     return wrap;
   }
@@ -2135,9 +2213,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
           a.hidden = !a.hidden;
           applyAndRefresh();
         }),
-        edButton(doc, 'link', 'Changer l\'adresse du contenu', false, function(){
+        // un carrousel porte des `urls`, pas une `url` : ses photos se gèrent
+        // par ses propres boutons, pas par cette adresse unique
+        (a.type === 'carousel' ? null : edButton(doc, 'link', 'Changer l\'adresse du contenu', false, function(){
           if (editAssetUrl(a)) applyAndRefresh();
-        }),
+        })),
         edButton(doc, 'close', 'Retirer ce contenu', true, function(){
           if (!confirm('Retirer ce contenu du projet ?')) return;
           assets.splice(i, 1);
@@ -2149,6 +2229,33 @@ body.visual-mode .wrap{ max-width: 1400px; }
           owner.thumb = a.url;
           applyAndRefresh();
         }));
+      }
+      // Un carrousel ne montre qu'une photo à la fois : les commandes agissent
+      // donc sur celle qui est AFFICHÉE. Son rang se lit dans le compteur du
+      // lecteur (« 3 / 7 »), seul endroit où l'éditeur peut savoir où en est la
+      // lecture — l'index vit dans une closure de script.js.
+      if (a.type === 'carousel'){
+        var shownIndex = function(){
+          var c = node.querySelector('.doc-count');
+          var m = c && c.textContent.match(/(\d+)\s*\//);
+          return m ? (+m[1] - 1) : 0;
+        };
+        btns.unshift(
+          edButton(doc, 'image', 'Ajouter des photos au carrousel', false, function(){
+            pendingUpload = { owner: owner, hint: hint, addTo: a };
+            $('visual-image-upload').click();
+          }),
+          edButton(doc, 'close', 'Retirer la photo affichée', true, function(){
+            var k = shownIndex();
+            if ((a.urls || []).length <= 1){
+              alert('Dernière photo du carrousel — retire le carrousel entier avec le bouton supprimer.');
+              return;
+            }
+            if (!confirm('Retirer la photo ' + (k + 1) + ' du carrousel ?')) return;
+            a.urls.splice(k, 1);
+            applyAndRefresh();
+          })
+        );
       }
       if (a.type === 'doc' && !(a.pages && a.pages.length) && /\.pdf($|\?|#)/i.test(a.url || '')){
         btns.unshift(edTextButton(doc, 'PDF', 'Convertir en pages (rendu identique sur tous les navigateurs)', function(){
@@ -2198,6 +2305,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
         if (!url) return;
         ensureAssets(owner).push({ type: 'doc', url: url.trim(), hidden: false });
         applyAndRefresh();
+      }],
+      // plusieurs photos envoyées d'un coup deviennent UN contenu, pas N
+      ['+ Carrousel', function(){
+        pendingUpload = { owner: owner, hint: hint, carousel: true };
+        $('visual-image-upload').click();
       }]
     ].forEach(function(pair){
       var b = doc.createElement('button');
@@ -2448,6 +2560,12 @@ body.visual-mode .wrap{ max-width: 1400px; }
     }).then(function(paths){
       if (target.thumbOnly){
         target.owner.thumb = paths[0];
+      } else if (target.addTo){
+        // photos ajoutées à un carrousel existant
+        target.addTo.urls = (target.addTo.urls || []).concat(paths);
+      } else if (target.carousel){
+        // l'envoi entier fait UN contenu, pas un par photo
+        ensureAssets(target.owner).push({ type: 'carousel', urls: paths, hidden: false });
       } else {
         var arr = ensureAssets(target.owner);
         paths.forEach(function(u){ arr.push({ type: 'image', url: u, hidden: false }); });

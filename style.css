@@ -542,15 +542,23 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
    ===================================================================== */
 .detail-gallery > *{ flex: 0 0 auto; margin-left: 0; margin-right: 0; }
 
-/* document paginé (PDF converti) : la largeur commande, pas la hauteur d'écran,
-   sinon une page haute imposerait sa taille à toute la rangée */
-.detail-gallery > .detail-docwrap.size-sm{ width: min(240px, 100%); }
-.detail-gallery > .detail-docwrap.size-md{ width: min(340px, 100%); }
-.detail-gallery > .detail-docwrap.size-lg{ width: min(520px, 100%); }
-.detail-gallery > .detail-docwrap .detail-doc{ margin-top: 0; }
-.detail-gallery > .detail-docwrap .doc-viewer{ max-width: 100%; }
-.detail-gallery > .detail-docwrap .doc-stage{ min-height: 0; max-height: none; }
-.detail-gallery > .detail-docwrap .doc-stage img{ width: 100%; max-height: none; }
+/* document paginé (PDF converti) et carrousel : même lecteur, mêmes règles.
+   La largeur commande, pas la hauteur d'écran — sinon une page haute imposerait
+   sa taille à toute la rangée. */
+.detail-gallery > .detail-docwrap.size-sm,
+.detail-gallery > .detail-carousel.size-sm{ width: min(240px, 100%); }
+.detail-gallery > .detail-docwrap.size-md,
+.detail-gallery > .detail-carousel.size-md{ width: min(340px, 100%); }
+.detail-gallery > .detail-docwrap.size-lg,
+.detail-gallery > .detail-carousel.size-lg{ width: min(520px, 100%); }
+.detail-gallery > .detail-docwrap .detail-doc,
+.detail-gallery > .detail-carousel .detail-doc{ margin-top: 0; }
+.detail-gallery > .detail-docwrap .doc-viewer,
+.detail-gallery > .detail-carousel .doc-viewer{ max-width: 100%; }
+.detail-gallery > .detail-docwrap .doc-stage,
+.detail-gallery > .detail-carousel .doc-stage{ min-height: 0; max-height: none; }
+.detail-gallery > .detail-docwrap .doc-stage img,
+.detail-gallery > .detail-carousel .doc-stage img{ width: 100%; max-height: none; }
 
 /* document en ligne (Google Docs, Office, PDF non converti) : une iframe */
 .detail-gallery > .detail-docwrap.size-sm .detail-doc iframe{ height: 420px; }

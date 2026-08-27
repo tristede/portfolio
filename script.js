@@ -64,7 +64,11 @@
   // in the admin's visual editor everything is rendered — hidden entries
   // included, flagged so the editor can grey them out and offer to unhide.
   function visibleAssets(obj){
-    var all = assetsOf(obj).filter(function(a){ return a && a.url; });
+    // un carrousel porte `urls` et non `url` : ne garder que ce qui a une `url`
+    // le faisait disparaître entièrement
+    var all = assetsOf(obj).filter(function(a){
+      return a && (a.url || (a.urls && a.urls.length));
+    });
     return window.__EDIT_MODE__ ? all : all.filter(function(a){ return !a.hidden; });
   }
 
@@ -224,6 +228,14 @@
         return '<div class="detail-docwrap' + sizeClass(a) + '"' + attrs(a) + '>' +
           docEmbedHTML(a.url, a.pages) + captionHTML(a) + '</div>';
       }
+      // Carrousel : plusieurs photos dans un seul bloc, comme un post Instagram
+      // conçu pour se feuilleter. Même lecteur que le PDF converti.
+      if (a.type === 'carousel'){
+        var shots = (a.urls || []).filter(Boolean);
+        if (!shots.length) return '';
+        return '<div class="detail-carousel' + sizeClass(a) + '"' + attrs(a) + '>' +
+          pagedViewerHTML(shots, 'Photo') + captionHTML(a) + '</div>';
+      }
       if (a.type === 'video'){
         return '<div class="detail-embed photo photo-' + n + sizeClass(a) + '"' + attrs(a) + '>' +
           videoEmbedHTML(a.url) + captionHTML(a) + '</div>';
@@ -259,6 +271,26 @@
     '</div>';
   }
 
+  // Une pile d'images qu'on feuilleuille, une seule à l'écran, avec nos propres
+  // commandes. Sert au PDF converti comme au carrousel : c'est le même geste, et
+  // dupliquer la mécanique aurait fait deux lecteurs à maintenir au lieu d'un.
+  // `noun` ne change que les libellés lus par les lecteurs d'écran.
+  function pagedViewerHTML(pages, noun){
+    noun = noun || 'Page';
+    return '<div class="detail-doc doc-viewer" data-doc-pages="' + encodeURIComponent(JSON.stringify(pages)) + '"' +
+        ' data-doc-noun="' + noun + '">' +
+      // les commandes vivent DANS la scène : c'est elle qui épouse l'image,
+      // alors que le lecteur, lui, occupe toute la largeur disponible
+      '<div class="doc-stage">' +
+        '<img src="' + pages[0] + '" alt="' + noun + ' 1" draggable="false">' +
+        '<button class="doc-nav doc-prev" type="button" aria-label="' + noun + ' précédente">' + UI_ICON.prev + '</button>' +
+        '<button class="doc-nav doc-next" type="button" aria-label="' + noun + ' suivante">' + UI_ICON.next + '</button>' +
+        '<button class="doc-nav doc-full" type="button" aria-label="Afficher en plein écran">' + UI_ICON.expand + '</button>' +
+      '</div>' +
+      '<div class="doc-bar"><span class="doc-count">1 / ' + pages.length + '</span></div>' +
+    '</div>';
+  }
+
   // Documents: PDFs embed natively in every modern browser; Google Docs/Slides/
   // Sheets have a /preview form; Office files have no native embed, so they get
   // routed through Microsoft's public viewer. A direct link always sits below,
@@ -266,21 +298,7 @@
   function docEmbedHTML(url, pages){
     // Converted at upload: show the pages as plain images. No browser PDF
     // viewer means no toolbar we can't style, and the same look everywhere.
-    if (pages && pages.length){
-      // one self-contained viewer: a single page on screen at a time, with our
-      // own controls — never a stack of every page.
-      return '<div class="detail-doc doc-viewer" data-doc-pages="' + encodeURIComponent(JSON.stringify(pages)) + '">' +
-        // les commandes vivent DANS la scène : c'est elle qui épouse la page,
-        // alors que le lecteur, lui, occupe toute la largeur disponible
-        '<div class="doc-stage">' +
-          '<img src="' + pages[0] + '" alt="Page 1" draggable="false">' +
-          '<button class="doc-nav doc-prev" type="button" aria-label="Page précédente">' + UI_ICON.prev + '</button>' +
-          '<button class="doc-nav doc-next" type="button" aria-label="Page suivante">' + UI_ICON.next + '</button>' +
-          '<button class="doc-nav doc-full" type="button" aria-label="Afficher en plein écran">' + UI_ICON.expand + '</button>' +
-        '</div>' +
-        '<div class="doc-bar"><span class="doc-count">1 / ' + pages.length + '</span></div>' +
-      '</div>';
-    }
+    if (pages && pages.length) return pagedViewerHTML(pages, 'Page');
 
     // Google fournit un bloc <iframe …> tout fait, qu'on colle plus volontiers
     // que l'adresse seule : on en extrait le src plutôt que de ne rien afficher.
@@ -401,10 +419,12 @@
       var full = v.querySelector('.doc-full');
       var i = 0;
 
+      var noun = v.getAttribute('data-doc-noun') || 'Page';
+
       function show(n){
         i = Math.max(0, Math.min(pages.length - 1, n));
         img.src = pages[i];
-        img.alt = 'Page ' + (i + 1);
+        img.alt = noun + ' ' + (i + 1);
         count.textContent = (i + 1) + ' / ' + pages.length;
         prev.disabled = (i === 0);
         next.disabled = (i === pages.length - 1);
