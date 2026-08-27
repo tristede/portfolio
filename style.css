@@ -10,6 +10,8 @@
   --accent: #4650ff;
   --accent-strong: #5b63ff;
   --accent-sky: #7fc4ff;
+  /* le favori, unique, se distingue du bleu des « mis en avant » */
+  --accent-favori: #ffb27f;
   --accent-border: rgba(120,140,255,0.35);
   --accent-soft: rgba(70,80,255,0.16);
   --line: rgba(140,160,255,0.14);
@@ -232,7 +234,14 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
 .nav-card .nc-sub{ font-size: 13.5px; color: var(--text-dim); }
 
 /* ---------- Sections ---------- */
-section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); position:relative; z-index:1; }
+/* Moins d'air sous une section que dessus : le trait de separation a besoin
+   de respirer avant le titre suivant, les cartes n'en ont pas besoin apres.
+   A 84px de chaque cote, les 168px de vide donnaient l'impression que la
+   page s'arretait la. */
+section.projects-section{
+  padding: clamp(52px, 6vw, 76px) 0 clamp(34px, 4vw, 50px);
+  border-top: 1px solid var(--line); position:relative; z-index:1;
+}
 .section-head{ margin-bottom: 40px; max-width: 640px; }
 .section-head .kicker{ color: var(--text-faint); font-size:13px; font-weight:600; letter-spacing:0.04em; margin-bottom:10px; display:block; }
 .section-head h1,
@@ -289,6 +298,9 @@ section.projects-section{ padding: 84px 0; border-top: 1px solid var(--line); po
   color: var(--accent-sky);
   display:inline-flex; align-items:center; gap:5px;
 }
+/* le favori est unique, « mis en avant » ne l'est pas : une couleur distincte
+   évite qu'on les confonde d'un coup d'œil */
+.card-featured-label.is-favori{ color: var(--accent-favori); }
 /* inline SVG marks sized to the text they sit next to */
 .ui-ico{ width:11px; height:11px; flex:none; }
 .ui-arrow{ width:15px; height:15px; flex:none; }

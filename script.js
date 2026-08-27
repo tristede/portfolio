@@ -25,8 +25,12 @@
     arrowRight: '<svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>',
     arrowLeft: '<svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>',
     external: '<svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 16L18 6M9.5 6H18v8.5"/></svg>',
-    expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg>'
+    expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg>',
+    heart: '<svg class="ui-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 20s-7-4.4-7-9.2A4 4 0 0 1 12 8a4 4 0 0 1 7 2.8C19 15.6 12 20 12 20z"/></svg>'
   };
+
+  // le projet favori, pour que sa carte le signale comme le fait « Mis en avant »
+  var favoriId = null;
 
   var icons = {
     video: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2.5" y="6" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M16.5 10.2l5-2.7v9l-5-2.7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
@@ -91,7 +95,9 @@
           '<span class="medium-label">' + (mediumLabel[p.medium] || p.medium) + '</span>' +
         '</div>' +
         '<div class="card-body">' +
-          (p.featured ? '<span class="card-featured-label">' + UI_ICON.star + ' Mis en avant</span>' : '') +
+          (p.id === favoriId
+            ? '<span class="card-featured-label is-favori">' + UI_ICON.heart + ' Projet favori</span>'
+            : (p.featured ? '<span class="card-featured-label">' + UI_ICON.star + ' Mis en avant</span>' : '')) +
           '<h3>' + p.title + '</h3>' +
           '<p class="desc">' + p.desc + '</p>' +
           '<div class="card-tags">' + p.tags.map(function(t){ return '<span class="tag">#' + t.replace(/\s+/g,'') + '</span>'; }).join('') + '</div>' +
@@ -748,6 +754,9 @@
     .then(function(data){
       var site = data.site || {};
       var projects = data.projects || [];
+      // les cartes en ont besoin pour signaler le favori ; renseigné avant
+      // renderGrids, qui est ce qui les fabrique
+      favoriId = site.favoriProjectId || null;
       applySiteTexts(site);
       applyFavori(site, projects);
       renderTimeline(site.timeline);
