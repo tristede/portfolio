@@ -236,7 +236,8 @@
         "Reportage"
       ],
       "desc": "Réalisation d'un reportage vidéo de bout en bout.",
-      "featured": true
+      "featured": true,
+      "thumb": "images/production-d-un-reportage-video-miniature-1787835136197-0.webp"
     },
     {
       "id": "projet-360-dei-belgique",
@@ -347,7 +348,8 @@
         "Événementiel"
       ],
       "desc": "Conception d'un projet événementiel autour de la Cinematek.",
-      "featured": false
+      "featured": false,
+      "thumb": "images/projet-evenementiel-cinematek-miniature-1787835145937-0.webp"
     },
     {
       "id": "articles-presse",
@@ -383,7 +385,8 @@
           "caption": "Article court réalisé dans le cadre du cours d'écriture journalistique, encadré par Bernard Buchel. J'ai interviewé le fondateur de Team Oasis Forest, club de futsal évoluant en ligue belge."
         }
       ],
-      "subProjects": []
+      "subProjects": [],
+      "thumb": "images/ecriture-d-articles-de-presse-miniature-1787834916089-0.webp"
     },
     {
       "id": "melo-de-la-semaine",
