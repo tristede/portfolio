@@ -92,15 +92,39 @@
         {
           "type": "image",
           "url": "images/union-oasis-forest-1787871728526-0.webp",
-          "hidden": false
+          "hidden": false,
+          "pos": {
+            "x": 177,
+            "y": 0,
+            "w": 473
+          }
         },
         {
           "type": "image",
           "url": "images/union-oasis-forest-1787871738308-0.webp",
-          "hidden": false
+          "hidden": false,
+          "pos": {
+            "x": 601,
+            "y": 80,
+            "w": 494
+          }
         }
       ],
-      "subProjects": []
+      "subProjects": [
+        {
+          "title": "Production de contenu sur les réseaux-sociaux",
+          "medium": "",
+          "desc": "",
+          "assets": [
+            {
+              "type": "video",
+              "url": "https://www.tiktok.com/embed/v2/7554688445604547872",
+              "hidden": false
+            }
+          ],
+          "link": ""
+        }
+      ]
     },
     {
       "id": "miniatures-youtube",
@@ -566,6 +590,66 @@
       ],
       "desc": "Conception d'un logo vectoriel pour un besoin interne.",
       "featured": false
+    },
+    {
+      "id": "campagne-avanttout-fictive",
+      "title": "Campagne #AvantTout (Fictive)",
+      "year": 2026,
+      "ctx": "perso",
+      "medium": "graphisme",
+      "tags": [],
+      "desc": "Campagne fictive de promotion du futsal à Bruxelles",
+      "featured": false,
+      "hidden": false,
+      "longDesc": "",
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/campagne-avanttout-fictive-1787872605962-0.webp",
+          "hidden": false,
+          "pos": {
+            "x": 251,
+            "y": 0,
+            "w": 381
+          },
+          "size": "lg"
+        },
+        {
+          "type": "image",
+          "url": "images/campagne-avanttout-fictive-1787872615050-0.webp",
+          "hidden": false,
+          "pos": {
+            "x": 653,
+            "y": 80,
+            "w": 389
+          }
+        },
+        {
+          "type": "doc",
+          "url": "docs/campagne-avanttout-fictive-1787873537806-0.pdf",
+          "hidden": false,
+          "pages": [
+            "images/campagne-avanttout-fictive-1787873537806-1.webp",
+            "images/campagne-avanttout-fictive-1787873537806-2.webp",
+            "images/campagne-avanttout-fictive-1787873537806-3.webp",
+            "images/campagne-avanttout-fictive-1787873537806-4.webp",
+            "images/campagne-avanttout-fictive-1787873537806-5.webp",
+            "images/campagne-avanttout-fictive-1787873537806-6.webp",
+            "images/campagne-avanttout-fictive-1787873537806-7.webp",
+            "images/campagne-avanttout-fictive-1787873537806-8.webp",
+            "images/campagne-avanttout-fictive-1787873537806-9.webp",
+            "images/campagne-avanttout-fictive-1787873537806-10.webp"
+          ],
+          "pos": {
+            "x": 353,
+            "y": 639,
+            "w": 583
+          }
+        }
+      ],
+      "link": "",
+      "thumb": "",
+      "subProjects": []
     }
   ]
 }
