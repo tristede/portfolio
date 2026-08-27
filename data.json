@@ -323,7 +323,8 @@
         "Identité visuelle"
       ],
       "desc": "Design d'une carte de visite pour le projet Echo Nexus.",
-      "featured": false
+      "featured": false,
+      "thumb": "images/carte-de-visite-echo-nexus-miniature-1787840494032-0.webp"
     },
     {
       "id": "episode-podcast",
