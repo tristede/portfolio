@@ -411,7 +411,19 @@
       ],
       "desc": "Enregistrement, montage et mixage d'un épisode de podcast.",
       "featured": false,
-      "assets": [],
+      "assets": [
+        {
+          "type": "audio",
+          "url": "https://soundcloud.com/adamdrk/pourquoi-tu-votes-anderlecht?utm_source=clipboard&utm_campaign=wtshare&utm_medium=widget&utm_content=https%253A%252F%252Fsoundcloud.com%252Fadamdrk%252Fpourquoi-tu-votes-anderlecht",
+          "hidden": false,
+          "pos": {
+            "x": 277,
+            "y": 0,
+            "w": 727
+          },
+          "caption": "Dans le contexte de ce projet, encadré par journaliste Himad Messoudi, nous nous entretiens des men avec les résidents d’Anderlecht, dans les quartiers de Saint-Guidon, Marius Renard et Peterbos sur les élections communales d’octobre 2024."
+        }
+      ],
       "subProjects": [],
       "thumb": "images/realisation-d-un-episode-de-podcast-miniature-1787865352278-0.webp"
     },
