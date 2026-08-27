@@ -301,13 +301,12 @@
               "type": "image",
               "url": "images/projet-360-dei-belgique-multipage-strategique-1787781100008-0.webp",
               "hidden": false,
-              "size": "lg"
-            },
-            {
-              "type": "image",
-              "url": "images/projet-360-dei-belgique-multipage-strategique-1787781375450-0.webp",
-              "hidden": false,
-              "size": "lg"
+              "size": "lg",
+              "pos": {
+                "x": 132,
+                "y": 0,
+                "w": 460
+              }
             },
             {
               "type": "doc",
@@ -328,6 +327,17 @@
                 "images/projet-360-dei-belgique-multipage-strategique-1787826393362-11.jpg"
               ],
               "size": "lg"
+            },
+            {
+              "type": "image",
+              "url": "images/projet-360-dei-belgique-multipage-strategique-1787781375450-0.webp",
+              "hidden": false,
+              "size": "lg",
+              "pos": {
+                "x": 36,
+                "y": 381,
+                "w": 460
+              }
             }
           ],
           "link": ""
