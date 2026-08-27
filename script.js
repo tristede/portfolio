@@ -191,8 +191,16 @@
   function videoEmbedHTML(url){
     var tk = tiktokId(url) ? [null, tiktokId(url)] : null;
     if (tk){
-      return '<iframe class="tiktok-embed-frame" src="https://www.tiktok.com/embed/v2/' + tk[1] + '" ' +
-        'title="Vidéo TikTok" allow="encrypted-media;" allowfullscreen loading="lazy"></iframe>';
+      // La page de TikTok centre sa carte sur un fond blanc et ne l'elargit pas
+      // au-dela d'une certaine taille : lui donner un cadre plus large ne fait
+      // qu'ajouter du blanc sur les cotes, et rien ici ne peut restyler une
+      // iframe d'un autre domaine. On l'affiche donc a la largeur ou sa carte
+      // remplit le cadre, puis on agrandit l'ensemble comme une image. Le
+      // facteur est pose par le mur, seul a connaitre la largeur reelle.
+      return '<div class="tiktok-shell">' +
+        '<iframe class="tiktok-embed-frame" src="https://www.tiktok.com/embed/v2/' + tk[1] + '" ' +
+          'title="Vidéo TikTok" allow="encrypted-media;" allowfullscreen loading="lazy"></iframe>' +
+      '</div>';
     }
     var yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{6,})/);
     if (yt){
@@ -478,6 +486,8 @@
   // sinon ce que l'on compose n'est pas ce que voit l'ecran d'a cote, et
   // epingler la premiere affiche la ferait changer de taille sans raison.
   var MIN_CANVAS = 900;   // en dessous, la composition devient illisible : on empile
+  // largeur a laquelle la carte de TikTok remplit son cadre, sans blanc sur les cotes
+  var TIKTOK_BASE_W = 325, TIKTOK_BASE_H = 578;
 
   function readPos(el){
     var raw = el.getAttribute('data-pos');
@@ -487,9 +497,20 @@
     return { x: n[0], y: n[1], w: n[2] };
   }
 
+  // Le cadre TikTok est rendu a taille fixe puis agrandi pour remplir sa tuile.
+  // A faire avant toute sortie anticipee : sur mobile le mur ne se calcule pas,
+  // et le cadre resterait a 325 px dans une colonne plus large.
+  function scaleTiktokFrames(gallery){
+    gallery.querySelectorAll('.tiktok-shell').forEach(function(shell){
+      var w = shell.offsetWidth;
+      if (w) shell.style.setProperty('--tk-scale', w / TIKTOK_BASE_W);
+    });
+  }
+
   function packWall(gallery){
     var items = Array.prototype.slice.call(gallery.children);
     if (!items.length) return;
+    scaleTiktokFrames(gallery);
 
     // mesurer en flux naturel : les largeurs viennent des tailles S/M/L
     gallery.classList.remove('is-packed');
