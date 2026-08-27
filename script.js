@@ -268,11 +268,29 @@
       '</div>';
     }
 
+    // Google fournit un bloc <iframe …> tout fait, qu'on colle plus volontiers
+    // que l'adresse seule : on en extrait le src plutôt que de ne rien afficher.
+    var embedded = String(url || '').match(/<iframe[^>]+src=["']([^"']+)["']/i);
+    if (embedded) url = embedded[1];
+
     var lower = url.toLowerCase();
     var src = null, note = '';
 
+    // Lien « Publier sur le web » : /<type>/d/e/<jeton>/pub. À tester AVANT la
+    // forme /d/<id>, dont la capture ramasserait le « e » du chemin et
+    // fabriquerait une URL morte (/document/d/e/preview) — c'était le bug.
+    // C'est aussi la meilleure forme à intégrer : Google sert alors le document
+    // en HTML nu, sans sa barre d'outils ni son cadre de visionneuse.
+    var GDOC_EMBED = {
+      document: '/pub?embedded=true',
+      spreadsheets: '/pubhtml?widget=true&headers=false',
+      presentation: '/embed?start=false&loop=false&delayms=3000'
+    };
+    var gpub = url.match(/docs\.google\.com\/(document|presentation|spreadsheets)\/d\/e\/([\w-]+)/);
     var gdoc = url.match(/docs\.google\.com\/(document|presentation|spreadsheets)\/d\/([\w-]+)/);
-    if (gdoc){
+    if (gpub){
+      src = 'https://docs.google.com/' + gpub[1] + '/d/e/' + gpub[2] + GDOC_EMBED[gpub[1]];
+    } else if (gdoc){
       src = 'https://docs.google.com/' + gdoc[1] + '/d/' + gdoc[2] + '/preview';
     } else if (/\.pdf($|\?|#)/.test(lower)){
       // hide the built-in PDF chrome where the browser honours it (Chrome,
