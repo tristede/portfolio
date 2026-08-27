@@ -37,6 +37,7 @@ style.css                  design partagé
 images/                    visuels (WebP) + images/tape/ (4 rubans de masking tape)
 docs/                      PDF envoyés depuis l'admin
 _artifact_preview.html     généré, gitignoré — sert uniquement à publier l'Artifact
+tools/build_preview.py     génère le fichier ci-dessus
 ```
 
 Header et footer sont copiés-collés dans chaque page (choix assumé : pas de build).
@@ -104,9 +105,14 @@ Vocabulaire : `subProjects` s'appelle **« sections »** dans l'interface.
   Clic droit et glisser désactivés — dissuasion, **pas** une protection réelle.
 - **PDF** : convertis en images page par page à l'envoi (pdf.js chargé
   uniquement dans l'admin), affichés dans un lecteur maison paginé. Raison :
-  chaque navigateur impose sa propre barre d'outils PDF, impossible à styler.
+  chaque navigateur impose sa propre barre d'outils PDF, impossible à styler —
+  et son fond gris entoure la page sans qu'aucune règle CSS ne puisse l'atteindre.
   Un bouton « PDF » permet de convertir les documents envoyés avant cette
   fonctionnalité. Le fichier original reste téléchargeable.
+  Le lecteur est **borderless** : ni bordure, ni fond, ni marge intérieure — la
+  page repose directement sur le fond du site, contrôles centrés dessous.
+  Un document qui affiche encore un cadre gris n'est donc **pas** converti :
+  vérifier que son asset a bien un tableau `pages`.
 - **Fond** : texture topographique (`images/bg-hor.webp` / `bg-vert.webp` selon
   l'orientation) à 55 % par-dessus le dégradé. **Pas de parallax** — testé puis
   retiré, ça donnait mal à la tête.
@@ -135,8 +141,11 @@ a bougé entre-temps (erreur 422 « not a fast forward »).
    d'écran : **l'outil de screenshot est peu fiable ici** (images noires,
    figées, ou onglet à taille nulle). Redimensionner le viewport quand
    `innerWidth` vaut 0.
-3. Régénérer `_artifact_preview.html` (script Python qui inline CSS/JS/données),
-   publier l'Artifact, puis `git add/commit/push`.
+3. Régénérer `_artifact_preview.html` avec `python3 tools/build_preview.py`
+   (inline CSS/JS/données dans `index.html`), publier l'Artifact, puis
+   `git add/commit/push`. L'aperçu ne couvre que l'accueil et ses images ne se
+   chargent pas (requêtes externes bloquées) : inutile d'y chercher une page
+   projet.
 4. `git pull --rebase` avant de pousser : **Adam édite en parallèle depuis
    l'admin**, qui commite directement sur `main`. Ne jamais écraser ses commits.
 5. Confirmer le déploiement (Monitor + `curl` sur un marqueur du fichier).
@@ -169,8 +178,6 @@ a bougé entre-temps (erreur 422 « not a fast forward »).
 - [ ] `contactEmail` est encore `PLACEHOLDER@email.com` (dans `data.json`).
 - [ ] `cv.pdf` absent à la racine → le bouton CV mène à une 404.
 - [ ] Descriptions des projets à réécrire (ce sont des reformulations de titres).
-- [ ] Convertir le PDF « Multipage stratégique » (projet 360° DEI-Belgique,
-      section) avec le bouton « PDF », puis enregistrer.
 - [ ] Filigrane automatique sur les images à l'envoi : proposé, jamais tranché.
 - [ ] Domaine personnalisé : si Adam en prend un, mettre à jour
       `ALLOWED_DOMAINS` sur le Worker Cloudflare.
