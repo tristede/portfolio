@@ -88,7 +88,18 @@
       "desc": "Création d'identité visuelle pour le projet Union Oasis Forest.",
       "featured": true,
       "thumb": "images/union-oasis-forest-miniature-1787866364017-0.webp",
-      "assets": [],
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/union-oasis-forest-1787871728526-0.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/union-oasis-forest-1787871738308-0.webp",
+          "hidden": false
+        }
+      ],
       "subProjects": []
     },
     {
