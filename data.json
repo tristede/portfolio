@@ -63,7 +63,7 @@
         "Identité visuelle"
       ],
       "desc": "Création d'identité visuelle pour le projet Union Oasis Forest.",
-      "featured": false
+      "featured": true
     },
     {
       "id": "miniatures-youtube",
@@ -222,7 +222,8 @@
         "Réseaux sociaux"
       ],
       "desc": "Gestion de la ligne éditoriale et des publications.",
-      "featured": true
+      "featured": false,
+      "hidden": true
     },
     {
       "id": "reportage-video",
@@ -235,7 +236,7 @@
         "Reportage"
       ],
       "desc": "Réalisation d'un reportage vidéo de bout en bout.",
-      "featured": false
+      "featured": true
     },
     {
       "id": "projet-360-dei-belgique",
@@ -307,7 +308,8 @@
           "link": ""
         }
       ],
-      "longDesc": "Dans le cadre du projet 2 à l'ISFSC, nous avons du réaliser une campagne 360' fictive pour un émetteur donné. Nous avons travailler sur une campagne de sensibilisation aux violences supposément éducative pour la DEI-Belgique."
+      "longDesc": "Dans le cadre du projet 2 à l'ISFSC, nous avons du réaliser une campagne 360' fictive pour un émetteur donné. Nous avons travailler sur une campagne de sensibilisation aux violences supposément éducative pour la DEI-Belgique.",
+      "thumb": "images/projet-360-dei-belgique-1787830564823-0.webp"
     },
     {
       "id": "carte-visite-echo-nexus",
@@ -333,7 +335,7 @@
         "Podcast"
       ],
       "desc": "Enregistrement, montage et mixage d'un épisode de podcast.",
-      "featured": true
+      "featured": false
     },
     {
       "id": "projet-evenementiel-cinematek",
@@ -357,7 +359,9 @@
         "Rédaction"
       ],
       "desc": "Rédaction d'articles dans un cadre journalistique.",
-      "featured": false
+      "featured": true,
+      "assets": [],
+      "subProjects": []
     },
     {
       "id": "melo-de-la-semaine",
@@ -420,7 +424,7 @@
         "Format court"
       ],
       "desc": "Réalisation de formats courts pour Reels et TikTok.",
-      "featured": true
+      "featured": false
     },
     {
       "id": "logo-vectoriel",
