@@ -193,7 +193,21 @@
         "Composition"
       ],
       "desc": "De l'écriture à l'enregistrement jusqu'au mixage final.",
-      "featured": false
+      "featured": false,
+      "assets": [
+        {
+          "type": "audio",
+          "url": "https://soundcloud.com/adamdrk/maquette-sorciere-proddovz2?utm_source=clipboard&utm_campaign=wtshare&utm_medium=widget&utm_content=https%253A%252F%252Fsoundcloud.com%252Fadamdrk%252Fmaquette-sorciere-proddovz2",
+          "hidden": false
+        },
+        {
+          "type": "audio",
+          "url": "https://soundcloud.com/adamdrk/maquette-ciel-turquoise-prod-1?utm_source=clipboard&utm_campaign=wtshare&utm_medium=widget&utm_content=https%253A%252F%252Fsoundcloud.com%252Fadamdrk%252Fmaquette-ciel-turquoise-prod-1",
+          "hidden": false
+        }
+      ],
+      "subProjects": [],
+      "thumb": "images/ecriture-enregistrement-mixage-chant-rap-miniature-1787928556958-0.webp"
     },
     {
       "id": "artwork-rap-pochette-albums",
