@@ -110,6 +110,8 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
 /* the button inside this pill needs to be a pill itself, not the standard
    10px-radius rectangle — a square button in an oval capsule looked wrong */
 .sticky-save-inner button{ border-radius: 999px; }
+/* l'etat est dans la pastille : il doit rester lisible sans l'etirer sans fin */
+.sticky-save-inner .status{ margin:0; max-width: 46ch; text-align:right; }
 .hidden{ display:none !important; }
 .small{ font-size:12.5px; color: var(--text-faint); }
 
@@ -515,13 +517,16 @@ body.visual-mode .wrap{ max-width: 1400px; }
     <input type="file" id="visual-image-upload" accept="image/*" multiple class="hidden">
     <input type="file" id="doc-upload" accept=".pdf,application/pdf" multiple class="hidden">
 
+    <!-- Le message d'état vit DANS la barre flottante. Placé après elle, il ne
+         devenait visible qu'au bas absolu de la page : sur une page de projet
+         longue, on ne voyait jamais ni le compte à rebours ni la confirmation. -->
     <div class="sticky-save">
       <div class="sticky-save-inner">
         <span class="small" id="save-hint">Les modifications restent locales tant que tu n'as pas cliqué ici.</span>
+        <span class="status" id="save-status"></span>
         <button class="primary" id="save-btn" type="button">Enregistrer sur GitHub</button>
       </div>
     </div>
-    <div class="status" id="save-status" style="text-align:center;"></div>
   </div>
 
 </div>
@@ -538,7 +543,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // dix minutes dans une version perimee sans que rien ne le signale — une
   // fonction annoncee comme livree parait alors simplement absente. Le panneau
   // compare donc ce qu'il execute a ce que le serveur sert, et le dit.
-  var ADMIN_BUILD = '2026-08-28-b';
+  var ADMIN_BUILD = '2026-08-28-c';
   (function watchAdminVersion(){
     setTimeout(function(){
       fetch('admin.html', { cache: 'no-store' })
@@ -1536,6 +1541,12 @@ body.visual-mode .wrap{ max-width: 1400px; }
   function setStatus(el, text, kind){
     el.textContent = text;
     el.className = 'status' + (kind ? ' ' + kind : '');
+    // dans la barre flottante, l'etat remplace la consigne : les deux cote a
+    // cote allongeraient la pastille au point de la faire deborder
+    if (el.id === 'save-status'){
+      var hint = document.getElementById('save-hint');
+      if (hint) hint.style.display = text ? 'none' : '';
+    }
   }
 
   function showEditor(){
