@@ -59,6 +59,15 @@
         "title": "Stage chez En Esprit",
         "desc": "Réalisations produites durant mon stage chez En Esprit."
       }
+    ],
+    "groups": [
+      {
+        "id": "union-oasis-forest",
+        "kicker": "Club",
+        "title": "Union Oasis Forest",
+        "desc": "",
+        "thumb": ""
+      }
     ]
   },
   "projects": [
@@ -145,7 +154,8 @@
           ],
           "link": ""
         }
-      ]
+      ],
+      "group": "union-oasis-forest"
     },
     {
       "id": "miniatures-youtube",

@@ -46,10 +46,14 @@
     social: 'Réseaux sociaux', event: 'Événementiel', ecrit: 'Écrit', web: 'Site web'
   };
 
+  // Un projet appartient a au plus un groupe. Le lien « retour » le ramene donc
+  // a la page de son groupe, ou a la liste generale s'il n'en a pas.
   function linkForProject(p){
-    if (p.ctx === 'perso') return 'projets-perso.html';
-    if (p.ctx === 'stage') return 'projets-academiques.html#stage';
-    return 'projets-academiques.html';
+    return p.group ? ('groupe.html?id=' + encodeURIComponent(p.group)) : 'projets.html';
+  }
+
+  function groupsOf(site){
+    return (site && Array.isArray(site.groups)) ? site.groups : [];
   }
 
   // the thumbnail image: an explicitly chosen one wins, otherwise the first
@@ -832,6 +836,121 @@
     });
   }
 
+  // Une entite — un club, une agence — rassemble plusieurs projets sous une
+  // seule carte. Meme habillage qu'un projet pour que la grille reste homogene,
+  // mais elle ouvre la page du groupe au lieu d'un projet.
+  function groupCardHTML(g, list, i){
+    var thumb = g.thumb || (list[0] ? thumbSrc(list[0]) : '');
+    var n = list.length;
+    return (
+      '<a class="card card-group" href="groupe.html?id=' + encodeURIComponent(g.id) + '"' +
+        ' data-group-id="' + g.id + '" style="transition-delay:' + ((i % 8) * 40) + 'ms">' +
+        '<div class="thumb' + (thumb ? ' has-img' : '') + '">' +
+          (thumb ? '<img class="thumb-img" src="' + thumb + '" alt="' + g.title + '" loading="lazy">' : '') +
+          '<span class="year">' + n + ' projet' + (n > 1 ? 's' : '') + '</span>' +
+          '<span class="medium-label">Groupe</span>' +
+        '</div>' +
+        '<div class="card-body">' +
+          '<h3>' + g.title + '</h3>' +
+          (g.desc ? '<p class="desc">' + g.desc + '</p>' : '') +
+        '</div>' +
+      '</a>'
+    );
+  }
+
+  // Une seule grille : les groupes d'abord, puis les projets qui n'appartiennent
+  // a aucune entite. Un projet range dans un groupe n'apparait pas deux fois.
+  // Un tag filtre les deux : un groupe reste affiche si l'un de ses projets
+  // porte le tag — sinon filtrer ferait disparaitre l'entite entiere alors
+  // qu'elle contient bien ce qu'on cherche.
+  var tagActif = null;
+
+  function renderProjectsPage(site, projects){
+    var host = document.querySelector('[data-projects-page]');
+    if (!host) return;
+    var shown = window.__EDIT_MODE__ ? projects : projects.filter(function(p){ return !p.hidden; });
+
+    function porteLeTag(p){
+      return !tagActif || (p.tags || []).indexOf(tagActif) !== -1;
+    }
+
+    var pris = {};
+    var cartes = [];
+    groupsOf(site).forEach(function(g){
+      var tous = shown.filter(function(p){ return p.group === g.id; });
+      tous.forEach(function(p){ pris[p.id] = true; });
+      var retenus = tous.filter(porteLeTag);
+      // un groupe vide reste visible dans l'editeur, pour pouvoir le remplir
+      if (!retenus.length && !(window.__EDIT_MODE__ && !tagActif)) return;
+      cartes.push({ g: g, list: retenus });
+    });
+    var libres = shown.filter(function(p){ return !pris[p.id]; }).filter(porteLeTag);
+
+    host.innerHTML = '<div class="grid">' +
+      cartes.map(function(c, i){ return groupCardHTML(c.g, c.list, i); }).join('') +
+      libres.map(function(p, i){ return cardHTML(p, cartes.length + i); }).join('') +
+    '</div>';
+
+    renderTagFilters(site, shown);
+    revealCards();
+  }
+
+  function renderTagFilters(site, shown){
+    var host = document.getElementById('js-tag-filters');
+    if (!host) return;
+    var vus = {}, ordre = [];
+    shown.forEach(function(p){
+      (p.tags || []).forEach(function(t){
+        if (!vus[t]){ vus[t] = 0; ordre.push(t); }
+        vus[t]++;
+      });
+    });
+    if (ordre.length < 2){ host.innerHTML = ''; return; }
+    ordre.sort(function(a, b){ return vus[b] - vus[a] || a.localeCompare(b); });
+
+    host.className = 'tag-filters';
+    host.innerHTML =
+      '<button type="button" class="tag-filter' + (tagActif ? '' : ' is-on') + '" data-tag="">Tout</button>' +
+      ordre.map(function(t){
+        return '<button type="button" class="tag-filter' + (tagActif === t ? ' is-on' : '') +
+          '" data-tag="' + t.replace(/"/g, '&quot;') + '">' + t +
+          '<span class="tag-count">' + vus[t] + '</span></button>';
+      }).join('');
+
+    host.querySelectorAll('.tag-filter').forEach(function(b){
+      b.addEventListener('click', function(){
+        var t = b.getAttribute('data-tag');
+        tagActif = (t && t !== tagActif) ? t : null;
+        renderProjectsPage(site, window.__ALL_PROJECTS__ || []);
+      });
+    });
+  }
+
+  function renderGroupDetail(site, projects){
+    var container = document.getElementById('js-group-detail');
+    if (!container) return;
+    var id = window.__GROUP_ID__ ||
+      new URLSearchParams(window.location.search).get('id');
+    var g = groupsOf(site).filter(function(x){ return x.id === id; })[0];
+    if (!g){
+      container.innerHTML = '<div class="wrap" style="padding:60px 0;text-align:center;color:var(--text-dim);">Groupe introuvable.</div>';
+      return;
+    }
+    document.title = g.title + ' — Adam';
+    var shown = window.__EDIT_MODE__ ? projects : projects.filter(function(p){ return !p.hidden; });
+    var list = shown.filter(function(p){ return p.group === g.id; });
+    container.innerHTML =
+      '<div class="wrap">' +
+        '<a class="pill-btn back-link" href="projets.html">' + UI_ICON.arrowLeft + ' Tous les projets</a>' +
+        '<div class="section-head">' +
+          '<span class="kicker" data-group-kicker>' + (g.kicker || 'Groupe') + '</span>' +
+          '<h1 data-group-title>' + titleWithAccent(g.title) + '</h1>' +
+          '<p data-group-desc>' + (g.desc || '') + '</p>' +
+        '</div>' +
+        '<div class="grid">' + list.map(cardHTML).join('') + '</div>' +
+      '</div>';
+  }
+
   function renderGrids(projects){
     var shown = window.__EDIT_MODE__ ? projects : projects.filter(function(p){ return !p.hidden; });
     document.querySelectorAll('.grid[data-group]').forEach(function(grid){
@@ -840,7 +959,11 @@
       grid.innerHTML = list.map(cardHTML).join('');
     });
 
-    var cards = document.querySelectorAll('.card');
+    revealCards();
+  }
+
+  function revealCards(){
+    var cards = document.querySelectorAll('.card:not(.in)');
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function(entries){
         entries.forEach(function(e){ if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
@@ -1044,6 +1167,9 @@
       applyFavori(site, projects);
       renderTimeline(site.timeline);
       renderSections(site);   // avant renderGrids : c'est lui qui cree les grilles
+      window.__ALL_PROJECTS__ = projects;   // le filtre par tag re-rend la grille
+      renderProjectsPage(site, projects);
+      renderGroupDetail(site, projects);
       renderGrids(projects);
       renderProjectDetail(site, projects);
       initScramble();

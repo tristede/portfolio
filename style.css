@@ -254,6 +254,30 @@ section.projects-section{
 
 .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 20px; }
 
+/* Filtres par tag. Un groupe reste affiché si l'un de ses projets porte le tag :
+   le filtre sert à trouver, pas à faire disparaître une entité qui contient
+   pourtant ce qu'on cherche. */
+.tag-filters{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:26px; }
+.tag-filter{
+  font-family: var(--font); font-size:13px; font-weight:600;
+  display:inline-flex; align-items:center; gap:7px;
+  padding:6px 14px; border-radius:999px; cursor:pointer;
+  color: var(--text-dim);
+  background: transparent; border:1px solid var(--line-strong);
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+.tag-filter:hover{ color: var(--text); border-color: var(--accent-sky); }
+.tag-filter.is-on{
+  color: #fff; border-color: transparent;
+  background: linear-gradient(180deg, var(--accent-strong), var(--accent));
+}
+.tag-count{ font-size:11px; opacity:.7; font-variant-numeric: tabular-nums; }
+
+/* Une carte de groupe se distingue d'un projet : elle ouvre une page qui en
+   contient plusieurs, et son compte remplace l'année. */
+.card-group .medium-label{ color: var(--accent-favori); }
+.card-group .year{ font-variant-numeric: tabular-nums; }
+
 .card{
   background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-lg);
   overflow:hidden; display:flex; flex-direction:column;
