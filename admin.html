@@ -538,7 +538,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // dix minutes dans une version perimee sans que rien ne le signale — une
   // fonction annoncee comme livree parait alors simplement absente. Le panneau
   // compare donc ce qu'il execute a ce que le serveur sert, et le dit.
-  var ADMIN_BUILD = '2026-08-28-a';
+  var ADMIN_BUILD = '2026-08-28-b';
   (function watchAdminVersion(){
     setTimeout(function(){
       fetch('admin.html', { cache: 'no-store' })
@@ -650,6 +650,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // travail — un envoi d'image puis cinq enregistrements — produise six commits,
   // donc six reconstructions de GitHub Pages.
   var sessionCommitSha = null;
+  // le parent de ce commit : il sert a reconnaitre une lecture de reference en
+  // retard sur notre propre ecriture, sans jamais supposer ou est le sommet
+  var sessionCommitParent = null;
 
   // Toutes les écritures passent par cette file. Deux envois lancés de près —
   // une miniature pendant que des images finissent de partir, un enregistrement
@@ -672,18 +675,23 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // entries : [{ path, mode, type, sha }], des blobs déjà créés.
   function commitEntriesNow(entries, message, attempt, lastTree){
     attempt = attempt || 0;
-    // Quand c'est NOUS qui venons de deplacer la reference, on sait ou elle est.
-    // La redemander a GitHub dans la foulee renvoie souvent la valeur d'avant :
-    // la lecture est servie par un cache qui n'a pas encore rattrape l'ecriture.
-    // On construisait alors sur un parent perime, et la reference refusait de
-    // bouger — huit fois de suite, puisque chaque tentative relisait de meme.
-    // Au premier essai on fait donc confiance a ce qu'on a ecrit ; des le
-    // premier echec on relit pour de bon, ce qui couvre une poussee exterieure.
-    var tipRead = (sessionCommitSha && attempt === 0)
-      ? Promise.resolve(sessionCommitSha)
-      : ghRequest('/git/ref/heads/' + BRANCH).then(function(ref){ return ref.object.sha; });
-
-    return tipRead
+    // On relit TOUJOURS la reference. Une version precedente faisait confiance
+    // a ce qu'on venait d'ecrire pour eviter une lecture en retard — mais le
+    // test « est-ce mon commit ? » comparait alors une valeur a elle-meme, donc
+    // toujours vrai : chaque enregistrement amendait, et ecrasait EN FORCE tout
+    // ce qui etait arrive entre-temps. Deux commits ont ete detruits ainsi.
+    // La lecture en retard se detecte autrement, sans jamais rien supposer :
+    // si la reference renvoie le PARENT de notre dernier commit, elle montre
+    // l'etat d'avant notre propre ecriture. Tout autre sommet appartient a
+    // quelqu'un d'autre, et on empile dessus.
+    return ghRequest('/git/ref/heads/' + BRANCH)
+      .then(function(ref){
+        var tipSha = ref.object.sha;
+        if (sessionCommitSha && sessionCommitParent && tipSha === sessionCommitParent){
+          tipSha = sessionCommitSha;   // lecture en retard, avérée
+        }
+        return tipSha;
+      })
       .then(function(tipSha){
         // un commit se lit par son empreinte : immuable, donc jamais perime
         return ghRequest('/git/commits/' + tipSha).then(function(tip){
@@ -712,6 +720,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
               body: JSON.stringify({ sha: newCommit.sha, force: amend })
             }).then(function(){
               sessionCommitSha = newCommit.sha;
+              sessionCommitParent = parent;
               return newCommit;
             });
           });
@@ -730,6 +739,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
           .then(function(tip){
             if (lastTree && tip.tree && tip.tree.sha === lastTree){
               sessionCommitSha = tip.sha;
+              sessionCommitParent = (tip.parents && tip.parents[0]) ? tip.parents[0].sha : null;
               return tip;   // c'etait deja fait : ne pas alarmer, ne pas refaire
             }
             // La file ecarte les courses avec nous-memes ; reste celles avec
@@ -741,7 +751,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
             // terminal. Quelques secondes suffisent, mais il en faut vraiment
             // quelques-unes : cinq essais rapides pouvaient encore echouer.
             if (attempt < 8){
-              sessionCommitSha = null; // ce qui est au-dessus n'est plus a nous
+              sessionCommitSha = sessionCommitParent = null; // ce qui est au-dessus n'est plus a nous
               // rappel direct, SANS repasser par la file : on y est deja, et s'y
               // remettre attendrait la fin de la tache courante, donc soi-meme
               var wait = Math.min(1600, 300 * (attempt + 1)) + Math.floor(Math.random() * 400);
