@@ -1,0 +1,8 @@
+{
+  "_comment": "Identité du service. Le nom n'est pas arrêté : il vit ici pour qu'un changement de domaine ne demande pas de relire la page.",
+  "nom": "Starz",
+  "domaine": "starz.dev",
+  "email": "bonjour@starz.dev",
+  "formulaire": "",
+  "_formulaire": "Adresse qui reçoit le formulaire (Worker Cloudflare). Vide = le bouton bascule sur un mail préparé, qui marche sans rien installer."
+}
