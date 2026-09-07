@@ -67,8 +67,13 @@ a{ color: inherit; }
   display:flex; align-items:baseline; justify-content:space-between;
   gap:20px; max-width: var(--large); margin:0 auto; padding:26px 28px 0;
 }
+/* Le nom vient de config.json avec sa capitale — c'est celui des mails et du
+   titre de l'onglet. Sa mise en bas de casse est une affaire de composition, pas
+   de donnee : elle vit donc ici, et le pied de page suit, un meme nom ne se
+   composant pas de deux facons sur une meme page. */
+.mark, #js-nom-pied{ text-transform: lowercase; }
 .mark{
-  font-weight:700; font-size:19px; letter-spacing:-0.03em;
+  font-weight:700; font-size:19px; letter-spacing:-0.02em;
   text-decoration:none; color: var(--vif);
 }
 
