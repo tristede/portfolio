@@ -7,7 +7,7 @@
 <meta name="description" content="Un portfolio à votre nom, que vous modifiez vous-même, sans abonnement et sans code.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Schoolbell&family=Homemade+Apple&family=Baloo+2:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Baloo+2:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- même feuille que les portfolios : la vitrine doit ressembler à ce qu'elle vend -->
 <link rel="stylesheet" href="../style.css">
 <style>
@@ -37,6 +37,15 @@
        emprunté. Blanc légèrement mauve, pour qu'elle appartienne au dégradé. */
     --star-rgb: 226, 214, 255;
     --stars-opacity: 1;
+    /* Schoolbell est l'écriture du portfolio d'Adam : sur la vitrine elle
+       raconterait son travail, pas le service. Michroma est large et
+       géométrique — de la signalétique, pas de la main courante. */
+    --font-title: "Michroma", ui-sans-serif, system-ui, sans-serif;
+  }
+  /* le nom porte l'identité : il prend la même police que les titres */
+  .logo{
+    font-family: var(--font-title);
+    font-size: 13px; letter-spacing: .04em;
   }
 
   .starz-hero{ padding: 110px 0 70px; text-align:center; }
