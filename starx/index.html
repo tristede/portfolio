@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starx — un portfolio qui vous appartient</title>
+<meta name="description" content="Je vous fais un portfolio à votre nom, que vous remplissez vous-même. Gratuit, sans abonnement, sans code.">
+<meta name="theme-color" content="#0a0713">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Schoolbell&display=swap" rel="stylesheet">
+<!-- La vitrine ne partage plus la feuille des portfolios : elle a la sienne. -->
+<!-- Le ciel d'abord : il est eteint par defaut, et c'est la feuille de la
+     vitrine qui l'allume — a specificite egale, la derniere chargee gagne. -->
+<link rel="stylesheet" href="../ciel.css">
+<link rel="stylesheet" href="starx.css">
+</head>
+<body>
+
+<div class="fond"></div>
+<div class="starfield" aria-hidden="true"><span></span></div>
+
+<header class="bar">
+  <a class="mark" href="#top" id="js-nom">Starx</a>
+  <a class="demander" href="#demander">Demander le mien</a>
+</header>
+
+<main id="top">
+
+  <section class="ouverture">
+    <div class="wrap">
+      <h1>Je vous fais un portfolio.<br><span class="vif">Vous le remplissez vous‑même.</span></h1>
+    </div>
+    <div class="wrap ouverture-grille">
+      <div class="dire">
+        <p class="sous">À votre nom, sans abonnement, sans une ligne de code.</p>
+        <a class="bouton" href="#demander">Demander le mien</a>
+        <p class="legende-mur">Le mien, en exemple — c'est le même système.</p>
+      </div>
+
+      <div class="mur">
+        <div class="colonne colonne-a">
+          <figure class="affiche a1">
+            <img src="../images/union-oasis-forest-miniature-1787866364017-0.webp" alt="Affiche du projet Union Oasis Forest" width="1920" height="1080">
+            <figcaption>Union Oasis Forest</figcaption>
+          </figure>
+          <figure class="affiche a3">
+            <img src="../images/artwork-rap-pochette-d-albums-1787778522077-9.webp" alt="Pochette d'album" width="1500" height="1500">
+            <figcaption>Pochette d'album</figcaption>
+          </figure>
+        </div>
+        <div class="colonne colonne-b">
+          <figure class="affiche a2">
+            <img src="../images/artwork-rap-pochette-d-albums-1787778504109-1.webp" alt="Pochette d'album" width="1440" height="1920">
+            <figcaption>Pochette d'album</figcaption>
+          </figure>
+          <figure class="affiche a4">
+            <img src="../images/miniatures-youtube-1787746157861-0.webp" alt="Miniature YouTube" width="1920" height="1080">
+            <figcaption>Miniature YouTube</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="comment">
+    <div class="wrap">
+      <h2>Trois étapes, une après-midi</h2>
+      <p class="chapeau">Il n'y a pas de compte à créer chez moi, ni de tableau de bord à apprendre.</p>
+
+      <ol class="etapes">
+        <li>
+          <span class="chiffre">01</span>
+          <div>
+            <h3>Vous m'écrivez</h3>
+            <p>Votre nom, ce que vous faites. On en discute, et je prépare votre portfolio.</p>
+          </div>
+        </li>
+        <li>
+          <span class="chiffre">02</span>
+          <div>
+            <h3>Vous recevez une adresse</h3>
+            <p>Un sous-domaine à votre pseudo, ou votre propre nom de domaine si vous en avez déjà un.</p>
+          </div>
+        </li>
+        <li>
+          <span class="chiffre">03</span>
+          <div>
+            <h3>Vous le remplissez</h3>
+            <p>Un panneau d'édition où vous cliquez sur un texte pour le changer et déposez vos images là où vous les voulez. Rien à installer, rien à mettre à jour.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" id="pourquoi">
+    <div class="wrap">
+      <h2>Ce qui change par rapport à une plateforme</h2>
+
+      <div class="arguments">
+        <div class="argument">
+          <h3>Le contenu est à vous</h3>
+          <p>Textes, images et documents vivent dans un dépôt qui vous appartient. Si j'arrête demain, votre site continue de fonctionner sans moi.</p>
+        </div>
+        <div class="argument">
+          <h3>Pas d'abonnement</h3>
+          <p>L'hébergement ne coûte rien. Seul un nom de domaine se paie, et vous l'achetez vous-même, à votre nom.</p>
+        </div>
+        <div class="argument">
+          <h3>Aucune marque imposée</h3>
+          <p>Pas de bandeau en bas de page. C'est votre site, pas ma vitrine.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="demander">
+    <div class="wrap demande">
+      <div>
+        <h2>Dites-moi ce que vous montrez</h2>
+
+        <form id="js-form">
+          <label for="f-nom">Votre nom</label>
+          <input id="f-nom" name="nom" type="text" required autocomplete="name">
+
+          <label for="f-email">Votre email</label>
+          <input id="f-email" name="email" type="email" required autocomplete="email">
+
+          <label for="f-pseudo">L'adresse que vous aimeriez</label>
+          <input id="f-pseudo" name="pseudo" type="text" placeholder="votrepseudo" autocomplete="off">
+
+          <label for="f-message">Ce que vous faites, et ce que vous voulez montrer</label>
+          <textarea id="f-message" name="message" required></textarea>
+
+          <div class="envoi"><button class="bouton" type="submit" id="js-envoyer">Envoyer</button></div>
+          <div class="statut" id="js-statut"></div>
+          <p class="note">Votre adresse ne sert qu'à vous répondre. Elle n'est ni revendue, ni ajoutée à une liste.</p>
+        </form>
+      </div>
+
+      <aside class="mot">
+        Je réponds à chaque message moi-même.<br>
+        Ce n'est pas un formulaire automatique.
+        <span class="signature">Adam, Bruxelles</span>
+      </aside>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="year"></span> <span id="js-nom-pied">Starx</span></span>
+    <span><a href="../index.html">Voir un portfolio en entier</a></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Le nom du service n'est pas arrêté : il vient de la configuration, pour
+  // qu'un changement de domaine ne demande pas de relire cette page.
+  var cfg = { nom: 'Starx', domaine: '', email: '', formulaire: '' };
+
+  fetch('config.json', { cache: 'no-cache' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .catch(function(){ return null; })
+    .then(function(c){
+      if (c) cfg = Object.assign(cfg, c);
+      document.getElementById('js-nom').textContent = cfg.nom;
+      document.getElementById('js-nom-pied').textContent = cfg.nom;
+      document.title = document.title.replace(/^Starx/, cfg.nom);
+      var pseudo = document.getElementById('f-pseudo');
+      if (cfg.domaine) pseudo.placeholder = 'votrepseudo.' + cfg.domaine;
+    });
+
+  var form = document.getElementById('js-form');
+  var statut = document.getElementById('js-statut');
+  var bouton = document.getElementById('js-envoyer');
+
+  function dire(texte, genre){
+    statut.textContent = texte;
+    statut.className = 'statut' + (genre ? ' ' + genre : '');
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var donnees = {
+      nom: form.nom.value.trim(),
+      email: form.email.value.trim(),
+      pseudo: form.pseudo.value.trim(),
+      message: form.message.value.trim()
+    };
+    if (!donnees.nom || !donnees.email || !donnees.message){
+      dire('Il manque votre nom, votre email ou votre message.', 'err');
+      return;
+    }
+
+    // Tant qu'aucun relais n'est en place, on n'invente pas un envoi qui
+    // n'aurait pas lieu : on prépare le mail dans le logiciel de la personne.
+    // C'est moins élégant, mais le message part vraiment.
+    if (!cfg.formulaire){
+      var sujet = 'Demande de portfolio — ' + donnees.nom;
+      var corps = 'Nom : ' + donnees.nom +
+        '\nEmail : ' + donnees.email +
+        (donnees.pseudo ? '\nAdresse souhaitée : ' + donnees.pseudo : '') +
+        '\n\n' + donnees.message;
+      window.location.href = 'mailto:' + (cfg.email || '') +
+        '?subject=' + encodeURIComponent(sujet) +
+        '&body=' + encodeURIComponent(corps);
+      dire('Votre logiciel de messagerie s\'ouvre avec le message prêt à envoyer.', 'ok');
+      return;
+    }
+
+    bouton.disabled = true;
+    dire('Envoi…');
+    fetch(cfg.formulaire, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(donnees)
+    })
+      .then(function(r){
+        if (!r.ok) throw new Error('Erreur ' + r.status);
+        form.reset();
+        dire('Message envoyé. Je vous réponds rapidement.', 'ok');
+      })
+      .catch(function(err){
+        dire('L\'envoi a échoué (' + err.message + '). Écrivez-moi directement à ' + (cfg.email || 'l\'adresse du site') + '.', 'err');
+      })
+      .then(function(){ bouton.disabled = false; });
+  });
+})();
+</script>
+
+</body>
+</html>

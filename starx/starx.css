@@ -1,0 +1,242 @@
+/* =============================================================
+   La vitrine a sa propre feuille.
+
+   Elle n'emprunte plus celle des portfolios : c'etait une DA sombre surchargee,
+   donc la vitrine ressemblait au site d'Adam.
+
+   Ce qui a change apres critique : le violet #7c3aed etait violet-600 de
+   Tailwind, la couleur par defaut du framework par defaut ; les mots en degrade
+   sont le tic le plus reconnaissable des pages generees ; six arguments egaux se
+   neutralisaient ; et une page qui vend du visuel ne montrait aucune image.
+   Le ciel, lui, n'etait pas le probleme — il etait le seul geste dans un lit
+   generique. Il reste, et le reste a ete refait autour.
+   ============================================================= */
+
+:root{
+  --fond:       #0a0713;
+  --fond-haut:  #1a1030;
+  --fond-bas:   #060409;
+  --halo:       rgba(150, 92, 255, 0.24);
+  --texte:      #efe7f5;
+  --texte-doux: #a99fb8;
+  --texte-faible:#7d7389;
+  /* Mauve orchidee, pas violet-600 : la teinte est poussee vers le magenta pour
+     sortir du bleu-violet sature que porte tout produit logiciel. */
+  --vif:        #c063e0;
+  --vif-fonce:  #9a3fb8;
+  --clair:      #e7c6f5;
+  --trait:      rgba(210,180,240,0.15);
+  --trait-fort: rgba(210,180,240,0.34);
+  /* Les affiches et le mot restent du vrai papier : ce sont des tirages colles
+     sur un mur, pas des cartes d'interface. Leur encre est donc sombre. */
+  --papier:     #f6f1e8;
+  --sur-papier: #17140f;
+  --sur-papier-doux: #5f584c;
+
+  --police: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --main:   "Schoolbell", cursive;   /* les annotations, rien d'autre */
+  --large:  1180px;
+
+  /* le ciel vient de ciel.css : ici on l'allume et on le teinte */
+  --star-rgb: 226, 214, 255;
+  --stars-opacity: 1;
+}
+
+*{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+body{
+  margin:0; background: var(--fond); color: var(--texte);
+  font-family: var(--police); font-size:17px; line-height:1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.fond{
+  position: fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    radial-gradient(ellipse 105% 62% at 50% -8%, var(--halo), rgba(0,0,0,0) 62%),
+    linear-gradient(166deg, var(--fond-haut) 0%, var(--fond) 52%, var(--fond-bas) 100%);
+}
+.wrap{ max-width: var(--large); margin:0 auto; padding:0 28px; position:relative; z-index:1; }
+
+h1,h2,h3{ margin:0; font-weight:700; letter-spacing:-0.035em; line-height:0.95; }
+p{ margin:0 0 14px; }
+a{ color: inherit; }
+
+/* ---------- Barre ---------- */
+/* Pas de pilule de verre flottante : c'est le chrome du portfolio d'Adam, et
+   c'est aussi le composant de nav le plus vu du web. Une ligne, un nom. */
+.bar{
+  position: relative; z-index:2;
+  display:flex; align-items:baseline; justify-content:space-between;
+  gap:20px; max-width: var(--large); margin:0 auto; padding:26px 28px 0;
+}
+.mark{
+  font-weight:700; font-size:19px; letter-spacing:-0.03em;
+  text-decoration:none; color: var(--vif);
+}
+.bar a.demander{
+  font-size:14.5px; font-weight:500; text-decoration:none;
+  border-bottom:1.5px solid var(--trait-fort); padding-bottom:2px;
+}
+.bar a.demander:hover{ border-color: var(--vif); color: var(--clair); }
+
+/* ---------- Ouverture ---------- */
+.ouverture{ padding: 46px 0 88px; }
+/* Le titre traverse la page entiere : enferme dans une colonne de 530 px, un
+   corps de 92 px cassait en six lignes et n'etait plus un titre. */
+h1{ font-size: clamp(40px, 6.6vw, 92px); margin-bottom: 42px; }
+h1 .vif{ color: var(--vif); }
+.ouverture-grille{
+  display:grid; grid-template-columns: minmax(0,0.82fr) minmax(0,1.18fr);
+  gap: 48px; align-items:start;
+}
+/* L'ecart d'echelle fait le ton : 92 px contre 19, pas 42 contre 17. */
+.sous{
+  font-size: clamp(17px, 1.5vw, 20px); color: var(--texte-doux);
+  max-width: 30ch; margin: 4px 0 30px;
+}
+.bouton{
+  display:inline-block; background: var(--vif); color: #150a1c;
+  font-weight:700; font-size:16px; letter-spacing:-0.01em;
+  text-decoration:none; padding:15px 26px; border:0; cursor:pointer;
+  font-family: var(--police);
+  transition: background .14s ease, box-shadow .14s ease, transform .14s ease;
+}
+.bouton:hover{ background: var(--clair); box-shadow: 0 0 34px -6px var(--vif-fonce); }
+.bouton:active{ transform: translateY(1px); }
+.legende-mur{
+  font-family: var(--main); font-size:17px; color: var(--texte-doux);
+  margin-top:26px; max-width:30ch;
+}
+
+/* ---------- Le mur d'affiches ---------- */
+/* Ce que la vitrine vend, elle le montre : des affiches posees a la main,
+   penchees, scotchees. Une page qui vend du visuel sans en montrer un seul
+   demande de la croire sur parole.
+
+   Deux colonnes qui s'imbriquent plutot qu'un placement absolu : la hauteur
+   d'une affiche depend du format de son image, qu'une hauteur de conteneur
+   fixee a l'avance ne peut pas connaitre — les affiches debordaient. */
+.mur{ display:flex; align-items:flex-start; gap:20px; position:relative; z-index:1; }
+.colonne{ display:flex; flex-direction:column; gap:30px; min-width:0; }
+.colonne-a{ flex:1; }
+/* decalee vers le bas et mordant sur la premiere : sans ce chevauchement, deux
+   colonnes bien rangees ne font pas un mur, elles font un tableau */
+.colonne-b{ flex:0.84; margin-top:54px; margin-left:-30px; }
+
+.affiche{
+  position:relative; margin:0;
+  background: var(--papier); color: var(--sur-papier);
+  padding:9px 9px 0;
+  box-shadow: 0 26px 48px -26px rgba(0,0,0,.85);
+}
+.affiche img{ display:block; width:100%; height:auto; }
+.affiche figcaption{
+  font-family: var(--main); font-size:14px; color: var(--sur-papier-doux);
+  padding:7px 2px 9px; line-height:1.2;
+}
+/* le scotch depasse du bord haut : c'est ce depassement qui fait « colle »
+   plutot que « cadre » */
+.affiche::before{
+  content:""; position:absolute; top:-15px; left:26%;
+  width:78px; height:30px; z-index:2;
+  background: url('../images/tape/tape-1.webp') center/100% 100% no-repeat;
+  opacity:.9;
+}
+.a1{ transform: rotate(-2.6deg); z-index:2; }
+.a2{ transform: rotate(2.4deg);  z-index:3; }
+.a3{ transform: rotate(1.8deg);  z-index:1; }
+.a4{ transform: rotate(-3deg);   z-index:4; }
+.a2::before{ background-image: url('../images/tape/tape-2.webp'); left:52%; transform: rotate(5deg); }
+.a3::before{ background-image: url('../images/tape/tape-3.webp'); left:14%; transform: rotate(-6deg); }
+.a4::before{ background-image: url('../images/tape/tape-4.webp'); left:44%; transform: rotate(3deg); }
+
+/* ---------- Sections ---------- */
+.section{ padding: 76px 0; border-top:1px solid var(--trait); }
+h2{ font-size: clamp(30px, 4.2vw, 52px); max-width: 20ch; }
+.chapeau{ color: var(--texte-doux); max-width: 52ch; margin-top:18px; font-size:17.5px; }
+
+/* ---------- Les etapes ---------- */
+/* Des chiffres composes en grand remplacent les surtitres « 01 — ». Ils font le
+   meme travail de reperage, mais typographiquement, et ils ne ressemblent pas
+   au gabarit de toutes les pages produit. */
+.etapes{ list-style:none; margin:44px 0 0; padding:0; }
+.etapes li{
+  display:grid; grid-template-columns: minmax(84px, 1fr) minmax(0, 7fr);
+  gap: 8px 34px; align-items:start;
+  padding: 30px 0; border-top:1px solid var(--trait);
+}
+.etapes li:first-child{ border-top:0; }
+.chiffre{
+  font-size: clamp(52px, 7vw, 104px); font-weight:700; line-height:.78;
+  letter-spacing:-0.05em; color: var(--vif);
+}
+.etapes h3{ font-size: clamp(21px, 2.3vw, 27px); margin-bottom:9px; }
+.etapes p{ color: var(--texte-doux); max-width: 56ch; margin:0; }
+
+/* ---------- Les arguments ---------- */
+/* Trois, pas six : six promesses egales se neutralisent. Et de longueurs
+   volontairement inegales — l'ecriture reguliere au caractere pres est ce qui
+   trahit le plus un texte fabrique. */
+.arguments{ display:grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap:38px; margin-top:44px; }
+.argument{ border-top:2px solid var(--clair); padding-top:16px; }
+.argument h3{ font-size:21px; margin-bottom:10px; }
+.argument p{ color: var(--texte-doux); margin:0; font-size:16.5px; }
+
+/* ---------- Le formulaire ---------- */
+.demande{ display:grid; grid-template-columns: minmax(0,1.15fr) minmax(0,0.85fr); gap:56px; align-items:start; }
+form{ margin-top:34px; max-width:520px; }
+label{ display:block; font-size:14px; font-weight:500; color: var(--texte-doux); margin:22px 0 4px; }
+input, textarea{
+  width:100%; font-family: var(--police); font-size:17px; color: var(--texte);
+  background: transparent; border:0; border-bottom:1.5px solid var(--trait-fort);
+  padding:8px 2px; border-radius:0;
+}
+input:focus, textarea:focus{ outline:none; border-bottom-color: var(--vif); }
+textarea{ min-height:110px; resize:vertical; }
+::placeholder{ color: var(--texte-faible); }
+.envoi{ margin-top:30px; }
+.statut{ margin-top:14px; font-size:15px; min-height:1.4em; }
+.statut.ok{ color: var(--clair); font-weight:500; }
+.statut.err{ color: var(--vif); font-weight:500; }
+.note{ margin-top:18px; font-size:14px; color: var(--texte-faible); max-width:44ch; }
+
+/* Le mot manuscrit, scotche a cote du formulaire : c'est une personne qui
+   repond, et rien ne le dit mieux qu'une ecriture a la main. Papier, comme les
+   affiches — c'est le meme mur. */
+.mot{
+  position:relative; background: var(--papier); color: var(--sur-papier);
+  padding:30px 28px 26px; transform: rotate(1.6deg); margin-top:56px;
+  box-shadow: 0 26px 48px -28px rgba(0,0,0,.85);
+  font-family: var(--main); font-size:19.5px; line-height:1.5;
+}
+.mot::before{
+  content:""; position:absolute; top:-16px; left:34%;
+  width:86px; height:32px;
+  background: url('../images/tape/tape-2.webp') center/100% 100% no-repeat;
+  transform: rotate(-4deg); opacity:.9;
+}
+.mot .signature{ display:block; margin-top:16px; font-size:23px; color: var(--vif-fonce); }
+
+/* ---------- Pied ---------- */
+footer{
+  border-top:1px solid var(--trait); margin-top:20px;
+  padding:30px 0 46px; font-size:14.5px; color: var(--texte-doux);
+}
+footer .wrap{ display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap; }
+footer a{ text-decoration:none; border-bottom:1px solid var(--trait-fort); }
+footer a:hover{ color: var(--clair); border-color: var(--vif); }
+
+/* ---------- Ecrans etroits ---------- */
+@media (max-width: 900px){
+  .ouverture-grille, .demande{ grid-template-columns: 1fr; gap:44px; }
+  /* le chevauchement demande de la largeur : en dessous, les colonnes se
+     desimbriquent mais les affiches gardent leur inclinaison */
+  .colonne-b{ margin-top:26px; margin-left:0; }
+  .mur{ gap:16px; padding-top:12px; }
+  .etapes li{ grid-template-columns:1fr; gap:6px; }
+  .mot{ margin-top:34px; }
+}
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior:auto; }
+  .bouton{ transition:none; }
+}
