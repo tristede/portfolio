@@ -79,20 +79,33 @@ a{ color: inherit; }
 h1{ font-size: clamp(40px, 6.6vw, 92px); margin-bottom: 42px; }
 h1 .vif{ color: var(--vif); }
 .ouverture-grille{
-  display:grid; grid-template-columns: minmax(0,1fr) minmax(0,0.62fr);
+  display:grid; grid-template-columns: minmax(0,1fr) minmax(0,0.86fr);
   gap: 40px; align-items:start;
 }
-/* Le doigt pointe le lecteur. Il est enorme parce qu'a taille raisonnable un
-   emoji ressemble a une icone d'interface ; a cette echelle c'est un dessin. */
-.doigt{
-  margin:0; text-align:center; line-height:1;
-  /* le glyphe deborde volontiers de sa boite : on ne lui coupe rien */
-  overflow: visible;
+/* L'adresse en grand. C'est l'objet le plus concret de l'offre, et il tenait
+   jusqu'ici dans une sous-ligne d'etape. */
+.adresse{ padding-top:4px; will-change: transform; }
+.url{
+  margin:0; font-weight:700; letter-spacing:-0.04em; line-height:1.05;
+  font-size: clamp(26px, 3.8vw, 46px);
+  /* Le <wbr> du balisage est le seul endroit ou l'adresse a le droit de casser :
+     entre le pseudo et le domaine, et seulement si elle ne tient pas. Chaque
+     moitie reste insecable, ce qui garde aussi le curseur colle au domaine —
+     boite a lui, il tombait seul a la ligne suivante. */
+  max-width: 100%;
 }
-.doigt span{
-  display:inline-block; font-size: clamp(140px, 21vw, 300px); line-height:0.9;
-  filter: drop-shadow(0 34px 46px rgba(0,0,0,.6));
-  will-change: transform;
+.url .pseudo{ color: var(--vif); white-space: nowrap; }
+.url .fin{ white-space: nowrap; }
+.url .tld{ color: var(--texte); }
+.curseur{
+  display:inline-block; width:0.06em; height:0.92em; margin-left:0.06em;
+  vertical-align:-0.1em; background: var(--clair);
+  animation: bat 1.15s steps(1) infinite;
+}
+@keyframes bat{ 0%,50%{ opacity:1 } 50.01%,100%{ opacity:0 } }
+.glose{
+  font-family: var(--main); font-size:17px; color: var(--texte-doux);
+  margin:18px 0 0;
 }
 
 /* L'ecart d'echelle fait le ton : 92 px contre 19, pas 42 contre 17. */
@@ -194,4 +207,5 @@ footer a:hover{ color: var(--clair); border-color: var(--vif); }
 @media (prefers-reduced-motion: reduce){
   html{ scroll-behavior:auto; }
   .bouton{ transition:none; }
+  .curseur{ animation:none; }
 }

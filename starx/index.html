@@ -36,10 +36,15 @@
         <p class="sous">À votre nom, sans abonnement, sans une ligne de code.</p>
         <a class="bouton" href="#demander">Demander le mien</a>
       </div>
-      <!-- Le doigt pointe le lecteur : c'est lui qui remplit son portfolio.
-           Decoratif, donc masque aux lecteurs d'ecran — « emoji doigt pointe »
-           annonce a voix haute n'apprend rien a personne. -->
-      <p class="doigt" aria-hidden="true"><span id="js-doigt">🫵</span></p>
+      <!-- Ce que la page vend de plus concret n'apparaissait nulle part : une
+           adresse a soi. La montrer vaut mieux que meubler le vide avec un
+           ornement — et le domaine vient de config.json, comme le reste. -->
+      <div class="adresse" id="js-adresse">
+        <p class="url">
+          <span class="pseudo">votrepseudo</span><wbr><span class="fin"><span class="tld" id="js-tld">.starx.be</span><span class="curseur" aria-hidden="true"></span></span>
+        </p>
+        <p class="glose">ou votre propre nom de domaine,<br>si vous en avez déjà un</p>
+      </div>
     </div>
   </section>
 
@@ -145,25 +150,26 @@
       if (c) cfg = Object.assign(cfg, c);
       document.getElementById('js-nom').textContent = cfg.nom;
       document.getElementById('js-nom-pied').textContent = cfg.nom;
+      if (cfg.domaine) document.getElementById('js-tld').textContent = '.' + cfg.domaine;
       document.title = document.title.replace(/^Starx/, cfg.nom);
     });
 
-  // Parallaxe : le doigt remonte un peu moins vite que la page. Le calcul se
+  // Parallaxe : l'adresse remonte un peu moins vite que la page. Le calcul se
   // fait dans une frame d'animation — un listener de defilement qui ecrit un
   // transform a chaque evenement fait saccader le defilement lui-meme.
   (function(){
-    var doigt = document.getElementById('js-doigt');
-    if (!doigt) return;
+    var bloc = document.getElementById('js-adresse');
+    if (!bloc) return;
     if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     var attendue = false;
     function poser(){
       attendue = false;
       var y = window.pageYOffset || 0;
-      // au-dela de l'accroche le doigt est sorti de l'ecran : inutile de
+      // au-dela de l'accroche le bloc est sorti de l'ecran : inutile de
       // continuer a calculer
       if (y > innerHeight * 1.4) return;
-      doigt.style.transform = 'translate3d(0,' + (y * -0.13).toFixed(1) + 'px,0) rotate(' +
-        (y * 0.006).toFixed(2) + 'deg)';
+      bloc.style.transform = 'translate3d(0,' + (y * -0.13).toFixed(1) + 'px,0) rotate(' +
+        (y * 0.004).toFixed(2) + 'deg)';
     }
     addEventListener('scroll', function(){
       if (attendue) return;
