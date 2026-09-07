@@ -78,6 +78,23 @@ a{ color: inherit; }
    corps de 92 px cassait en six lignes et n'etait plus un titre. */
 h1{ font-size: clamp(40px, 6.6vw, 92px); margin-bottom: 42px; }
 h1 .vif{ color: var(--vif); }
+.ouverture-grille{
+  display:grid; grid-template-columns: minmax(0,1fr) minmax(0,0.62fr);
+  gap: 40px; align-items:start;
+}
+/* Le doigt pointe le lecteur. Il est enorme parce qu'a taille raisonnable un
+   emoji ressemble a une icone d'interface ; a cette echelle c'est un dessin. */
+.doigt{
+  margin:0; text-align:center; line-height:1;
+  /* le glyphe deborde volontiers de sa boite : on ne lui coupe rien */
+  overflow: visible;
+}
+.doigt span{
+  display:inline-block; font-size: clamp(140px, 21vw, 300px); line-height:0.9;
+  filter: drop-shadow(0 34px 46px rgba(0,0,0,.6));
+  will-change: transform;
+}
+
 /* L'ecart d'echelle fait le ton : 92 px contre 19, pas 42 contre 17. */
 .sous{
   font-size: clamp(17px, 1.5vw, 20px); color: var(--texte-doux);
@@ -170,7 +187,7 @@ footer a:hover{ color: var(--clair); border-color: var(--vif); }
 
 /* ---------- Ecrans etroits ---------- */
 @media (max-width: 900px){
-  .demande{ grid-template-columns: 1fr; gap:44px; }
+  .ouverture-grille, .demande{ grid-template-columns: 1fr; gap:32px; }
   .etapes li{ grid-template-columns:1fr; gap:6px; }
   .mot{ margin-top:34px; }
 }
