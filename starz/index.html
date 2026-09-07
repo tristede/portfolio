@@ -33,6 +33,10 @@
     --bg-image: none;
     --bg-image-vertical: none;
     --bg-image-opacity: 0;
+    /* Le service s'appelle Starz : la voûte est sa signature, pas un décor
+       emprunté. Blanc légèrement mauve, pour qu'elle appartienne au dégradé. */
+    --star-rgb: 226, 214, 255;
+    --stars-opacity: 1;
   }
 
   .starz-hero{ padding: 110px 0 70px; text-align:center; }
@@ -74,6 +78,7 @@
 <body>
 
 <div class="topo-bg"></div>
+<div class="starfield" aria-hidden="true"><span></span></div>
 
 <header class="site-nav">
   <a class="logo" href="#top" id="js-nom">Starz</a>

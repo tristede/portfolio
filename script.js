@@ -121,7 +121,8 @@
     bg: '--bg', bgSoft: '--bg-soft', bgDeep: '--bg-deep',
     accent: '--accent', accentStrong: '--accent-strong', accentSky: '--accent-sky',
     halo: '--halo', text: '--text', cardBg: '--card-bg', cardBorder: '--card-border',
-    line: '--line', lineStrong: '--line-strong'
+    line: '--line', lineStrong: '--line-strong',
+    starRgb: '--star-rgb'
   };
 
   function applyTheme(theme){
@@ -134,6 +135,7 @@
     if (theme.bgImage) root.style.setProperty('--bg-image', 'url("' + theme.bgImage + '")');
     if (theme.bgImageVertical) root.style.setProperty('--bg-image-vertical', 'url("' + theme.bgImageVertical + '")');
     if (theme.bgImageOpacity != null) root.style.setProperty('--bg-image-opacity', theme.bgImageOpacity);
+    if (theme.starsOpacity != null) root.style.setProperty('--stars-opacity', theme.starsOpacity);
   }
 
   function applySiteTexts(site){
