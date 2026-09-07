@@ -7,7 +7,7 @@
 <meta name="description" content="Un portfolio à votre nom, que vous modifiez vous-même, sans abonnement et sans code.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Baloo+2:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Baloo+2:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- même feuille que les portfolios : la vitrine doit ressembler à ce qu'elle vend -->
 <link rel="stylesheet" href="../style.css">
 <style>
@@ -38,14 +38,18 @@
     --star-rgb: 226, 214, 255;
     --stars-opacity: 1;
     /* Schoolbell est l'écriture du portfolio d'Adam : sur la vitrine elle
-       raconterait son travail, pas le service. Michroma est large et
-       géométrique — de la signalétique, pas de la main courante. */
-    --font-title: "Michroma", ui-sans-serif, system-ui, sans-serif;
+       raconterait son travail, pas le service. */
+    --font-title: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   }
+  /* La feuille partagée titre en 400 : c'est le poids des écritures manuscrites,
+     qui n'en ont qu'un. Une grotesque à ce poids et à cette taille paraît
+     délavée — les titres de la vitrine passent donc en gras, avec un
+     interlettrage resserré, comme une grotesque le demande en grand corps. */
+  h1, h2, h3{ font-weight: 700; letter-spacing: -0.02em; }
   /* le nom porte l'identité : il prend la même police que les titres */
   .logo{
     font-family: var(--font-title);
-    font-size: 13px; letter-spacing: .04em;
+    font-weight: 700; font-size: 14px; letter-spacing: .01em;
   }
 
   .starz-hero{ padding: 110px 0 70px; text-align:center; }
