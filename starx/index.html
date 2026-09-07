@@ -41,22 +41,18 @@
       <div class="mur">
         <div class="colonne colonne-a">
           <figure class="affiche a1">
-            <img src="../images/union-oasis-forest-miniature-1787866364017-0.webp" alt="Affiche du projet Union Oasis Forest" width="1920" height="1080">
-            <figcaption>Union Oasis Forest</figcaption>
+            <img src="apercus/accueil.webp" alt="Page d'accueil d'un portfolio" width="900" height="562" decoding="async">
+            <figcaption>La page d'accueil</figcaption>
           </figure>
           <figure class="affiche a3">
-            <img src="../images/artwork-rap-pochette-d-albums-1787778522077-9.webp" alt="Pochette d'album" width="1500" height="1500">
-            <figcaption>Pochette d'album</figcaption>
+            <img src="apercus/projet.webp" alt="Page d'un projet, visuels scotchés" width="900" height="562" decoding="async">
+            <figcaption>Une page de projet</figcaption>
           </figure>
         </div>
         <div class="colonne colonne-b">
           <figure class="affiche a2">
-            <img src="../images/artwork-rap-pochette-d-albums-1787778504109-1.webp" alt="Pochette d'album" width="1440" height="1920">
-            <figcaption>Pochette d'album</figcaption>
-          </figure>
-          <figure class="affiche a4">
-            <img src="../images/miniatures-youtube-1787746157861-0.webp" alt="Miniature YouTube" width="1920" height="1080">
-            <figcaption>Miniature YouTube</figcaption>
+            <img src="apercus/mobile.webp" alt="Le même portfolio sur téléphone" width="460" height="986" decoding="async">
+            <figcaption>Sur téléphone</figcaption>
           </figure>
         </div>
       </div>
@@ -91,6 +87,23 @@
           </div>
         </li>
       </ol>
+    </div>
+  </section>
+
+  <section class="section" id="placement">
+    <div class="wrap">
+      <h2>Vos visuels se posent où vous les déposez</h2>
+      <p class="chapeau">Aucune grille imposée. Attrapez une image ci-dessous et déplacez-la : c'est
+        exactement le geste du panneau d'édition, et la position que vous lâchez est celle que vos
+        visiteurs verront.</p>
+
+      <div class="bac" id="js-bac">
+        <div class="piece" style="left:5%;  top:12%; --r:-3.4deg"><img src="apercus/piece-1.webp" alt="" width="420" height="420" loading="lazy" decoding="async"></div>
+        <div class="piece" style="left:37%; top:34%; --r:2.6deg"><img src="apercus/piece-2.webp" alt="" width="420" height="236" loading="lazy" decoding="async"></div>
+        <div class="piece" style="left:68%; top:8%;  --r:-1.8deg"><img src="apercus/piece-3.webp" alt="" width="420" height="560" loading="lazy" decoding="async"></div>
+        <p class="indice" id="js-indice">Attrapez-en une</p>
+      </div>
+      <p class="note">Ces trois visuels ne sont qu'un exemple : dans votre portfolio, ce sont les vôtres.</p>
     </div>
   </section>
 
@@ -175,6 +188,49 @@
       var pseudo = document.getElementById('f-pseudo');
       if (cfg.domaine) pseudo.placeholder = 'votrepseudo.' + cfg.domaine;
     });
+
+  // Le placement libre est l'argument central : plutot que de le decrire ou d'en
+  // montrer une video, on le rend jouable. Le visiteur fait le geste lui-meme,
+  // et c'est le meme que dans le panneau d'edition.
+  (function(){
+    var bac = document.getElementById('js-bac');
+    if (!bac) return;
+    var indice = document.getElementById('js-indice');
+    var dessus = 5;
+
+    bac.querySelectorAll('.piece').forEach(function(piece){
+      piece.addEventListener('pointerdown', function(e){
+        // la capture garde le pointeur sur la piece meme si le curseur la
+        // depasse : sans elle, un geste rapide lache la piece en route
+        piece.setPointerCapture(e.pointerId);
+        var cadre = bac.getBoundingClientRect();
+        var boite = piece.getBoundingClientRect();
+        var dx = e.clientX - boite.left, dy = e.clientY - boite.top;
+        piece.classList.add('prise');
+        piece.style.zIndex = ++dessus;
+        if (indice) indice.classList.add('parti');
+
+        function bouger(ev){
+          var x = ev.clientX - cadre.left - dx;
+          var y = ev.clientY - cadre.top - dy;
+          // on borne au bac : une piece lachee dehors serait perdue
+          x = Math.max(0, Math.min(cadre.width - boite.width, x));
+          y = Math.max(0, Math.min(cadre.height - boite.height, y));
+          piece.style.left = (x / cadre.width * 100) + '%';
+          piece.style.top = (y / cadre.height * 100) + '%';
+        }
+        function lacher(){
+          piece.classList.remove('prise');
+          piece.removeEventListener('pointermove', bouger);
+          piece.removeEventListener('pointerup', lacher);
+          piece.removeEventListener('pointercancel', lacher);
+        }
+        piece.addEventListener('pointermove', bouger);
+        piece.addEventListener('pointerup', lacher);
+        piece.addEventListener('pointercancel', lacher);
+      });
+    });
+  })();
 
   var form = document.getElementById('js-form');
   var statut = document.getElementById('js-statut');

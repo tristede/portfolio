@@ -240,3 +240,38 @@ footer a:hover{ color: var(--clair); border-color: var(--vif); }
   html{ scroll-behavior:auto; }
   .bouton{ transition:none; }
 }
+
+/* ---------- Le bac de placement ---------- */
+/* La mise en page libre est l'argument central. Une video l'aurait montree ;
+   la rendre jouable la fait comprendre — le visiteur fait le geste lui-meme,
+   et c'est le meme que dans le panneau d'edition. */
+.bac{
+  position:relative; margin-top:36px;
+  height: clamp(300px, 34vw, 420px);
+  border:1px dashed var(--trait-fort);
+  background: rgba(255,255,255,0.018);
+  overflow:hidden;
+}
+.piece{
+  position:absolute; width: clamp(110px, 15%, 190px);
+  background: var(--papier); padding:7px 7px 8px;
+  box-shadow: 0 18px 32px -20px rgba(0,0,0,.9);
+  transform: rotate(var(--r, 0deg));
+  cursor: grab;
+  /* sans cela, un glissement au doigt fait defiler la page au lieu de
+     deplacer la piece */
+  touch-action: none;
+  transition: box-shadow .14s ease;
+}
+.piece img{ display:block; width:100%; height:auto; pointer-events:none; }
+.piece.prise{
+  cursor: grabbing;
+  box-shadow: 0 26px 44px -18px rgba(0,0,0,.95), 0 0 0 2px var(--vif);
+  transform: rotate(var(--r, 0deg)) scale(1.03);
+}
+.indice{
+  position:absolute; left:50%; bottom:16px; transform:translateX(-50%);
+  margin:0; font-family: var(--main); font-size:17px; color: var(--texte-faible);
+  pointer-events:none; transition: opacity .3s ease;
+}
+.indice.parti{ opacity:0; }
