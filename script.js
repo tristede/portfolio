@@ -114,6 +114,23 @@
   }
 
   function applySiteTexts(site){
+    // Le nom du proprietaire vit dans les donnees, plus dans le balisage : c'est
+    // ce qui permet a une copie du depot de devenir le portfolio de quelqu'un
+    // d'autre sans toucher a une seule page.
+    if (site.owner){
+      document.querySelectorAll('.logo').forEach(function(el){ el.textContent = site.owner; });
+      document.title = document.title.replace(/Adam/g, site.owner);
+      // On ne remplace que du TEXTE : reecrire l'innerHTML detruirait
+      // l'element qui porte l'annee, deja rempli au chargement.
+      document.querySelectorAll('footer .foot-left span').forEach(function(el){
+        Array.prototype.forEach.call(el.childNodes, function(n){
+          if (n.nodeType === 3 && n.nodeValue.indexOf('Adam') !== -1){
+            n.nodeValue = n.nodeValue.replace(/Adam/g, site.owner);
+          }
+        });
+      });
+    }
+
     var roleMain = document.getElementById('js-role-main');
     var roleAccent = document.getElementById('js-role-accent');
     if (roleMain && site.roleMain) roleMain.textContent = site.roleMain;

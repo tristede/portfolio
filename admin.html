@@ -533,6 +533,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
 <script>
 (function(){
+  // Depot et relais d'authentification : lus dans config.json, pas ecrits ici.
+  // Creer un autre portfolio revient alors a copier le depot et a changer ce
+  // fichier — le moteur ne connait plus personne en particulier. Les valeurs
+  // ci-dessous ne servent que de repli si config.json manque ou n'est pas encore
+  // arrive, pour qu'une copie incomplete ne laisse pas un panneau muet.
   var REPO_OWNER = 'tristede';
   var REPO_NAME = 'portfolio';
   var BRANCH = 'main';
@@ -543,7 +548,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
   // dix minutes dans une version perimee sans que rien ne le signale — une
   // fonction annoncee comme livree parait alors simplement absente. Le panneau
   // compare donc ce qu'il execute a ce que le serveur sert, et le dit.
-  var ADMIN_BUILD = '2026-08-28-c';
+  var ADMIN_BUILD = '2026-09-07-a';
   (function watchAdminVersion(){
     setTimeout(function(){
       fetch('admin.html', { cache: 'no-store' })
@@ -3003,11 +3008,23 @@ body.visual-mode .wrap{ max-width: 1400px; }
     }
   });
 
-  // auto-connect if a token from a previous OAuth login is still stored
-  var existing = getToken();
-  if (existing){
-    connectAndLoad(existing, $('oauth-status'));
-  }
+  // La configuration doit etre lue AVANT toute requete : se connecter d'abord
+  // irait interroger le depot de repli, pas celui de ce portfolio.
+  fetch('config.json', { cache: 'no-cache' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .catch(function(){ return null; })
+    .then(function(cfg){
+      if (cfg){
+        if (cfg.owner) REPO_OWNER = cfg.owner;
+        if (cfg.repo) REPO_NAME = cfg.repo;
+        if (cfg.branch) BRANCH = cfg.branch;
+        if (cfg.oauthWorker) OAUTH_WORKER_URL = cfg.oauthWorker;
+      }
+      $('repo-label').textContent = REPO_OWNER + '/' + REPO_NAME;
+      // auto-connect if a token from a previous OAuth login is still stored
+      var existing = getToken();
+      if (existing) connectAndLoad(existing, $('oauth-status'));
+    });
 })();
 </script>
 </body>
