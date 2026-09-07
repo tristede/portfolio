@@ -252,12 +252,32 @@ section.projects-section{
 .section-head.sub h2{ font-size: clamp(18px, 2vw, 22px); }
 .back-link{ margin-bottom: 28px; }
 
-.grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 20px; }
+.grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 20px 28px; }
 
 /* Filtres par tag. Un groupe reste affiché si l'un de ses projets porte le tag :
    le filtre sert à trouver, pas à faire disparaître une entité qui contient
-   pourtant ce qu'on cherche. */
-.tag-filters{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:26px; }
+   pourtant ce qu'on cherche.
+   Dix-neuf pastilles en permanence poussaient la grille hors de l'écran : elles
+   se déplient à la demande, et le bouton porte le filtre actif. */
+.filter-zone{ margin-bottom: 24px; }
+.filter-toggle{
+  font-family: var(--font); font-size:13.5px; font-weight:600;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 16px; border-radius:999px; cursor:pointer;
+  color: var(--text); background: transparent;
+  border:1px solid var(--line-strong);
+  transition: border-color .15s ease, background .15s ease;
+}
+.filter-toggle svg{ width:15px; height:15px; }
+.filter-toggle:hover{ border-color: var(--accent-sky); }
+.filter-toggle.is-active{ border-color: var(--accent-sky); background: var(--accent-soft); }
+.filter-chosen{
+  font-size:12px; font-weight:700; color:#fff;
+  background: linear-gradient(180deg, var(--accent-strong), var(--accent));
+  padding:2px 9px; border-radius:999px;
+}
+.tag-filters.is-closed{ display:none; }
+.tag-filters{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
 .tag-filter{
   font-family: var(--font); font-size:13px; font-weight:600;
   display:inline-flex; align-items:center; gap:7px;
@@ -273,9 +293,31 @@ section.projects-section{
 }
 .tag-count{ font-size:11px; opacity:.7; font-variant-numeric: tabular-nums; }
 
-/* Une carte de groupe se distingue d'un projet : elle ouvre une page qui en
-   contient plusieurs, et son compte remplace l'année. */
-.card-group .medium-label{ color: var(--accent-favori); }
+/* Un groupe se lit comme un paquet de cartes : deux feuilles décalées derrière
+   la carte disent d'un coup d'œil qu'il y en a plusieurs dessous. `.card` masque
+   ce qui déborde, d'où le conteneur — sans lui les feuilles seraient rognées par
+   la carte elle-même. */
+.card-deck{ position: relative; }
+/* la carte remplit son conteneur : les feuilles se calent sur `inset: 0`, et
+   sans ça elles dépassaient sous une carte plus courte que sa rangée */
+.card-deck > .card{ position: relative; z-index: 2; height: 100%; }
+.deck-sheet{
+  position:absolute; inset:0; z-index:1;
+  border-radius: var(--radius-lg);
+  background: var(--card-bg); border:1px solid var(--card-border);
+  pointer-events:none; opacity:0;
+  transition: transform .25s ease, opacity .4s ease;
+}
+/* les feuilles apparaissent avec la carte, pas avant elle */
+.card-deck:has(.card.in) .deck-sheet-1{ opacity:.75; }
+.card-deck:has(.card.in) .deck-sheet-2{ opacity:.45; }
+.deck-sheet-1{ transform: translate(7px, 7px) rotate(1.1deg); }
+.deck-sheet-2{ transform: translate(14px, 14px) rotate(2.3deg); }
+.card-deck:hover .deck-sheet-1{ transform: translate(11px, 10px) rotate(1.8deg); }
+.card-deck:hover .deck-sheet-2{ transform: translate(22px, 20px) rotate(3.4deg); }
+
+/* et le badge le nomme, avec le compte a la place de l'annee */
+.card-group .medium-label{ color: var(--accent-favori); font-weight:700; }
 .card-group .year{ font-variant-numeric: tabular-nums; }
 
 .card{

@@ -26,6 +26,7 @@
     arrowLeft: '<svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg>',
     external: '<svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 16L18 6M9.5 6H18v8.5"/></svg>',
     expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg>',
+    filter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>',
     heart: '<svg class="ui-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 20s-7-4.4-7-9.2A4 4 0 0 1 12 8a4 4 0 0 1 7 2.8C19 15.6 12 20 12 20z"/></svg>'
   };
 
@@ -842,7 +843,11 @@
   function groupCardHTML(g, list, i){
     var thumb = g.thumb || (list[0] ? thumbSrc(list[0]) : '');
     var n = list.length;
+    // Un groupe se lit comme un paquet de cartes : deux feuilles decalees
+    // derriere la carte. `.card` masque ce qui deborde, d'ou le conteneur —
+    // sans lui les feuilles seraient rognees par la carte elle-meme.
     return (
+      '<div class="card-deck">' +
       '<a class="card card-group" href="groupe.html?id=' + encodeURIComponent(g.id) + '"' +
         ' data-group-id="' + g.id + '" style="transition-delay:' + ((i % 8) * 40) + 'ms">' +
         '<div class="thumb' + (thumb ? ' has-img' : '') + '">' +
@@ -854,7 +859,10 @@
           '<h3>' + g.title + '</h3>' +
           (g.desc ? '<p class="desc">' + g.desc + '</p>' : '') +
         '</div>' +
-      '</a>'
+      '</a>' +
+      '<span class="deck-sheet deck-sheet-1" aria-hidden="true"></span>' +
+      '<span class="deck-sheet deck-sheet-2" aria-hidden="true"></span>' +
+      '</div>'
     );
   }
 
@@ -895,6 +903,8 @@
     revealCards();
   }
 
+  var filtresOuverts = false;
+
   function renderTagFilters(site, shown){
     var host = document.getElementById('js-tag-filters');
     if (!host) return;
@@ -908,14 +918,27 @@
     if (ordre.length < 2){ host.innerHTML = ''; return; }
     ordre.sort(function(a, b){ return vus[b] - vus[a] || a.localeCompare(b); });
 
-    host.className = 'tag-filters';
+    // Dix-neuf pastilles en permanence poussaient la grille hors de l'ecran :
+    // les filtres se deplient a la demande, et le bouton dit ce qui est actif.
+    host.className = 'filter-zone';
     host.innerHTML =
-      '<button type="button" class="tag-filter' + (tagActif ? '' : ' is-on') + '" data-tag="">Tout</button>' +
-      ordre.map(function(t){
-        return '<button type="button" class="tag-filter' + (tagActif === t ? ' is-on' : '') +
-          '" data-tag="' + t.replace(/"/g, '&quot;') + '">' + t +
-          '<span class="tag-count">' + vus[t] + '</span></button>';
-      }).join('');
+      '<button type="button" class="filter-toggle' + (tagActif ? ' is-active' : '') + '">' +
+        UI_ICON.filter + ' Filtrer' +
+        (tagActif ? '<span class="filter-chosen">' + tagActif + '</span>' : '') +
+      '</button>' +
+      '<div class="tag-filters' + (filtresOuverts ? '' : ' is-closed') + '">' +
+        '<button type="button" class="tag-filter' + (tagActif ? '' : ' is-on') + '" data-tag="">Tout</button>' +
+        ordre.map(function(t){
+          return '<button type="button" class="tag-filter' + (tagActif === t ? ' is-on' : '') +
+            '" data-tag="' + t.replace(/"/g, '&quot;') + '">' + t +
+            '<span class="tag-count">' + vus[t] + '</span></button>';
+        }).join('') +
+      '</div>';
+
+    host.querySelector('.filter-toggle').addEventListener('click', function(){
+      filtresOuverts = !filtresOuverts;
+      host.querySelector('.tag-filters').classList.toggle('is-closed', !filtresOuverts);
+    });
 
     host.querySelectorAll('.tag-filter').forEach(function(b){
       b.addEventListener('click', function(){
