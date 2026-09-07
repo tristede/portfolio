@@ -113,7 +113,32 @@
     );
   }
 
+  // Chaque portfolio a ses couleurs et sa texture. Elles vivent dans les donnees
+  // et sont posees en variables CSS : le CSS reste commun, l'apparence non.
+  // Une valeur absente laisse celle de la feuille de style, pour qu'un theme
+  // incomplet n'efface pas le reste.
+  var THEME_VARS = {
+    bg: '--bg', bgSoft: '--bg-soft', bgDeep: '--bg-deep',
+    accent: '--accent', accentStrong: '--accent-strong', accentSky: '--accent-sky',
+    halo: '--halo', text: '--text', cardBg: '--card-bg', cardBorder: '--card-border',
+    line: '--line', lineStrong: '--line-strong'
+  };
+
+  function applyTheme(theme){
+    if (!theme) return;
+    var root = document.documentElement;
+    Object.keys(THEME_VARS).forEach(function(cle){
+      if (theme[cle]) root.style.setProperty(THEME_VARS[cle], theme[cle]);
+    });
+    // les images se donnent par leur chemin ; on fabrique la valeur CSS ici
+    if (theme.bgImage) root.style.setProperty('--bg-image', 'url("' + theme.bgImage + '")');
+    if (theme.bgImageVertical) root.style.setProperty('--bg-image-vertical', 'url("' + theme.bgImageVertical + '")');
+    if (theme.bgImageOpacity != null) root.style.setProperty('--bg-image-opacity', theme.bgImageOpacity);
+  }
+
   function applySiteTexts(site){
+    applyTheme(site.theme);
+
     // Le nom du proprietaire vit dans les donnees, plus dans le balisage : c'est
     // ce qui permet a une copie du depot de devenir le portfolio de quelqu'un
     // d'autre sans toucher a une seule page.

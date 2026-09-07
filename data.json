@@ -69,7 +69,19 @@
         "desc": "",
         "thumb": ""
       }
-    ]
+    ],
+    "theme": {
+      "bg": "#080b30",
+      "bgSoft": "#0d1454",
+      "bgDeep": "#05071f",
+      "accent": "#4650ff",
+      "accentStrong": "#5b63ff",
+      "accentSky": "#7fc4ff",
+      "halo": "rgba(90,100,255,0.22)",
+      "bgImage": "images/bg-hor.webp",
+      "bgImageVertical": "images/bg-vert.webp",
+      "bgImageOpacity": 0.55
+    }
   },
   "projects": [
     {

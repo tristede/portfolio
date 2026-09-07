@@ -100,13 +100,15 @@ h1,h2,h3{ font-family: var(--font-title); font-weight: 400; letter-spacing:0; ma
   text-shadow: 0 0 8px rgba(127,196,255,0.5);
 }
 
-/* Simple dark-blue gradient placeholder — swap for the real background image
-   (see README: set background-image: url('background.jpg') here, background-size: cover) */
+/* Le fond est piloté par des variables plutôt qu'écrit en dur : chaque
+   portfolio choisit ses couleurs et sa texture depuis ses données, sans qu'on
+   touche à cette feuille. Les valeurs ci-dessous restent les valeurs par
+   défaut — un thème absent ou incomplet n'efface donc rien. */
 .topo-bg{
   position: fixed; inset:0; z-index:0; pointer-events:none;
   background-image:
-    radial-gradient(ellipse 100% 60% at 50% -10%, rgba(90,100,255,0.22), rgba(0,0,0,0) 60%),
-    linear-gradient(160deg, var(--bg-soft) 0%, var(--bg) 50%, #05071f 100%);
+    radial-gradient(ellipse 100% 60% at 50% -10%, var(--halo, rgba(90,100,255,0.22)), rgba(0,0,0,0) 60%),
+    linear-gradient(160deg, var(--bg-soft) 0%, var(--bg) 50%, var(--bg-deep, #05071f) 100%);
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -114,12 +116,12 @@ h1,h2,h3{ font-family: var(--font-title); font-weight: 400; letter-spacing:0; ma
    gradient still does the colour work underneath */
 .topo-bg::after{
   content: ""; position: absolute; inset: 0;
-  background: url('images/bg-hor.webp') center/cover no-repeat;
-  opacity: 0.55;
+  background: var(--bg-image, url('images/bg-hor.webp')) center/cover no-repeat;
+  opacity: var(--bg-image-opacity, 0.55);
 }
 /* portrait screens get the vertical artwork so it isn't stretched */
 @media (max-aspect-ratio: 1/1){
-  .topo-bg::after{ background-image: url('images/bg-vert.webp'); }
+  .topo-bg::after{ background-image: var(--bg-image-vertical, url('images/bg-vert.webp')); }
 }
 
 /* ---------- Nav (floating glass pill, blue-tinted) ---------- */
