@@ -3275,8 +3275,12 @@ body.visual-mode .wrap{ max-width: 1400px; }
     $('reload-btn').textContent = 'Annuler mes changements';
     $('repo-label').parentNode.innerHTML = 'Panneau de démonstration — aucune connexion, aucune publication';
     document.title = 'Bac à sable — un portfolio Starx';
+    // « Voir le site » ouvrirait le fichier du serveur, donc la demonstration
+    // d'origine, sans les changements du visiteur — ceux-ci ne vivent que dans
+    // cet onglet. L'apercu visuel du panneau est deja le site : le bouton n'a
+    // rien a ajouter, il n'aurait qu'a decevoir.
     var voirLeSite = document.querySelector('.topbar .actions a[href*="github.io"]');
-    if (voirLeSite) voirLeSite.setAttribute('href', 'index.html');
+    if (voirLeSite) voirLeSite.remove();
 
     // On n'appelle pas connectAndLoad : il ecrirait un jeton dans le stockage
     // que le vrai panneau partage.
