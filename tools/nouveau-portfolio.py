@@ -25,7 +25,7 @@ RACINE = pathlib.Path(__file__).resolve().parent.parent
 PAGES = [
     "index.html", "projet.html", "projets.html", "groupe.html",
     "projets-perso.html", "projets-academiques.html", "admin.html",
-    "script.js", "style.css",
+    "script.js", "style.css", "ciel.css",
 ]
 OUTILS = ["tools/build_preview.py", "tools/pdfpages.swift", "tools/nouveau-portfolio.py"]
 # décors partagés : sans eux le mur n'a plus ni scotch ni fond

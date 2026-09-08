@@ -1,0 +1,8 @@
+{
+  "_comment": "Portfolio de démonstration. « demo: true » coupe l'authentification et détourne TOUTES les écritures : rien ne part sur GitHub, tout vit dans l'onglet du visiteur. owner/repo sont vides — aucun dépôt n'est jamais contacté.",
+  "owner": "",
+  "repo": "",
+  "branch": "main",
+  "oauthWorker": "",
+  "demo": true
+}

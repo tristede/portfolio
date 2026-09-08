@@ -1,0 +1,197 @@
+{
+  "site": {
+    "owner": "Name",
+    "roleMain": "Direction artistique",
+    "roleAccent": "identité · photo · vidéo",
+    "bio": "Ce portfolio est une démonstration. Tous les textes et toutes les images se changent depuis le panneau d'édition.",
+    "aboutParagraphs": [
+      "Cette page est un gabarit : remplacez ce paragraphe par le vôtre. Cliquez sur un texte pour le modifier, déposez vos images là où vous les voulez.",
+      "Les visuels ci-dessus sont des aplats fabriqués pour la démonstration. Rien ici n'est un vrai projet."
+    ],
+    "contactEmail": "bonjour@example.com",
+    "linkedin": "",
+    "instagram": "",
+    "favoriProjectId": "identite-visuelle",
+    "timeline": [
+      {
+        "year": "2026",
+        "title": "Votre parcours",
+        "desc": "Une ligne par étape. Ajoutez, retirez, réordonnez."
+      },
+      {
+        "year": "2025",
+        "title": "Une autre étape",
+        "desc": "Formation, stage, poste — ce que vous voulez montrer."
+      }
+    ],
+    "sections": [
+      {
+        "id": "perso",
+        "page": "perso",
+        "kicker": "01 — Perso",
+        "title": "Projets perso",
+        "desc": "Les projets menés par envie."
+      },
+      {
+        "id": "academique",
+        "page": "academique",
+        "kicker": "02 — Académique",
+        "title": "Projets académiques",
+        "desc": "Les travaux réalisés en formation."
+      }
+    ],
+    "groups": [],
+    "theme": {
+      "bg": "#0d1024",
+      "bgSoft": "#1a1f44",
+      "bgDeep": "#070914",
+      "accent": "#5b7cfa",
+      "accentStrong": "#7f99fb",
+      "accentSky": "#9fd0ff",
+      "halo": "rgba(90,120,255,0.20)",
+      "bgImage": "images/bg-hor.webp",
+      "bgImageVertical": "images/bg-vert.webp",
+      "bgImageOpacity": 0.4,
+      "starRgb": "214, 226, 255",
+      "starsOpacity": 0.75
+    },
+    "kicker": "Portfolio de démonstration"
+  },
+  "projects": [
+    {
+      "id": "identite-visuelle",
+      "title": "Identité visuelle",
+      "year": 2026,
+      "ctx": "perso",
+      "medium": "graphisme",
+      "tags": [
+        "Graphisme",
+        "Identité"
+      ],
+      "featured": true,
+      "desc": "Un exemple de projet. Le titre, le texte et les visuels se modifient depuis le panneau.",
+      "thumb": "images/demo-01.webp",
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/demo-01.webp",
+          "hidden": false,
+          "size": "lg"
+        },
+        {
+          "type": "image",
+          "url": "images/demo-02.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/demo-03.webp",
+          "hidden": false
+        }
+      ]
+    },
+    {
+      "id": "serie-photo",
+      "title": "Série photographique",
+      "year": 2026,
+      "ctx": "perso",
+      "medium": "photo",
+      "tags": [
+        "Photo"
+      ],
+      "featured": false,
+      "desc": "Deuxième exemple. Les images se placent où vous les déposez, sans grille imposée.",
+      "thumb": "images/demo-04.webp",
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/demo-04.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/demo-05.webp",
+          "hidden": false,
+          "caption": "Une légende sous un visuel, si vous en voulez une."
+        },
+        {
+          "type": "image",
+          "url": "images/demo-06.webp",
+          "hidden": false
+        }
+      ]
+    },
+    {
+      "id": "clip-musical",
+      "title": "Clip musical",
+      "year": 2025,
+      "ctx": "perso",
+      "medium": "video",
+      "tags": [
+        "Vidéo"
+      ],
+      "featured": false,
+      "desc": "Un projet vidéo. Les liens YouTube, Vimeo et TikTok s'affichent directement dans la page.",
+      "thumb": "images/demo-07.webp",
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/demo-07.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/demo-08.webp",
+          "hidden": false,
+          "size": "lg"
+        }
+      ]
+    },
+    {
+      "id": "affiches-festival",
+      "title": "Affiches de festival",
+      "year": 2025,
+      "ctx": "academique",
+      "medium": "graphisme",
+      "tags": [
+        "Graphisme",
+        "Print"
+      ],
+      "featured": false,
+      "desc": "Un projet académique. Les PDF se feuillettent dans la page, sans quitter le portfolio.",
+      "thumb": "images/demo-09.webp",
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/demo-09.webp",
+          "hidden": false
+        },
+        {
+          "type": "image",
+          "url": "images/demo-10.webp",
+          "hidden": false
+        }
+      ]
+    },
+    {
+      "id": "podcast",
+      "title": "Épisode de podcast",
+      "year": 2025,
+      "ctx": "academique",
+      "medium": "audio",
+      "tags": [
+        "Audio"
+      ],
+      "featured": false,
+      "desc": "Un projet audio. Un lien SoundCloud ou Spotify suffit.",
+      "thumb": "images/demo-03.webp",
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/demo-03.webp",
+          "hidden": false
+        }
+      ]
+    }
+  ]
+}

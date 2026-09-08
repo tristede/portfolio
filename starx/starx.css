@@ -127,6 +127,14 @@ h1 .vif{ color: var(--vif); }
 }
 .bouton:hover{ background: var(--clair); box-shadow: 0 0 34px -6px var(--vif-fonce); }
 .bouton:active{ transform: translateY(1px); }
+/* Un lien de texte, pas un second bouton : la paire plein/fantome est
+   l'element le plus interchangeable d'une page produit. */
+.agir{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; margin:0; }
+.essai{
+  font-size:15px; color: var(--texte-doux); text-decoration:none;
+  border-bottom:1px solid var(--trait-fort); padding-bottom:2px;
+}
+.essai:hover{ color: var(--clair); border-color: var(--vif); }
 
 /* ---------- Sections ---------- */
 .section{ padding: 76px 0; border-top:1px solid var(--trait); }
