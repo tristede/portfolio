@@ -11,26 +11,30 @@ Adobe Portfolio : palette bleu nuit, police manuscrite.
 
 ## Structure des pages
 
-- **`index.html`** — l'accueil : titre, bio, 2 boutons, un projet favori mis en
-  avant, la sélection "Projets mis en avant" (3 projets), à propos, parcours, contact.
-  **Les grilles complètes de projets ne sont plus sur cette page.**
-- **`projets-perso.html`** — les projets perso, accessible via le bouton
-  "Projets perso" de l'accueil.
-- **`projets-academiques.html`** — les projets académiques, avec **le stage
-  "En Esprit" en sous-section juste en dessous** — pas de page ni de bouton
-  séparé pour le stage.
+- **`index.html`** — l'accueil : titre, bio, un bouton "Tous les projets", un
+  projet favori mis en avant, la sélection "Projets mis en avant" (3 projets),
+  à propos, parcours, contact. **Les grilles complètes de projets ne sont plus
+  sur cette page.**
+- **`projets.html`** — tous les projets : les groupes d'abord (voir plus bas),
+  puis les projets qui n'appartiennent à aucun groupe, filtrables par tag.
+  Remplace les anciennes pages `projets-perso.html`/`projets-academiques.html`,
+  supprimées — la catégorie (`ctx`) d'un projet reste une simple étiquette
+  affichée dans l'admin, elle ne détermine plus sa page.
+- **`groupe.html?id=...`** — la page d'un groupe (un club, une agence, un
+  stage — plusieurs projets réunis sous une seule carte sur `projets.html`,
+  ex. "Union Oasis Forest"). Se crée et se remplit depuis l'admin, sur la
+  fiche d'un projet.
 - **`projet.html`** — la page détail d'un projet (`projet.html?id=...`),
   ouverte en cliquant sur n'importe quelle vignette — voir plus bas.
 - **`admin.html`** — le panneau d'édition (voir plus bas).
 - **`data.json`** — **tout le contenu du site** : textes (bio, à propos, accroche,
-  contact, réseaux sociaux), projet favori, et la liste des projets. C'est ce
-  fichier que `/admin.html` lit et modifie — tu peux aussi l'éditer à la main si
-  tu préfères (c'est du JSON standard).
+  contact, réseaux sociaux), projet favori, la liste des groupes, et la liste
+  des projets. C'est ce fichier que `/admin.html` lit et modifie — tu peux
+  aussi l'éditer à la main si tu préfères (c'est du JSON standard).
 - **`style.css`** — tout le design, partagé par toutes les pages.
 - **`script.js`** — charge `data.json` et se charge de tout le rendu (grilles,
   icônes, projet favori, textes, effet de décryptage), partagé par toutes les
-  pages. Chaque page ne fait que déclarer `data-group="perso"` (ou `academique`,
-  `stage`, `featured`) sur son conteneur — le script filtre automatiquement.
+  pages.
 
 Le header (nav flottante) et le footer (contact) sont dupliqués tels quels dans
 chaque page — pas de composants partagés, juste du HTML copié-collé volontairement

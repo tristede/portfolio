@@ -40,10 +40,9 @@ tools/pdfpages.swift       convertit un PDF en images, hors navigateur
 
 adam/                      LE portfolio d'Adam — l'exemple qui a servi de modèle au moteur
   index.html                 accueil (hero, favori, mis en avant, à propos, parcours, contact)
-  projets-perso.html         grille perso
-  projets-academiques.html   grille académique + section stage
+  projets.html               tous les projets (groupes + projets libres), filtrables par tag
   projet.html?id=...         page détail d'un projet
-  groupe.html                page d'un groupe de projets (ex. Union Oasis Forest)
+  groupe.html?id=...         page d'un groupe de projets (ex. Union Oasis Forest, Stage En Esprit)
   admin.html                 panneau d'édition (vue visuelle + vue liste)
   data.json                  TOUT le contenu du portfolio d'Adam
   config.json                identité du dépôt + `basePath: "adam/"` (ce portfolio ne vit pas à la racine)

@@ -169,18 +169,6 @@
       else if (site.kicker === '') kicker.remove();
     }
 
-    // Les deux cartes de l'accueil annoncaient « 8 projets — graphisme… » en
-    // dur : elles decrivent maintenant les sections de ce portfolio-ci.
-    document.querySelectorAll('.nav-card[data-section]').forEach(function(carte){
-      var s = (site.sections || []).filter(function(x){
-        return x.id === carte.getAttribute('data-section'); })[0];
-      if (!s) return;
-      var titre = carte.querySelector('.nc-title');
-      var sous = carte.querySelector('.nc-sub');
-      if (titre && s.title) titre.textContent = s.title;
-      if (sous) { if (s.desc) sous.textContent = s.desc; else sous.remove(); }
-    });
-
     var roleMain = document.getElementById('js-role-main');
     var roleAccent = document.getElementById('js-role-accent');
     if (roleMain && site.roleMain) roleMain.textContent = site.roleMain;
@@ -253,7 +241,15 @@
     }).join('');
   }
 
-  var BACK_LABEL = { perso: 'Retour — Projets perso', academique: 'Retour — Projets académiques', stage: 'Retour — Stage' };
+  // Le lien « retour » ramene au groupe du projet s'il en a un (meme regle que
+  // linkForProject), sinon a la liste generale.
+  function backLabelFor(site, p){
+    if (p.group){
+      var g = groupsOf(site).filter(function(x){ return x.id === p.group; })[0];
+      if (g) return 'Retour — ' + g.title;
+    }
+    return 'Retour — Projets';
+  }
 
   // parses a YouTube/Vimeo URL into an embeddable iframe; anything else
   // (direct .mp4/.webm link) falls back to a plain <video> tag.
@@ -530,7 +526,7 @@
 
     container.innerHTML =
       '<div class="wrap detail-wrap">' +
-        '<a class="pill-btn back-link" href="' + linkForProject(p) + '">' + UI_ICON.arrowLeft + ' ' + (BACK_LABEL[p.ctx] || 'Retour') + '</a>' +
+        '<a class="pill-btn back-link" href="' + linkForProject(p) + '">' + UI_ICON.arrowLeft + ' ' + backLabelFor(site, p) + '</a>' +
         '<div class="detail-meta-row">' +
           '<span class="tag">' + (mediumLabel[p.medium] || p.medium) + '</span>' +
           '<span class="tag">' + p.year + '</span>' +
@@ -867,21 +863,6 @@
     });
   }
 
-  // Les sections principales viennent des données, plus du HTML : c'est ce qui
-  // permet de les créer, renommer et réordonner depuis le panneau. Chaque page
-  // de grille porte un conteneur `data-sections-page`, et reçoit les sections
-  // qui lui sont affectées.
-  var DEFAULT_SECTIONS = [
-    { id: 'perso', page: 'perso', kicker: '01 — Perso', title: 'Projets perso', desc: '' },
-    { id: 'academique', page: 'academique', kicker: '02 — Académique', title: 'Projets académiques', desc: '' },
-    { id: 'stage', page: 'academique', kicker: 'Stage — En Esprit', title: 'Stage de deuxième', desc: '' }
-  ];
-
-  function sectionsOf(site){
-    var list = site && Array.isArray(site.sections) ? site.sections : null;
-    return (list && list.length) ? list : DEFAULT_SECTIONS;
-  }
-
   // Le dégradé portait sur un mot choisi à la main dans le HTML. Le titre étant
   // désormais du texte libre, c'est le dernier mot qui le reçoit : on garde
   // l'effet sans demander de balises à qui écrit le titre.
@@ -890,26 +871,6 @@
     if (words.length < 2) return '<span class="grad-text">' + (words[0] || '') + '</span>';
     var last = words.pop();
     return words.join(' ') + ' <span class="grad-text">' + last + '</span>';
-  }
-
-  function renderSections(site){
-    var sections = sectionsOf(site);
-    document.querySelectorAll('[data-sections-page]').forEach(function(host){
-      var page = host.getAttribute('data-sections-page');
-      var mine = sections.filter(function(s){ return (s.page || 'perso') === page; });
-      host.innerHTML = mine.map(function(s, n){
-        return '<section class="projects-section" id="' + s.id + '" data-section-id="' + s.id + '">' +
-          '<div class="wrap">' +
-            '<div class="section-head' + (n ? ' sub' : '') + '">' +
-              '<span class="kicker" data-section-kicker>' + (s.kicker || '') + '</span>' +
-              (n ? '<h2' : '<h1') + ' data-section-title>' + titleWithAccent(s.title) + (n ? '</h2>' : '</h1>') +
-              '<p data-section-desc>' + (s.desc || '') + '</p>' +
-            '</div>' +
-            '<div class="grid" data-group="' + s.id + '"></div>' +
-          '</div>' +
-        '</section>';
-      }).join('');
-    });
   }
 
   // Une entite — un club, une agence — rassemble plusieurs projets sous une
@@ -1264,7 +1225,6 @@
       applySiteTexts(site);
       applyFavori(site, projects);
       renderTimeline(site.timeline);
-      renderSections(site);   // avant renderGrids : c'est lui qui cree les grilles
       window.__ALL_PROJECTS__ = projects;   // le filtre par tag re-rend la grille
       renderProjectsPage(site, projects);
       renderGroupDetail(site, projects);
