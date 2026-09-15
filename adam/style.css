@@ -199,7 +199,6 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
   max-width: 900px; margin: 0 auto;
 }
 .nav-cards-2{ grid-template-columns: repeat(2, 1fr); max-width: 680px; gap: 20px; }
-.nav-cards-1{ grid-template-columns: 1fr; max-width: 360px; }
 /* dark HUD-panel CTA — compact square-ish card, thin edge, faint ambient glow */
 .nav-card{
   position: relative; isolation: isolate;

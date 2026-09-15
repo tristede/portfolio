@@ -11,19 +11,25 @@ Adobe Portfolio : palette bleu nuit, police manuscrite.
 
 ## Structure des pages
 
-- **`index.html`** — l'accueil : titre, bio, un bouton "Tous les projets", un
-  projet favori mis en avant, la sélection "Projets mis en avant" (3 projets),
-  à propos, parcours, contact. **Les grilles complètes de projets ne sont plus
-  sur cette page.**
-- **`projets.html`** — tous les projets : les groupes d'abord (voir plus bas),
-  puis les projets qui n'appartiennent à aucun groupe, filtrables par tag.
-  Remplace les anciennes pages `projets-perso.html`/`projets-academiques.html`,
-  supprimées — la catégorie (`ctx`) d'un projet reste une simple étiquette
-  affichée dans l'admin, elle ne détermine plus sa page.
+- **`index.html`** — l'accueil : titre, bio, deux boutons ("Projets perso" /
+  "Projets académiques"), un projet favori mis en avant, la sélection
+  "Projets mis en avant" (3 projets), à propos, parcours, contact. **Les
+  grilles complètes de projets ne sont plus sur cette page.**
+- **`projets-perso.html`** / **`projets-academiques.html`** — la séparation
+  principale du site. Chacune affiche d'abord les groupes de sa catégorie
+  (voir plus bas), puis les projets qui n'appartiennent à aucun groupe,
+  filtrables par tag. La catégorie (`ctx: "perso"`/`"academique"`/`"stage"`)
+  d'un projet détermine sa page — `"stage"` compte comme académique.
+  `projets.html` (sans distinction) existe toujours en repli, pour la page
+  d'un groupe dont la catégorie n'est pas évidente, mais n'est plus lié
+  depuis l'accueil.
 - **`groupe.html?id=...`** — la page d'un groupe (un club, une agence, un
-  stage — plusieurs projets réunis sous une seule carte sur `projets.html`,
-  ex. "Union Oasis Forest"). Se crée et se remplit depuis l'admin, sur la
-  fiche d'un projet.
+  stage — plusieurs projets réunis sous une seule carte, ex. "Union Oasis
+  Forest" ou "Stage chez En Esprit"). Remplace l'ancien système de
+  sous-section figée : un groupe se crée, se renomme et se supprime depuis
+  l'admin (sur la fiche d'un projet, ou dans sa propre page en vue visuelle) —
+  supprimer un groupe ne supprime jamais ses projets, qui redeviennent
+  indépendants.
 - **`projet.html`** — la page détail d'un projet (`projet.html?id=...`),
   ouverte en cliquant sur n'importe quelle vignette — voir plus bas.
 - **`admin.html`** — le panneau d'édition (voir plus bas).

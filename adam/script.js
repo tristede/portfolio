@@ -49,8 +49,14 @@
 
   // Un projet appartient a au plus un groupe. Le lien « retour » le ramene donc
   // a la page de son groupe, ou a la liste generale s'il n'en a pas.
+  // Sans groupe, le retour va a la page de SA categorie (perso ou academique
+  // — le stage est un groupe, pas une categorie a part).
+  function pageForCtx(ctx){
+    return (ctx === 'academique' || ctx === 'stage') ? 'projets-academiques.html' : 'projets-perso.html';
+  }
+
   function linkForProject(p){
-    return p.group ? ('groupe.html?id=' + encodeURIComponent(p.group)) : 'projets.html';
+    return p.group ? ('groupe.html?id=' + encodeURIComponent(p.group)) : pageForCtx(p.ctx);
   }
 
   function groupsOf(site){
@@ -248,7 +254,7 @@
       var g = groupsOf(site).filter(function(x){ return x.id === p.group; })[0];
       if (g) return 'Retour — ' + g.title;
     }
-    return 'Retour — Projets';
+    return (p.ctx === 'academique' || p.ctx === 'stage') ? 'Retour — Projets académiques' : 'Retour — Projets perso';
   }
 
   // parses a YouTube/Vimeo URL into an embeddable iframe; anything else
@@ -909,33 +915,45 @@
   // qu'elle contient bien ce qu'on cherche.
   var tagActif = null;
 
+  // La page porte la separation principale perso/academique (data-projects-page
+  // vaut "perso" ou "academique" ; vide = tout, comme projets.html). Le stage
+  // n'est plus une sous-section a part : c'est un groupe parmi d'autres,
+  // range dans "academique" comme n'importe quel projet de cette categorie.
+  function projetDansLaPage(scope, p){
+    if (!scope) return true;
+    if (scope === 'academique') return p.ctx === 'academique' || p.ctx === 'stage';
+    return p.ctx === scope;
+  }
+
   function renderProjectsPage(site, projects){
-    var host = document.querySelector('[data-projects-page]');
-    if (!host) return;
-    var shown = window.__EDIT_MODE__ ? projects : projects.filter(function(p){ return !p.hidden; });
+    document.querySelectorAll('[data-projects-page]').forEach(function(host){
+      var scope = host.getAttribute('data-projects-page') || '';
+      var shown = (window.__EDIT_MODE__ ? projects : projects.filter(function(p){ return !p.hidden; }))
+        .filter(function(p){ return projetDansLaPage(scope, p); });
 
-    function porteLeTag(p){
-      return !tagActif || (p.tags || []).indexOf(tagActif) !== -1;
-    }
+      function porteLeTag(p){
+        return !tagActif || (p.tags || []).indexOf(tagActif) !== -1;
+      }
 
-    var pris = {};
-    var cartes = [];
-    groupsOf(site).forEach(function(g){
-      var tous = shown.filter(function(p){ return p.group === g.id; });
-      tous.forEach(function(p){ pris[p.id] = true; });
-      var retenus = tous.filter(porteLeTag);
-      // un groupe vide reste visible dans l'editeur, pour pouvoir le remplir
-      if (!retenus.length && !(window.__EDIT_MODE__ && !tagActif)) return;
-      cartes.push({ g: g, list: retenus });
+      var pris = {};
+      var cartes = [];
+      groupsOf(site).forEach(function(g){
+        var tous = shown.filter(function(p){ return p.group === g.id; });
+        tous.forEach(function(p){ pris[p.id] = true; });
+        var retenus = tous.filter(porteLeTag);
+        // un groupe vide reste visible dans l'editeur, pour pouvoir le remplir
+        if (!retenus.length && !(window.__EDIT_MODE__ && !tagActif)) return;
+        cartes.push({ g: g, list: retenus });
+      });
+      var libres = shown.filter(function(p){ return !pris[p.id]; }).filter(porteLeTag);
+
+      host.innerHTML = '<div class="grid">' +
+        cartes.map(function(c, i){ return groupCardHTML(c.g, c.list, i); }).join('') +
+        libres.map(function(p, i){ return cardHTML(p, cartes.length + i); }).join('') +
+      '</div>';
+
+      renderTagFilters(site, shown);
     });
-    var libres = shown.filter(function(p){ return !pris[p.id]; }).filter(porteLeTag);
-
-    host.innerHTML = '<div class="grid">' +
-      cartes.map(function(c, i){ return groupCardHTML(c.g, c.list, i); }).join('') +
-      libres.map(function(p, i){ return cardHTML(p, cartes.length + i); }).join('') +
-    '</div>';
-
-    renderTagFilters(site, shown);
     revealCards();
   }
 
