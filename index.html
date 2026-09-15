@@ -132,15 +132,13 @@
 
 <footer>
   <div class="wrap">
-    <span>© <span id="year"></span> <span id="js-nom-pied">Starx</span></span>
+    <span id="js-nom-pied">Starx</span>
     <span><a href="adam/index.html">Voir un portfolio en entier</a></span>
   </div>
 </footer>
 
 <script>
 (function(){
-  document.getElementById('year').textContent = new Date().getFullYear();
-
   // Le nom du service n'est pas arrêté : il vient de la configuration, pour
   // qu'un changement de domaine ne demande pas de relire cette page.
   var cfg = { nom: 'Starx', domaine: '', email: '', formulaire: '' };
