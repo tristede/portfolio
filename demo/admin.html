@@ -1749,7 +1749,12 @@ body.visual-mode .wrap{ max-width: 1400px; }
   function showEditor(){
     $('login-screen').classList.add('hidden');
     $('editor-screen').classList.remove('hidden');
-    $('repo-label').textContent = REPO_OWNER + '/' + REPO_NAME;
+    // demarreDemo() remplace #repo-label par un message fixe (« Panneau de
+    // démonstration ») en detruisant l'element lui-meme, pour que rien ici ne
+    // l'ecrase — d'ou la garde : sans elle, la vue visuelle ne s'affichait
+    // jamais dans le bac a sable.
+    var repoLabel = $('repo-label');
+    if (repoLabel) repoLabel.textContent = REPO_OWNER + '/' + REPO_NAME;
     // the visual editor is the default way in; the list view stays a click away
     showView('visual');
   }
