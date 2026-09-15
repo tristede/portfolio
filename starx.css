@@ -200,6 +200,7 @@ textarea{ min-height:110px; resize:vertical; }
   background: url('adam/images/tape/tape-2.webp') center/100% 100% no-repeat;
   transform: rotate(-4deg); opacity:.9;
 }
+.mot .signature{ display:block; margin-top:16px; font-size:23px; color: var(--vif-fonce); }
 
 /* ---------- Pied ---------- */
 footer{
