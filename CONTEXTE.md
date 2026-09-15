@@ -1,16 +1,20 @@
 # Contexte du projet — à lire en début de session
 
-Portfolio personnel d'Adam (étudiant en communication, Bruxelles). Remplace son
-ancien Adobe Portfolio. Site statique + panneau d'édition maison.
+Le dépôt sert deux choses : la vitrine du produit **Starx** à la racine, et le
+portfolio personnel d'Adam (étudiant en communication, Bruxelles — remplace son
+ancien Adobe Portfolio) dans `/adam`. Site statique + panneau d'édition maison,
+partagé par les deux.
 
 ## Coordonnées techniques
 
 | | |
 |---|---|
-| Dossier local | `/Users/adam/Documents/workspace/portfolio-adam` |
+| Dossier local | `/Users/adam/Documents/PROJETS/WEB/portfolio-adam` |
 | Dépôt | `github.com/tristede/portfolio` — branche `main` |
-| Site en ligne | https://tristede.github.io/portfolio/ |
-| Panneau d'édition | https://tristede.github.io/portfolio/admin.html |
+| Vitrine Starx | https://tristede.github.io/portfolio/ |
+| Portfolio d'Adam | https://tristede.github.io/portfolio/adam/ |
+| Panneau d'édition (portfolio d'Adam) | https://tristede.github.io/portfolio/adam/admin.html |
+| Bac à sable (démo Starx) | https://tristede.github.io/portfolio/demo/admin.html |
 | Aperçu Artifact | https://claude.ai/code/artifact/5f753f39-a2b1-4ff5-a5d7-87bedd5b4543 |
 | Sauvegarde propre | tag git `backup-clean-v1` |
 | Serveur local | `python3 -m http.server 8000` dans le dossier du projet |
@@ -26,22 +30,38 @@ ancien Adobe Portfolio. Site statique + panneau d'édition maison.
 ## Structure
 
 ```
-index.html                 accueil (hero, favori, mis en avant, à propos, parcours, contact)
-projets-perso.html         grille perso
-projets-academiques.html   grille académique + section stage
-projet.html?id=...         page détail d'un projet
-admin.html                 panneau d'édition (vue visuelle + vue liste)
-data.json                  TOUT le contenu du site
-script.js                  rendu partagé par toutes les pages publiques
-style.css                  design partagé
-images/                    visuels (WebP) + images/tape/ (4 rubans de masking tape)
-docs/                      PDF envoyés depuis l'admin
-_artifact_preview.html     généré, gitignoré — sert uniquement à publier l'Artifact
-tools/build_preview.py     génère le fichier ci-dessus
+index.html                 vitrine Starx (page produit, formulaire de contact)
+starx.css                  design de la vitrine
+ciel.css                   ciel étoilé animé — partagé par la vitrine et /adam
+demo/                      bac à sable : admin + portfolio-jouet autonomes, rien n'est publié
+tools/nouveau-portfolio.py fabrique un nouveau portfolio (le moteur vit dans /adam)
+tools/build_preview.py     génère adam/_artifact_preview.html
 tools/pdfpages.swift       convertit un PDF en images, hors navigateur
+
+adam/                      LE portfolio d'Adam — l'exemple qui a servi de modèle au moteur
+  index.html                 accueil (hero, favori, mis en avant, à propos, parcours, contact)
+  projets-perso.html         grille perso
+  projets-academiques.html   grille académique + section stage
+  projet.html?id=...         page détail d'un projet
+  groupe.html                page d'un groupe de projets (ex. Union Oasis Forest)
+  admin.html                 panneau d'édition (vue visuelle + vue liste)
+  data.json                  TOUT le contenu du portfolio d'Adam
+  config.json                identité du dépôt + `basePath: "adam/"` (ce portfolio ne vit pas à la racine)
+  script.js                  rendu partagé par toutes les pages publiques
+  style.css                  design partagé
+  images/                    visuels (WebP) + images/tape/ (4 rubans de masking tape)
+  docs/                      PDF envoyés depuis l'admin
+  _artifact_preview.html     généré, gitignoré — sert uniquement à publier l'Artifact
 ```
 
 Header et footer sont copiés-collés dans chaque page (choix assumé : pas de build).
+
+**`basePath`** : un portfolio créé par `tools/nouveau-portfolio.py` vit seul à la
+racine de son propre dépôt (`basePath` vide, comportement par défaut). Celui
+d'Adam partage ce dépôt-ci avec la vitrine Starx, d'où `basePath: "adam/"` dans
+`adam/config.json` — c'est ce qui préfixe les chemins écrits sur GitHub
+(`data.json`, `images/…`) sans changer les chemins que les pages publiques
+résolvent depuis leur propre dossier.
 
 ## Modèle de données (`data.json`)
 

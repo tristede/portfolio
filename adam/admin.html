@@ -247,7 +247,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
           <button class="view-tab is-active" id="view-visual-btn" type="button">Vue visuelle</button>
           <button class="view-tab" id="view-form-btn" type="button">Liste</button>
         </div>
-        <a href="https://tristede.github.io/portfolio/" target="_blank" rel="noopener"><button class="ghost" type="button">Voir le site <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 16L18 6M9.5 6H18v8.5"/></svg></button></a>
+        <a href="https://tristede.github.io/portfolio/adam/" target="_blank" rel="noopener"><button class="ghost" type="button">Voir le site <svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 16L18 6M9.5 6H18v8.5"/></svg></button></a>
         <button class="ghost" id="reload-btn" type="button">Recharger depuis GitHub</button>
         <button class="ghost" id="logout-btn" type="button">Se déconnecter</button>
       </div>
@@ -612,14 +612,18 @@ body.visual-mode .wrap{ max-width: 1400px; }
   var REPO_OWNER = 'tristede';
   var REPO_NAME = 'portfolio';
   var BRANCH = 'main';
-  var DATA_PATH = 'data.json';
+  // Vide pour un portfolio seul a la racine de son depot. Ce portfolio-ci
+  // partage le depot avec la vitrine Starx et vit dans /adam — d'ou le champ
+  // config.json "basePath", qui prefixe tout chemin ecrit sur GitHub.
+  var BASE_PATH = '';
+  var DATA_PATH = BASE_PATH + 'data.json';
   var TOKEN_KEY = 'portfolio_admin_pat_v1';
 
   // GitHub Pages sert admin.html avec max-age=600 : on peut donc travailler
   // dix minutes dans une version perimee sans que rien ne le signale — une
   // fonction annoncee comme livree parait alors simplement absente. Le panneau
   // compare donc ce qu'il execute a ce que le serveur sert, et le dit.
-  var ADMIN_BUILD = '2026-09-07-c';
+  var ADMIN_BUILD = '2026-09-15-a';
   (function watchAdminVersion(){
     setTimeout(function(){
       fetch('admin.html', { cache: 'no-store' })
@@ -911,6 +915,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
     // 1. convert + upload each file as a blob, a few at a time
     var entries = new Array(total);
     var pendingB64 = new Array(total);
+    // Le chemin ecrit dans le depot (prefixe par BASE_PATH) et celui que les
+    // pages publiques resolvent depuis leur propre dossier (jamais prefixe)
+    // ne sont pas le meme chemin des que ce portfolio ne vit pas a la racine
+    // du depot — d'ou les deux tableaux au lieu d'un seul `path`.
+    var relPaths = new Array(total);
     var next = 0;
     function worker(){
       if (next >= total) return Promise.resolve();
@@ -934,12 +943,13 @@ body.visual-mode .wrap{ max-width: 1400px; }
           var ext = isPreEncoded ? (raw.ext || '.webp')
             : (isDoc ? ((raw.name.match(/\.[a-z0-9]+$/i) || ['.pdf'])[0].toLowerCase()) : '.webp');
           var dir = isPreEncoded ? (raw.dir || 'images/') : (isDoc ? 'docs/' : 'images/');
-          var path = dir + slug + '-' + stamp + '-' + i + ext;
-          entries[i] = { path: path, mode: '100644', type: 'blob', sha: blob.sha };
+          var relPath = dir + slug + '-' + stamp + '-' + i + ext;
+          relPaths[i] = relPath;
+          entries[i] = { path: BASE_PATH + relPath, mode: '100644', type: 'blob', sha: blob.sha };
           // GitHub Pages needs ~a minute to serve the new file, so keep the
           // local bytes around and show those in the editor meanwhile.
           // PDFs render reliably from a blob: URL, images from a data: URL
-          freshUploads[path] = (isDoc && !isPreEncoded)
+          freshUploads[relPath] = (isDoc && !isPreEncoded)
             ? URL.createObjectURL(raw)
             : 'data:' + (ext === '.webp' ? 'image/webp' : 'application/pdf') + ';base64,' + pendingB64[i];
           done++; report('upload');
@@ -961,10 +971,10 @@ body.visual-mode .wrap{ max-width: 1400px; }
       .then(function(){
         // data.json now sits on a newer commit; its blob sha is unchanged, so
         // the pending save still applies cleanly.
-        return entries.map(function(e){
+        return relPaths.map(function(p){
           // En demonstration rien n'est publie : un chemin de depot ne menerait
           // nulle part. On rend les octets, qui s'affichent partout.
-          return MODE_DEMO ? (freshUploads[e.path] || e.path) : e.path;
+          return MODE_DEMO ? (freshUploads[p] || p) : p;
         });
       });
   }
@@ -3303,6 +3313,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
         if (cfg.repo) REPO_NAME = cfg.repo;
         if (cfg.branch) BRANCH = cfg.branch;
         if (cfg.oauthWorker) OAUTH_WORKER_URL = cfg.oauthWorker;
+        if (cfg.basePath !== undefined){ BASE_PATH = cfg.basePath; DATA_PATH = BASE_PATH + 'data.json'; }
       }
       if (cfg && cfg.demo){ demarreDemo(); return; }
       $('repo-label').textContent = REPO_OWNER + '/' + REPO_NAME;

@@ -1,7 +1,8 @@
 {
-  "_comment": "Identité de CE portfolio. Copier le dépôt et changer ces quatre lignes suffit à en créer un autre : rien d'autre n'est écrit en dur.",
-  "owner": "tristede",
-  "repo": "portfolio",
-  "branch": "main",
-  "oauthWorker": "https://portfolioadamxbc.tristederk.workers.dev"
+  "_comment": "Identité du service. Le nom et le domaine vivent ici pour qu'un changement ne demande pas de relire la page.",
+  "nom": "Starx",
+  "domaine": "starx.be",
+  "email": "bonjour@starx.be",
+  "formulaire": "",
+  "_formulaire": "Adresse qui reçoit le formulaire (Worker Cloudflare). Vide = le bouton bascule sur un mail préparé, qui marche sans rien installer."
 }

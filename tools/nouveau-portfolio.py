@@ -20,13 +20,18 @@ import shutil
 import sys
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
+# La racine du depot sert la vitrine Starx ; le portfolio-exemple qui a servi
+# de modele vit dans /adam a cote d'elle. ciel.css est partage par les deux,
+# donc reste a la racine.
+ADAM = RACINE / "adam"
 
 # Le moteur. Tout le reste appartient à la personne qui l'utilise.
 PAGES = [
     "index.html", "projet.html", "projets.html", "groupe.html",
     "projets-perso.html", "projets-academiques.html", "admin.html",
-    "script.js", "style.css", "ciel.css",
+    "script.js", "style.css",
 ]
+PARTAGES = ["ciel.css"]
 OUTILS = ["tools/build_preview.py", "tools/pdfpages.swift", "tools/nouveau-portfolio.py"]
 # décors partagés : sans eux le mur n'a plus ni scotch ni fond
 DECORS = ["images/tape", "images/bg-hor.webp", "images/bg-vert.webp"]
@@ -71,7 +76,14 @@ def main():
         sys.exit("« %s » existe déjà et n'est pas vide — choisis un dossier neuf." % dest)
     dest.mkdir(parents=True, exist_ok=True)
 
-    for rel in PAGES + OUTILS:
+    for rel in PAGES:
+        src = ADAM / rel
+        if not src.exists():
+            sys.exit("fichier du moteur introuvable : %s" % (ADAM / rel))
+        (dest / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dest / rel)
+
+    for rel in PARTAGES + OUTILS:
         src = RACINE / rel
         if not src.exists():
             sys.exit("fichier du moteur introuvable : %s" % rel)
@@ -79,7 +91,7 @@ def main():
         shutil.copy2(src, dest / rel)
 
     for rel in DECORS:
-        src = RACINE / rel
+        src = ADAM / rel
         if not src.exists():
             continue
         cible = dest / rel

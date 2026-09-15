@@ -1,12 +1,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Projets perso — Adam</title>
-<meta name="description" content="Projets personnels d'Adam — graphisme, montage vidéo, audio et événementiel.">
+<title>Groupe — Adam</title>
+<meta name="description" content="Les projets r&#233;alis&#233;s pour une m&#234;me entit&#233;.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schoolbell&family=Homemade+Apple&family=Baloo+2:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="ciel.css">
+<link rel="stylesheet" href="../ciel.css">
 
 <div class="topo-bg"></div>
 <div class="starfield" aria-hidden="true"><span></span></div>
@@ -14,7 +14,7 @@
 <header class="site-nav">
   <a class="logo" href="index.html">Adam</a>
   <nav class="links">
-    <a class="current" href="index.html#mis-en-avant">Projets</a>
+    <a href="index.html#mis-en-avant">Projets</a>
     <a href="index.html#apropos">À propos</a>
     <a href="index.html#contact">Contact</a>
   </nav>
@@ -25,12 +25,11 @@
 </header>
 
 <main>
-  <div class="wrap" style="padding-top:34px;">
-    <a class="pill-btn back-link" href="index.html"><svg class="ui-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H5M11 6l-6 6 6 6"/></svg> Accueil</a>
-  </div>
-  <!-- Les sections sont ecrites dans data.json et rendues par script.js :
-       c'est ce qui permet de les creer et de les renommer depuis /admin.html -->
-  <div data-sections-page="perso"></div>
+  <section class="projects-section" style="border-top:none;">
+    <div id="js-group-detail">
+      <div class="wrap" style="padding:60px 0; text-align:center; color:var(--text-dim);">Chargement…</div>
+    </div>
+  </section>
 </main>
 
 <footer id="contact">
@@ -38,7 +37,7 @@
     <div class="contact-band">
       <span class="eyebrow" style="justify-content:center; display:flex;">Contact</span>
       <h2>Un projet à monter, <span class="grad-text">une image à créer ?</span></h2>
-      <a class="contact-email" href="mailto:PLACEHOLDER@email.com">PLACEHOLDER@email.com</a>
+      <a class="contact-email js-contact-email-link" href="mailto:PLACEHOLDER@email.com">PLACEHOLDER@email.com</a>
     </div>
     <div class="foot-meta">
       <div class="foot-left">

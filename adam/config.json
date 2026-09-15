@@ -1,0 +1,9 @@
+{
+  "_comment": "Identité de CE portfolio. Copier le dépôt et changer ces lignes suffit à en créer un autre : rien d'autre n'est écrit en dur.",
+  "owner": "tristede",
+  "repo": "portfolio",
+  "branch": "main",
+  "oauthWorker": "https://portfolioadamxbc.tristederk.workers.dev",
+  "_basePath": "Ce portfolio partage le dépôt avec la vitrine Starx : il vit dans /adam au lieu de la racine. Un portfolio créé par tools/nouveau-portfolio.py a son propre dépôt et n'a pas besoin de ce champ.",
+  "basePath": "adam/"
+}
