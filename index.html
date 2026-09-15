@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Starx — un portfolio qui vous appartient</title>
-<meta name="description" content="Je vous fais un portfolio à votre nom, que vous remplissez vous-même. Gratuit, sans abonnement, sans code.">
+<meta name="description" content="Un portfolio à votre image, que vous remplissez vous-même. Gratuit, sans abonnement, sans code.">
 <meta name="theme-color" content="#0a0713">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,7 +29,7 @@
 
   <section class="ouverture">
     <div class="wrap">
-      <h1>Je vous fais un portfolio.<br><span class="vif">Vous le remplissez vous‑même.</span></h1>
+      <h1>Un portfolio à votre image.<br><span class="vif">Vous le remplissez vous‑même.</span></h1>
     </div>
     <div class="wrap ouverture-grille">
       <div>
@@ -58,8 +58,8 @@
         <li>
           <span class="chiffre">01</span>
           <div>
-            <h3>Vous m'écrivez</h3>
-            <p>Votre nom, ce que vous faites. On en discute, et je prépare votre portfolio.</p>
+            <h3>Vous décrivez votre projet</h3>
+            <p>Votre nom, ce que vous faites, ce que vous voulez montrer.</p>
           </div>
         </li>
         <li>
@@ -86,7 +86,7 @@
       <div class="arguments">
         <div class="argument">
           <h3>Le contenu est à vous</h3>
-          <p>Textes, images et documents vivent dans un dépôt qui vous appartient. Si j'arrête demain, votre site continue de fonctionner sans moi.</p>
+          <p>Textes, images et documents vivent dans un dépôt qui vous appartient. Si Starx s'arrête demain, votre site continue de fonctionner.</p>
         </div>
         <div class="argument">
           <h3>Pas d'abonnement</h3>
@@ -94,7 +94,7 @@
         </div>
         <div class="argument">
           <h3>Aucune marque imposée</h3>
-          <p>Pas de bandeau en bas de page. C'est votre site, pas ma vitrine.</p>
+          <p>Pas de bandeau en bas de page. C'est votre site, pas une vitrine pour Starx.</p>
         </div>
       </div>
     </div>
@@ -103,7 +103,7 @@
   <section class="section" id="demander">
     <div class="wrap demande">
       <div>
-        <h2>Dites-moi ce que vous montrez</h2>
+        <h2>Décrivez ce que vous montrez</h2>
 
         <form id="js-form">
           <label for="f-nom">Votre nom</label>
@@ -122,9 +122,8 @@
       </div>
 
       <aside class="mot">
-        Je réponds à chaque message moi-même.<br>
+        Chaque message reçoit une vraie réponse.<br>
         Ce n'est pas un formulaire automatique.
-        <span class="signature">Adam, Bruxelles</span>
       </aside>
     </div>
   </section>
@@ -228,10 +227,10 @@
       .then(function(r){
         if (!r.ok) throw new Error('Erreur ' + r.status);
         form.reset();
-        dire('Message envoyé. Je vous réponds rapidement.', 'ok');
+        dire('Message envoyé. Réponse rapide.', 'ok');
       })
       .catch(function(err){
-        dire('L\'envoi a échoué (' + err.message + '). Écrivez-moi directement à ' + (cfg.email || 'l\'adresse du site') + '.', 'err');
+        dire('L\'envoi a échoué (' + err.message + '). Écrivez directement à ' + (cfg.email || 'l\'adresse du site') + '.', 'err');
       })
       .then(function(){ bouton.disabled = false; });
   });
