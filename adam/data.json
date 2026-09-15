@@ -68,6 +68,13 @@
         "title": "Union Oasis Forest",
         "desc": "",
         "thumb": ""
+      },
+      {
+        "id": "en-esprit",
+        "kicker": "Stage de 2e année",
+        "title": "Stage chez En Esprit",
+        "desc": "Réalisations produites durant mon stage chez En Esprit.",
+        "thumb": ""
       }
     ],
     "theme": {
@@ -578,6 +585,7 @@
       "title": "La mélo de la semaine",
       "year": 2025,
       "ctx": "stage",
+      "group": "en-esprit",
       "medium": "audio",
       "tags": [
         "Audio",
@@ -591,6 +599,7 @@
       "title": "Montage vidéo : long format",
       "year": 2025,
       "ctx": "stage",
+      "group": "en-esprit",
       "medium": "video",
       "tags": [
         "Montage vidéo"
@@ -603,6 +612,7 @@
       "title": "Post d'actualité",
       "year": 2025,
       "ctx": "stage",
+      "group": "en-esprit",
       "medium": "social",
       "tags": [
         "Réseaux sociaux"
@@ -615,6 +625,7 @@
       "title": "Thumbnails YouTube",
       "year": 2025,
       "ctx": "stage",
+      "group": "en-esprit",
       "medium": "graphisme",
       "tags": [
         "Graphisme",
@@ -628,6 +639,7 @@
       "title": "Reel / TikTok",
       "year": 2025,
       "ctx": "stage",
+      "group": "en-esprit",
       "medium": "video",
       "tags": [
         "Vidéo",
@@ -641,6 +653,7 @@
       "title": "Création d'un logo vectoriel",
       "year": 2025,
       "ctx": "stage",
+      "group": "en-esprit",
       "medium": "graphisme",
       "tags": [
         "Graphisme",
