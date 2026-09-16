@@ -974,6 +974,11 @@
         return !tagActif || (p.tags || []).indexOf(tagActif) !== -1;
       }
 
+      // pour distinguer "aucun membre dans CETTE categorie" (le groupe vit
+      // ailleurs, rien a faire ici) de "aucun membre nulle part" (groupe tout
+      // juste cree, a remplir depuis n'importe quelle page)
+      var shownPartout = window.__EDIT_MODE__ ? projects : projects.filter(function(p){ return !p.hidden; });
+
       var pris = {};
       var cartes = [];
       groupsOf(site).forEach(function(g){
@@ -986,8 +991,15 @@
         // demasquer
         if (g.hidden && !window.__EDIT_MODE__) return;
         var retenus = tous.filter(porteLeTag);
-        // un groupe vide reste visible dans l'editeur, pour pouvoir le remplir
-        if (!retenus.length && !(window.__EDIT_MODE__ && !tagActif)) return;
+        if (!retenus.length){
+          // des membres existent, juste pas dans cette categorie : le groupe
+          // vit ailleurs, il n'a rien a faire ici
+          var existeAilleurs = shownPartout.some(function(p){ return p.group === g.id; });
+          if (existeAilleurs) return;
+          // sinon, groupe vraiment vide : reste visible dans l'editeur, pour
+          // pouvoir le remplir depuis n'importe quelle page
+          if (!(window.__EDIT_MODE__ && !tagActif)) return;
+        }
         cartes.push({ g: g, list: retenus });
       });
       var libres = shown.filter(function(p){ return !pris[p.id]; }).filter(porteLeTag);

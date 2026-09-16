@@ -2281,6 +2281,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
         '.ed-add{ font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; color:#fff;' +
           'background:rgba(70,80,255,0.22); border:1px dashed rgba(127,196,255,0.7); border-radius:10px; padding:9px 16px; }' +
         '.ed-add:hover{ background:rgba(70,80,255,0.4); border-style:solid; }' +
+        '.ed-draggable{ cursor:grab; }' +
+        '.ed-dragging{ opacity:.35; cursor:grabbing; }' +
         // une légende vide n'a rien à afficher : dans l'éditeur elle doit
         // quand même se voir et s\'attraper, sinon impossible de l\'écrire
         // placement libre : on attrape l'affiche, on la pose ou on veut
@@ -2515,6 +2517,72 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
     wireGroupCardEditing(doc);
     wireUnifiedAddButton(doc);
+    wireDragReorder(doc);
+  }
+
+  // Glisser une carte (projet ou groupe) pour changer son ordre d'affichage
+  // sur projets*.html. Les groupes gardent leur ordre dans site.groups, les
+  // projets libres le leur dans state.projects — reordonnerArraySelonIds ne
+  // touche qu'aux elements presents dans le nouvel ordre donne, sans deranger
+  // le reste (les projets d'une autre categorie, par exemple).
+  function reordonnerArraySelonIds(arr, idsDansNouvelOrdre){
+    var positions = [];
+    arr.forEach(function(item, i){ if (idsDansNouvelOrdre.indexOf(item.id) !== -1) positions.push(i); });
+    var parId = {};
+    arr.forEach(function(item){ parId[item.id] = item; });
+    idsDansNouvelOrdre.forEach(function(id, k){ if (parId[id]) arr[positions[k]] = parId[id]; });
+  }
+
+  function wireDragReorder(doc){
+    var host = doc.querySelector('[data-projects-page]');
+    var grid = host ? host.querySelector('.grid') : null;
+    if (!grid) return;
+
+    function idEtTypeDe(item){
+      var a = item.matches('a.card') ? item : item.querySelector('a.card');
+      if (!a) return null;
+      var href = a.getAttribute('href') || '';
+      var m = href.match(/[?&]id=([^&]+)/);
+      if (!m) return null;
+      return { id: decodeURIComponent(m[1]), type: a.classList.contains('card-group') ? 'group' : 'project' };
+    }
+
+    var dragEl = null;
+    Array.prototype.forEach.call(grid.children, function(item){
+      item.setAttribute('draggable', 'true');
+      item.classList.add('ed-draggable');
+      item.addEventListener('dragstart', function(e){
+        dragEl = item;
+        item.classList.add('ed-dragging');
+        try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', ''); } catch(err){}
+      });
+      item.addEventListener('dragend', function(){
+        item.classList.remove('ed-dragging');
+        dragEl = null;
+      });
+      item.addEventListener('dragover', function(e){
+        if (!dragEl || dragEl === item) return;
+        e.preventDefault();
+        var rect = item.getBoundingClientRect();
+        var avant = (e.clientX - rect.left) < rect.width / 2;
+        grid.insertBefore(dragEl, avant ? item : item.nextSibling);
+      });
+    });
+
+    grid.addEventListener('drop', function(e){ e.preventDefault(); });
+    grid.addEventListener('dragover', function(e){ e.preventDefault(); });
+    grid.addEventListener('dragend', function(){
+      if (!dragEl) return;
+      var groupIds = [], projectIds = [];
+      Array.prototype.forEach.call(grid.children, function(item){
+        var it = idEtTypeDe(item);
+        if (!it) return;
+        (it.type === 'group' ? groupIds : projectIds).push(it.id);
+      });
+      reordonnerArraySelonIds(siteGroups(), groupIds);
+      reordonnerArraySelonIds(state.projects, projectIds);
+      applyAndRefresh();
+    });
   }
 
   // Une carte de groupe (.card-group) affiche g.title/g.desc — jamais un
