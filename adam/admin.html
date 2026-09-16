@@ -2446,6 +2446,11 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
   function wireCardEditing(doc){
     doc.querySelectorAll('.card').forEach(function(card){
+      // les cartes de groupe (.card-group) ne sont pas des projets — meme si
+      // leur id de groupe coincide parfois avec l'id d'un vrai projet (ex.
+      // "union-oasis-forest" existe des deux cotes), c'est wireGroupCardEditing
+      // qui s'en occupe, plus bas.
+      if (card.classList.contains('card-group')) return;
       var href = card.getAttribute('href') || '';
       var m = href.match(/[?&]id=([^&]+)/);
       if (!m) return;
@@ -2484,7 +2489,55 @@ body.visual-mode .wrap{ max-width: 1400px; }
       if (p.hidden) edBadge(doc, card, 'masqué');
     });
 
+    wireGroupCardEditing(doc);
     wireUnifiedAddButton(doc);
+  }
+
+  // Une carte de groupe (.card-group) affiche g.title/g.desc — jamais un
+  // projet, meme quand son id de groupe coincide par hasard avec l'id d'un
+  // vrai projet (ex. "union-oasis-forest" existe des deux cotes). Titre/
+  // description au clic, miniature et suppression au survol, comme sur la
+  // page du groupe (wireGroupDetailEditing) — pas d'oeil/etoile/coeur, ca ne
+  // s'applique qu'a un projet.
+  function wireGroupCardEditing(doc){
+    var groups = siteGroups();
+    doc.querySelectorAll('.card-group').forEach(function(card){
+      var href = card.getAttribute('href') || '';
+      var m = href.match(/[?&]id=([^&]+)/);
+      if (!m) return;
+      var id = decodeURIComponent(m[1]);
+      var g = groups.filter(function(x){ return x.id === id; })[0];
+      if (!g) return;
+
+      bindEditable(card.querySelector('h3'), function(){ return g.title || ''; }, function(v){ g.title = v; });
+      bindEditable(card.querySelector('.desc'), function(){ return g.desc || ''; }, function(v){ g.desc = v; }, true);
+
+      edTools(doc, card, [
+        edButton(doc, 'image', 'Changer la miniature du groupe (envoyer une image)', false, function(){
+          pendingUpload = { owner: g, hint: g.title + '-miniature', thumbOnly: true };
+          $('visual-image-upload').click();
+        }),
+        edButton(doc, 'close', 'Supprimer ce groupe', true, function(){
+          deleteGroup(g);
+        })
+      ]);
+    });
+  }
+
+  // Supprime un groupe : ses projets redeviennent independants (jamais
+  // supprimes). afterDelete() s'execute avant le rafraichissement — utilise
+  // pour quitter la page du groupe qui vient de disparaitre.
+  function deleteGroup(g, afterDelete){
+    var groups = siteGroups();
+    var membres = state.projects.filter(function(p){ return p.group === g.id; });
+    var msg = membres.length
+      ? 'Supprimer le groupe « ' + g.title + ' » ?\n\n' + membres.length + ' projet(s) redeviendront indépendants (retirés du groupe, pas supprimés).'
+      : 'Supprimer le groupe « ' + g.title + ' » ?';
+    if (!confirm(msg)) return;
+    membres.forEach(function(p){ delete p.group; });
+    groups.splice(groups.indexOf(g), 1);
+    if (afterDelete) afterDelete();
+    applyAndRefresh();
   }
 
   // "+ Nouveau projet" sous la grille de projets.html — le seul endroit ou un
@@ -2497,9 +2550,10 @@ body.visual-mode .wrap{ max-width: 1400px; }
     var scope = host.getAttribute('data-projects-page') || 'perso';
     var bar = doc.createElement('div');
     bar.className = 'ed-addbar';
-    var b = doc.createElement('button');
-    b.type = 'button'; b.className = 'ed-add'; b.textContent = '+ Nouveau projet';
-    b.addEventListener('click', function(e){
+
+    var bProjet = doc.createElement('button');
+    bProjet.type = 'button'; bProjet.className = 'ed-add'; bProjet.textContent = '+ Nouveau projet';
+    bProjet.addEventListener('click', function(e){
       e.preventDefault(); e.stopPropagation();
       var title = prompt('Titre du nouveau projet :', '');
       if (!title) return;
@@ -2512,7 +2566,23 @@ body.visual-mode .wrap{ max-width: 1400px; }
       });
       applyAndRefresh();
     });
-    bar.appendChild(b);
+
+    var bGroupe = doc.createElement('button');
+    bGroupe.type = 'button'; bGroupe.className = 'ed-add'; bGroupe.textContent = '+ Nouveau groupe';
+    bGroupe.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      var title = prompt('Titre du nouveau groupe :', '');
+      if (!title || !title.trim()) return;
+      title = title.trim();
+      var groups = siteGroups();
+      var base = slugify(title) || 'groupe', id = base, n = 2;
+      while (groups.some(function(g){ return g.id === id; })){ id = base + '-' + (n++); }
+      groups.push({ id: id, kicker: '', title: title, desc: '', thumb: '' });
+      applyAndRefresh();
+    });
+
+    bar.appendChild(bProjet);
+    bar.appendChild(bGroupe);
     host.appendChild(bar);
   }
 
@@ -2534,15 +2604,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
     var head = doc.querySelector('.section-head');
     edTools(doc, head, [
       edButton(doc, 'close', 'Supprimer ce groupe', true, function(){
-        var membres = state.projects.filter(function(p){ return p.group === g.id; });
-        var msg = membres.length
-          ? 'Supprimer le groupe « ' + g.title + ' » ?\n\n' + membres.length + ' projet(s) redeviendront indépendants (retirés du groupe, pas supprimés).'
-          : 'Supprimer le groupe « ' + g.title + ' » ?';
-        if (!confirm(msg)) return;
-        membres.forEach(function(p){ delete p.group; });
-        groups.splice(groups.indexOf(g), 1);
-        visualNav = { page: 'projets.html', projectId: null };
-        applyAndRefresh();
+        deleteGroup(g, function(){ visualNav = { page: 'projets.html', projectId: null }; });
       })
     ]);
   }
