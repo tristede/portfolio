@@ -287,7 +287,8 @@
           "hidden": false,
           "caption": "Best of d'un live gaming de 2h"
         }
-      ]
+      ],
+      "thumb": "images/montage-video-style-youtube-thumb.webp"
     },
     {
       "id": "ecriture-enregistrement-mixage-chant-rap",
@@ -897,7 +898,8 @@
           "url": "https://www.instagram.com/p/DKZb46BMedS/embed",
           "hidden": false
         }
-      ]
+      ],
+      "thumb": "images/melo-de-la-semaine-thumb.webp"
     },
     {
       "id": "montage-video-long-format",
@@ -937,7 +939,8 @@
           "url": "https://www.youtube.com/watch?v=H5qDkSosgdM",
           "hidden": false
         }
-      ]
+      ],
+      "thumb": "images/montage-video-long-format-thumb.webp"
     },
     {
       "id": "post-actualite",
@@ -982,7 +985,8 @@
           "url": "https://www.instagram.com/p/DJIK5Ddsr3e/embed",
           "hidden": false
         }
-      ]
+      ],
+      "thumb": "images/post-actualite-thumb.webp"
     },
     {
       "id": "thumbnails-youtube",
