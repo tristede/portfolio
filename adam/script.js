@@ -30,8 +30,11 @@
     heart: '<svg class="ui-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 20s-7-4.4-7-9.2A4 4 0 0 1 12 8a4 4 0 0 1 7 2.8C19 15.6 12 20 12 20z"/></svg>'
   };
 
-  // le projet favori, pour que sa carte le signale comme le fait « Mis en avant »
+  // le projet favori, pour que sa carte le signale comme le fait « Mis en avant » —
+  // un groupe peut aussi etre favori (favoriGroupId), auquel cas il prime sur
+  // favoriId : voir applyFavori().
   var favoriId = null;
+  var favoriGroupId = null;
 
   var icons = {
     video: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2.5" y="6" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M16.5 10.2l5-2.7v9l-5-2.7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
@@ -210,6 +213,14 @@
   function applyFavori(site, projects){
     var container = document.getElementById('js-favori');
     if (!container) return;
+    // un groupe favori prime sur un projet favori — les deux champs sont
+    // mutuellement exclusifs, voir admin.html
+    var g = groupsOf(site).filter(function(x){ return x.id === site.favoriGroupId && !x.hidden; })[0];
+    if (g){
+      var membres = projects.filter(function(x){ return !x.hidden && x.group === g.id; });
+      applyFavoriGroup(container, g, membres);
+      return;
+    }
     var shown = projects.filter(function(x){ return !x.hidden; });
     var p = shown.filter(function(x){ return x.id === site.favoriProjectId; })[0] || shown[0];
     if (!p){ container.closest('.projects-section').style.display = 'none'; return; }
@@ -218,6 +229,7 @@
     // stays a <span> (an <a> inside an <a> is invalid and breaks the click)
     container.setAttribute('href', 'projet.html?id=' + encodeURIComponent(p.id));
     container.setAttribute('data-project-id', p.id);
+    container.removeAttribute('data-group-id');
     container.innerHTML =
       '<div class="thumb' + (thumb ? ' has-img' : '') + '">' +
         (thumb ? '<img class="thumb-img" src="' + thumb + '" alt="' + p.title + '" loading="lazy">' : '') +
@@ -230,6 +242,28 @@
         '<p class="desc">' + p.desc + '</p>' +
         '<div class="card-tags">' + p.tags.map(function(t){ return '<span class="tag">#' + t.replace(/\s+/g,'') + '</span>'; }).join('') + '</div>' +
         '<span class="pill-btn" style="width:fit-content;">Voir le projet ' + UI_ICON.arrowRight + '</span>' +
+      '</div>';
+  }
+
+  // Le favori vise un groupe entier plutot qu'un projet unique : meme carte
+  // (id="js-favori"), mais elle ouvre la page du groupe et compte ses projets
+  // au lieu d'en montrer un seul.
+  function applyFavoriGroup(container, g, list){
+    var thumb = g.thumb || (list[0] ? thumbSrc(list[0]) : '');
+    var n = list.length;
+    container.setAttribute('href', 'groupe.html?id=' + encodeURIComponent(g.id));
+    container.setAttribute('data-group-id', g.id);
+    container.removeAttribute('data-project-id');
+    container.innerHTML =
+      '<div class="thumb' + (thumb ? ' has-img' : '') + '">' +
+        (thumb ? '<img class="thumb-img" src="' + thumb + '" alt="' + g.title + '" loading="lazy">' : '') +
+        '<span class="year">' + n + ' projet' + (n > 1 ? 's' : '') + '</span>' +
+      '</div>' +
+      '<div class="body">' +
+        '<span class="kicker" style="color:var(--text-faint);font-size:13px;font-weight:600;letter-spacing:0.04em;">Groupe favori</span>' +
+        '<h2>' + g.title + '</h2>' +
+        '<p class="desc">' + (g.desc || '') + '</p>' +
+        '<span class="pill-btn" style="width:fit-content;">Voir le groupe ' + UI_ICON.arrowRight + '</span>' +
       '</div>';
   }
 
@@ -891,13 +925,18 @@
     return (
       '<div class="card-deck">' +
       '<a class="card card-group" href="groupe.html?id=' + encodeURIComponent(g.id) + '"' +
-        ' data-group-id="' + g.id + '" style="transition-delay:' + ((i % 8) * 40) + 'ms">' +
+        ' data-group-id="' + g.id + '"' +
+        (g.hidden ? ' data-group-hidden="1"' : '') +
+        ' style="transition-delay:' + ((i % 8) * 40) + 'ms">' +
         '<div class="thumb' + (thumb ? ' has-img' : '') + '">' +
           (thumb ? '<img class="thumb-img" src="' + thumb + '" alt="' + g.title + '" loading="lazy">' : '') +
           '<span class="year">' + n + ' projet' + (n > 1 ? 's' : '') + '</span>' +
           '<span class="medium-label">Groupe</span>' +
         '</div>' +
         '<div class="card-body">' +
+          (g.id === favoriGroupId
+            ? '<span class="card-featured-label is-favori">' + UI_ICON.heart + ' Groupe favori</span>'
+            : (g.featured ? '<span class="card-featured-label">' + UI_ICON.star + ' Mis en avant</span>' : '')) +
           '<h3>' + g.title + '</h3>' +
           (g.desc ? '<p class="desc">' + g.desc + '</p>' : '') +
         '</div>' +
@@ -939,7 +978,13 @@
       var cartes = [];
       groupsOf(site).forEach(function(g){
         var tous = shown.filter(function(p){ return p.group === g.id; });
+        // toujours retires des "libres", caches ou non : un projet d'un groupe
+        // masque ne doit pas se retrouver affiche a part
         tous.forEach(function(p){ pris[p.id] = true; });
+        // un groupe masque disparait completement du site public, avec ses
+        // projets — en edition il reste visible (dimme) pour pouvoir le
+        // demasquer
+        if (g.hidden && !window.__EDIT_MODE__) return;
         var retenus = tous.filter(porteLeTag);
         // un groupe vide reste visible dans l'editeur, pour pouvoir le remplir
         if (!retenus.length && !(window.__EDIT_MODE__ && !tagActif)) return;
@@ -1028,11 +1073,25 @@
       '</div>';
   }
 
-  function renderGrids(projects){
+  function renderGrids(site, projects){
     var shown = window.__EDIT_MODE__ ? projects : projects.filter(function(p){ return !p.hidden; });
     document.querySelectorAll('.grid[data-group]').forEach(function(grid){
       var group = grid.dataset.group;
-      var list = group === 'featured' ? shown.filter(function(p){ return p.featured; }) : shown.filter(function(p){ return p.ctx === group; });
+      if (group === 'featured'){
+        // "mis en avant" melange des projets individuels et des groupes
+        // entiers (carte "paquet de cartes") dans l'ordre ou ils sont marques
+        var entries = [];
+        groupsOf(site).forEach(function(g){
+          if (!g.featured || (g.hidden && !window.__EDIT_MODE__)) return;
+          entries.push({ g: g, list: shown.filter(function(p){ return p.group === g.id; }) });
+        });
+        var featuredProjects = shown.filter(function(p){ return p.featured; });
+        grid.innerHTML =
+          entries.map(function(e, i){ return groupCardHTML(e.g, e.list, i); }).join('') +
+          featuredProjects.map(function(p, i){ return cardHTML(p, entries.length + i); }).join('');
+        return;
+      }
+      var list = shown.filter(function(p){ return p.ctx === group; });
       grid.innerHTML = list.map(cardHTML).join('');
     });
 
@@ -1240,13 +1299,14 @@
       // les cartes en ont besoin pour signaler le favori ; renseigné avant
       // renderGrids, qui est ce qui les fabrique
       favoriId = site.favoriProjectId || null;
+      favoriGroupId = site.favoriGroupId || null;
       applySiteTexts(site);
       applyFavori(site, projects);
       renderTimeline(site.timeline);
       window.__ALL_PROJECTS__ = projects;   // le filtre par tag re-rend la grille
       renderProjectsPage(site, projects);
       renderGroupDetail(site, projects);
-      renderGrids(projects);
+      renderGrids(site, projects);
       renderProjectDetail(site, projects);
       initScramble();
     })

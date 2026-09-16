@@ -359,7 +359,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
     <div class="panel">
       <h2>Projet favori</h2>
-      <label for="f-favori">Projet mis en avant en haut de la page d'accueil</label>
+      <label for="f-favori">Favori (projet ou groupe) en haut de la page d'accueil</label>
       <select id="f-favori"></select>
     </div>
 
@@ -1059,11 +1059,18 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
   function renderFavoriSelect(){
     var sel = $('f-favori');
-    var current = sel.value || state.site.favoriProjectId;
-    sel.innerHTML = state.projects.map(function(p){
+    var current = sel.value ||
+      (state.site.favoriGroupId ? 'group:' + state.site.favoriGroupId : state.site.favoriProjectId);
+    var groupOptions = siteGroups().map(function(g){
+      return '<option value="group:'+g.id+'">[Groupe] ' + escapeHtml(g.title) + '</option>';
+    }).join('');
+    var projectOptions = state.projects.map(function(p){
       return '<option value="'+p.id+'">' + escapeHtml(p.title) + ' (' + p.year + ')</option>';
     }).join('');
-    if (current && state.projects.some(function(p){ return p.id === current; })) sel.value = current;
+    sel.innerHTML = groupOptions + projectOptions;
+    var valide = siteGroups().map(function(g){ return 'group:'+g.id; })
+      .concat(state.projects.map(function(p){ return p.id; }));
+    if (current && valide.indexOf(current) !== -1) sel.value = current;
   }
 
   function escapeHtml(s){
@@ -1708,7 +1715,14 @@ body.visual-mode .wrap{ max-width: 1400px; }
     state.site.contactEmail = $('f-email').value.trim();
     state.site.linkedin = $('f-linkedin').value.trim();
     state.site.instagram = $('f-instagram').value.trim();
-    state.site.favoriProjectId = $('f-favori').value;
+    var favVal = $('f-favori').value;
+    if (favVal.indexOf('group:') === 0){
+      state.site.favoriGroupId = favVal.slice(6);
+      delete state.site.favoriProjectId;
+    } else {
+      state.site.favoriProjectId = favVal;
+      delete state.site.favoriGroupId;
+    }
     // state.site.timeline is kept up to date live by the timeline
     // add/edit/delete/reorder handlers below — nothing to collect here.
   }
@@ -2249,7 +2263,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
         '.card{ cursor:pointer; position:relative; }' +
         '.card:hover{ outline:2px solid var(--accent-sky); outline-offset:2px; }' +
         // hidden things stay visible in the editor, visibly dimmed
-        '[data-project-hidden], [data-asset-hidden]{ opacity:0.42; }' +
+        '[data-project-hidden], [data-group-hidden], [data-asset-hidden]{ opacity:0.42; }' +
         '.ed-badge{ position:absolute; top:8px; left:8px; z-index:5; font-size:10px; font-weight:700;' +
           'letter-spacing:0.06em; text-transform:uppercase; background:rgba(4,6,26,0.85); color:#fff;' +
           'border:1px solid rgba(255,255,255,0.25); border-radius:999px; padding:2px 8px; }' +
@@ -2418,30 +2432,38 @@ body.visual-mode .wrap{ max-width: 1400px; }
       tlRoot.parentNode.appendChild(tlBar);
     }
 
-    // favourite project block: same fields as its card, bound to that project
+    // favourite block: un projet OU un groupe entier, meme carte — memes
+    // champs bindes au bon objet selon lequel est actif (voir applyFavori()
+    // dans script.js : un groupe favori prime sur un projet favori).
     var fav = doc.getElementById('js-favori');
     if (fav){
-      var favP = state.projects.filter(function(p){ return p.id === s.favoriProjectId; })[0] || state.projects[0];
-      if (favP){
-        bindEditable(fav.querySelector('h2'), function(){ return favP.title || ''; }, function(v){ favP.title = v; });
-        bindEditable(fav.querySelector('.desc'), function(){ return favP.desc || ''; }, function(v){ favP.desc = v; }, true);
-        edTools(doc, fav, [ edButton(doc, 'heart', 'Choisir un autre projet favori', false, function(){
-          var choice = pickProject('Projet favori affiché en haut de l\'accueil :');
+      var favG = siteGroups().filter(function(g){ return g.id === s.favoriGroupId; })[0];
+      var favObj = favG || state.projects.filter(function(p){ return p.id === s.favoriProjectId; })[0] || state.projects[0];
+      if (favObj){
+        bindEditable(fav.querySelector('h2'), function(){ return favObj.title || ''; }, function(v){ favObj.title = v; });
+        bindEditable(fav.querySelector('.desc'), function(){ return favObj.desc || ''; }, function(v){ favObj.desc = v; }, true);
+        edTools(doc, fav, [ edButton(doc, 'heart', 'Choisir un autre favori', false, function(){
+          var choice = pickFavori('Favori affiché en haut de l\'accueil :');
           if (!choice) return;
-          s.favoriProjectId = choice.id; applyAndRefresh();
+          if (choice.type === 'group'){ s.favoriGroupId = choice.item.id; delete s.favoriProjectId; }
+          else { s.favoriProjectId = choice.item.id; delete s.favoriGroupId; }
+          applyAndRefresh();
         }) ]);
       }
     }
   }
 
   // small numbered picker — a <select> can't live inside the frame's own
-  // layout without disturbing it, so a prompt list keeps this simple.
-  function pickProject(title){
-    var lines = state.projects.map(function(p, i){ return (i + 1) + '. ' + p.title; }).join('\n');
+  // layout without disturbing it, so a prompt list keeps this simple. Les
+  // groupes d'abord (peu nombreux, faciles a reperer), puis les projets.
+  function pickFavori(title){
+    var options = siteGroups().map(function(g){ return { type: 'group', item: g, label: '[Groupe] ' + g.title }; })
+      .concat(state.projects.map(function(p){ return { type: 'project', item: p, label: p.title }; }));
+    var lines = options.map(function(o, i){ return (i + 1) + '. ' + o.label; }).join('\n');
     var raw = prompt(title + '\n\n' + lines + '\n\nNuméro :', '');
     if (!raw) return null;
     var idx = parseInt(raw, 10) - 1;
-    return state.projects[idx] || null;
+    return options[idx] || null;
   }
 
   function wireCardEditing(doc){
@@ -2474,6 +2496,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
         }),
         edButton(doc, 'heart', 'Définir comme projet favori', false, function(){
           state.site.favoriProjectId = p.id;
+          // un seul favori actif a la fois
+          delete state.site.favoriGroupId;
           applyAndRefresh();
         }),
         edButton(doc, 'image', 'Changer la miniature (envoyer une image)', false, function(){
@@ -2513,6 +2537,20 @@ body.visual-mode .wrap{ max-width: 1400px; }
       bindEditable(card.querySelector('.desc'), function(){ return g.desc || ''; }, function(v){ g.desc = v; }, true);
 
       edTools(doc, card, [
+        edButton(doc, g.hidden ? 'eyeOff' : 'eye', g.hidden ? 'Afficher ce groupe sur le site' : 'Masquer ce groupe et ses projets du site', false, function(){
+          g.hidden = !g.hidden;
+          applyAndRefresh();
+        }),
+        edButton(doc, g.featured ? 'starFilled' : 'star', g.featured ? 'Retirer des projets mis en avant' : 'Mettre ce groupe en avant sur l\'accueil', false, function(){
+          g.featured = !g.featured;
+          applyAndRefresh();
+        }),
+        edButton(doc, 'heart', 'Définir ce groupe comme favori', false, function(){
+          state.site.favoriGroupId = g.id;
+          // un seul favori actif a la fois
+          delete state.site.favoriProjectId;
+          applyAndRefresh();
+        }),
         edButton(doc, 'image', 'Changer la miniature du groupe (envoyer une image)', false, function(){
           pendingUpload = { owner: g, hint: g.title + '-miniature', thumbOnly: true };
           $('visual-image-upload').click();
@@ -2521,6 +2559,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
           deleteGroup(g);
         })
       ]);
+      if (g.hidden) edBadge(doc, card, 'masqué');
     });
   }
 
