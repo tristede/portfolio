@@ -938,7 +938,7 @@
             ? '<span class="card-featured-label is-favori">' + UI_ICON.heart + ' Groupe favori</span>'
             : (g.featured ? '<span class="card-featured-label">' + UI_ICON.star + ' Mis en avant</span>' : '')) +
           '<h3>' + g.title + '</h3>' +
-          (g.desc ? '<p class="desc">' + g.desc + '</p>' : '') +
+          '<p class="desc">' + (g.desc || '') + '</p>' +
         '</div>' +
       '</a>' +
       '<span class="deck-sheet deck-sheet-1" aria-hidden="true"></span>' +
