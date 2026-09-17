@@ -712,8 +712,8 @@ section.projects-section{
 .detail-gallery > .detail-webwrap.size-lg{ width: min(700px, 100%); }
 .detail-gallery > .detail-webwrap .detail-site-embed{ max-width: 100%; margin: 0; }
 .detail-gallery > .detail-webwrap.size-sm iframe{ height: 260px; }
-.detail-gallery > .detail-webwrap.size-md iframe{ height: 380px; }
-.detail-gallery > .detail-webwrap.size-lg iframe{ height: 520px; }
+.detail-gallery > .detail-webwrap.size-md iframe{ height: 780px; }
+.detail-gallery > .detail-webwrap.size-lg iframe{ height: 900px; }
 /* borderless: no frame and no white plate — the viewer sits straight on the
    page background */
 /* Un document en ligne est scotché au mur comme tout le reste. Le ruban se pose
