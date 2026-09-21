@@ -129,6 +129,80 @@
       ]
     },
     {
+      "id": "union-oasis-forest",
+      "title": "Union Oasis Forest",
+      "year": 2025,
+      "ctx": "perso",
+      "medium": "graphisme",
+      "tags": [
+        "Graphisme",
+        "Identité visuelle"
+      ],
+      "desc": "Création d'identité visuelle pour le projet Union Oasis Forest.",
+      "featured": true,
+      "thumb": "images/union-oasis-forest-miniature-1787866364017-0.webp",
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/union-oasis-forest-1787871728526-0.webp",
+          "hidden": false,
+          "pos": {
+            "x": 177,
+            "y": 0,
+            "w": 473
+          }
+        },
+        {
+          "type": "image",
+          "url": "images/union-oasis-forest-1787871738308-0.webp",
+          "hidden": false,
+          "pos": {
+            "x": 601,
+            "y": 80,
+            "w": 494
+          }
+        }
+      ],
+      "subProjects": [
+        {
+          "title": "Production de contenu sur les réseaux-sociaux",
+          "medium": "",
+          "desc": "",
+          "assets": [
+            {
+              "type": "video",
+              "url": "https://www.tiktok.com/embed/v2/7554688445604547872",
+              "hidden": false,
+              "size": "sm",
+              "pos": {
+                "x": 136,
+                "y": 13,
+                "w": 325
+              },
+              "caption": "Babyfutsal"
+            },
+            {
+              "type": "video",
+              "url": "https://www.tiktok.com/embed/v2/7542489276752219425",
+              "hidden": false,
+              "size": "sm",
+              "caption": "Récap' de match"
+            },
+            {
+              "type": "video",
+              "url": "https://www.tiktok.com/embed/v2/7556725924587244833",
+              "hidden": false,
+              "size": "sm",
+              "caption": "Détections jeunes"
+            }
+          ],
+          "link": ""
+        }
+      ],
+      "group": "union-oasis-forest",
+      "link": "https://www.tiktok.com/@oasisforestfutsal"
+    },
+    {
       "id": "miniatures-youtube",
       "title": "Miniatures YouTube",
       "year": 2023,
@@ -475,6 +549,50 @@
       "link": "https://www.instagram.com/easypermis.be/"
     },
     {
+      "id": "reportage-video",
+      "title": "Production d'un reportage vidéo",
+      "year": 2025,
+      "ctx": "academique",
+      "medium": "video",
+      "tags": [
+        "Vidéo",
+        "Reportage"
+      ],
+      "desc": "Réalisation d'un reportage vidéo de bout en bout.",
+      "featured": true,
+      "thumb": "images/production-d-un-reportage-video-miniature-1787835136197-0.webp",
+      "assets": [
+        {
+          "type": "image",
+          "url": "images/production-d-un-reportage-video-1787864379342-0.webp",
+          "hidden": false,
+          "pos": {
+            "x": 53,
+            "y": 29,
+            "w": 594
+          },
+          "caption": "Timeline du projet"
+        },
+        {
+          "type": "video",
+          "url": "https://youtu.be/73Ggp19Jdec?t=919",
+          "hidden": false,
+          "pos": {
+            "x": 575,
+            "y": 97,
+            "w": 714
+          },
+          "caption": "Reportage réalisé dans le cadre du projet vidéo 2 à l'ISFSC"
+        },
+        {
+          "type": "image",
+          "url": "images/reportage-video-myportfolio-0.webp",
+          "hidden": false
+        }
+      ],
+      "subProjects": []
+    },
+    {
       "id": "projet-360-dei-belgique",
       "title": "Projet 360° : DEI-Belgique",
       "year": 2025,
@@ -710,6 +828,43 @@
           "hidden": false
         }
       ]
+    },
+    {
+      "id": "articles-presse",
+      "title": "Écriture d'articles de presse",
+      "year": 2025,
+      "ctx": "academique",
+      "medium": "ecrit",
+      "tags": [
+        "Rédaction"
+      ],
+      "desc": "Rédaction d'articles dans un cadre journalistique.",
+      "featured": true,
+      "assets": [
+        {
+          "type": "doc",
+          "url": "https://docs.google.com/document/d/e/2PACX-1vTYKJySMkgsxDHJtsHlcqAw3R4OdHJ7pKAgIIK6ibIPfU1WZtr92o04bLXakzMtV4qLgIR5Z12EbAgn/pub",
+          "hidden": false,
+          "caption": "Article long, réalisé dans le cadre du projet \"Feuille verte\", encadré par Julie Nicosie. J'ai interviewé M. David Bol, fondateur de l'ISIT-BE.",
+          "size": "lg"
+        },
+        {
+          "type": "doc",
+          "url": "https://docs.google.com/document/d/e/2PACX-1vQsn2XagQwd6QKsJSUsv_3X_myQzpPFhR8gzOiXMBU_-FBcrKtq0-UlH9rK_Dwzzv0EFnHccMM15YIe/pub",
+          "hidden": false,
+          "size": "lg",
+          "caption": "Article court réalisé dans le cadre du cours d'écriture journalistique, encadré par Bernard Buchel. J'ai interviewé un jeune des quartiers difficiles d'Anderlecht."
+        },
+        {
+          "type": "doc",
+          "url": "https://docs.google.com/document/d/e/2PACX-1vRpzcLCgPWJbAi7kRZGKylBzIqzvU0QeMsWJnss-a3rfQxK58lmUMRq9Bigp6-4Gk5cLqiatVhCPhPJ/pub",
+          "hidden": false,
+          "size": "lg",
+          "caption": "Article court réalisé dans le cadre du cours d'écriture journalistique, encadré par Bernard Buchel. J'ai interviewé le fondateur de Team Oasis Forest, club de futsal évoluant en ligue belge."
+        }
+      ],
+      "subProjects": [],
+      "thumb": "images/ecriture-d-articles-de-presse-miniature-1787834916089-0.webp"
     },
     {
       "id": "melo-de-la-semaine",
