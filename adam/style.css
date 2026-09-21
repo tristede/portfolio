@@ -837,6 +837,15 @@ section.projects-section{
 .timeline-content h3{ font-family: var(--font-display); font-size: 17px; font-weight:700; margin-bottom: 4px; }
 .timeline-content p{ font-size: 14px; color: var(--text-dim); line-height:1.5; margin:0; }
 
+.stage-cta{
+  max-width: 620px; margin: 48px auto 0; padding: 30px 32px;
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg); text-align:center;
+}
+.stage-cta h3{ font-size: clamp(19px, 2.4vw, 23px); margin: 10px 0 10px; }
+.stage-cta p{ color: var(--text-dim); font-size:14.5px; margin: 0 0 20px; }
+.stage-cta-actions{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
 /* ---------- Footer / contact ---------- */
 footer{ border-top: 1px solid var(--line); padding: 92px 0 40px; position:relative; z-index:1; }
 .contact-band{ text-align:center; margin-bottom: 56px; }

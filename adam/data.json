@@ -139,7 +139,7 @@
         "Identité visuelle"
       ],
       "desc": "Création d'identité visuelle pour le projet Union Oasis Forest.",
-      "featured": true,
+      "featured": false,
       "thumb": "images/union-oasis-forest-miniature-1787866364017-0.webp",
       "assets": [
         {
@@ -559,7 +559,7 @@
         "Reportage"
       ],
       "desc": "Réalisation d'un reportage vidéo de bout en bout.",
-      "featured": true,
+      "featured": false,
       "thumb": "images/production-d-un-reportage-video-miniature-1787835136197-0.webp",
       "assets": [
         {
@@ -839,7 +839,7 @@
         "Rédaction"
       ],
       "desc": "Rédaction d'articles dans un cadre journalistique.",
-      "featured": true,
+      "featured": false,
       "assets": [
         {
           "type": "doc",
