@@ -735,6 +735,10 @@ body.visual-mode .wrap{ max-width: 1400px; }
 
   function loadData(){
     return ghRequest('/contents/' + DATA_PATH + '?ref=' + BRANCH).then(function(file){
+      // Retenu pour saveData() : un onglet resté ouvert (donc jamais rechargé)
+      // garde ce sha en mémoire même si data.json change sur GitHub entre-temps
+      // — c'est ce qui permet de repérer une sauvegarde partie de données perimées.
+      state.loadedSha = file.sha;
       return JSON.parse(b64ToUtf8(file.content));
     });
   }
@@ -860,12 +864,34 @@ body.visual-mode .wrap{ max-width: 1400px; }
   }
 
   function saveData(data, message){
-    var content = utf8ToB64(JSON.stringify(data, null, 2) + '\n');
-    return ghRequest('/git/blobs', {
-      method: 'POST',
-      body: JSON.stringify({ content: content, encoding: 'base64' })
-    }).then(function(blob){
-      return commitEntries([{ path: DATA_PATH, mode: '100644', type: 'blob', sha: blob.sha }], message);
+    // Cet onglet a pu rester ouvert longtemps sans jamais être rechargé : son
+    // `state` en mémoire date alors du dernier loadData(), pas d'aujourd'hui.
+    // Écrire tel quel remplacerait TOUT data.json — donc effacerait tout ce
+    // qui a été ajouté sur GitHub depuis (par un autre onglet, ou en direct
+    // via git) sans le moindre avertissement. Un vrai cas vécu : un groupe
+    // coché « en avant » depuis un onglet resté ouvert a ainsi effacé trois
+    // projets migrés entre-temps. On revérifie donc le sha juste avant
+    // d'écrire, et on refuse si data.json a bougé depuis le chargement.
+    return ghRequest('/contents/' + DATA_PATH + '?ref=' + BRANCH).then(function(file){
+      if (state.loadedSha && file.sha !== state.loadedSha){
+        throw new Error(
+          'data.json a changé sur GitHub depuis l\'ouverture de cette page ' +
+          '(un autre onglet ou un push direct). Enregistrer maintenant ' +
+          'effacerait ce changement. Clique « Recharger », reporte tes ' +
+          'modifications, puis réessaie.'
+        );
+      }
+      var content = utf8ToB64(JSON.stringify(data, null, 2) + '\n');
+      return ghRequest('/git/blobs', {
+        method: 'POST',
+        body: JSON.stringify({ content: content, encoding: 'base64' })
+      }).then(function(blob){
+        return commitEntries([{ path: DATA_PATH, mode: '100644', type: 'blob', sha: blob.sha }], message)
+          .then(function(result){
+            state.loadedSha = blob.sha;
+            return result;
+          });
+      });
     });
   }
 
@@ -3410,6 +3436,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
   function demarreDemo(){
     MODE_DEMO = true;
     var publie = null;      // le data.json du bac a sable, en texte
+    var publieSha = 'demo'; // suit `publie` : saveData() compare les sha, un
+                             // sha fige aurait fait echouer son controle d'ecart
+                             // des le deuxieme enregistrement de la session
     var n = 0;
     var sha = function(prefixe){ return prefixe + '-' + (++n); };
 
@@ -3424,19 +3453,20 @@ body.visual-mode .wrap{ max-width: 1400px; }
           ? Promise.resolve(publie)
           : fetch('data.json', { cache: 'no-cache' }).then(function(r){ return r.text(); })
               .then(function(txt){ publie = txt; return txt; });
-        return source.then(function(txt){ return { content: utf8ToB64(txt), sha: 'demo' }; });
+        return source.then(function(txt){ return { content: utf8ToB64(txt), sha: publieSha }; });
       }
 
       // Le contenu de data.json passe par la creation de blob avant d'etre
       // commite : c'est la qu'on le retient. Les images, elles, sont du binaire
       // que le decodage rejette — d'ou le try.
       if (methode === 'POST' && chemin === '/git/blobs'){
+        var shaBlob = sha('blob');
         try {
           var texte = corps.encoding === 'base64' ? b64ToUtf8(corps.content) : corps.content;
           var objet = JSON.parse(texte);
-          if (objet && objet.projects && objet.site) publie = texte;
+          if (objet && objet.projects && objet.site){ publie = texte; publieSha = shaBlob; }
         } catch(e){}
-        return Promise.resolve({ sha: sha('blob') });
+        return Promise.resolve({ sha: shaBlob });
       }
 
       if (methode === 'GET' && chemin.indexOf('/git/ref/') === 0)
