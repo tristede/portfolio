@@ -190,35 +190,17 @@ def project(x, y, title, desc, tags, link_label=None):
     return y - 12
 
 
-def placeholder_box(x, y, h, label="À compléter"):
-    """Encart vide en pointillés, pour une future expérience pas encore décidée."""
-    c.saveState()
-    c.setDash(3, 3)
-    c.setStrokeColorRGB(*LINE)
-    c.setLineWidth(0.8)
-    c.roundRect(x, y - h, COL_W, h, 6, fill=0, stroke=1)
-    c.restoreState()
-    c.setFillColorRGB(*TEXT_FAINT)
-    c.setFont("Helvetica-Oblique", 9)
-    c.drawCentredString(x + COL_W / 2, y - h / 2 - 3, label)
-    return y - h
-
-
 def insert_card(x, top_y, title, items):
-    """Encart encadré (fond légèrement teinté), pour un groupe d'xp à part
-    des expériences « com » — ex. jobs étudiants."""
+    """Encart en pointillés, sans fond — pour un groupe d'xp à part des
+    expériences « com » — ex. jobs étudiants."""
     pad = 13
     item_h = 30
     h = pad * 2 + 18 + len(items) * item_h
 
     c.saveState()
-    c.setFillColorRGB(22/255, 28/255, 92/255)
-    c.setFillAlpha(0.4)
-    c.roundRect(x, top_y - h, COL_W, h, 8, fill=1, stroke=0)
-    c.restoreState()
-    c.saveState()
+    c.setDash(3, 3)
     c.setStrokeColorRGB(140/255, 160/255, 255/255)
-    c.setStrokeAlpha(0.35)
+    c.setStrokeAlpha(0.5)
     c.setLineWidth(0.8)
     c.roundRect(x, top_y - h, COL_W, h, 8, fill=0, stroke=1)
     c.restoreState()
@@ -251,8 +233,6 @@ ly = entry(LX, ly, "2024 — Aujourd'hui", "Social Media Manager", "Union Oasis 
             "des prestataires GFX/photo/vidéo, gestion Meta Business Suite."])
 ly = entry(LX, ly, "2025 (8 semaines)", "Stage — assistant de production", "Média En Esprit",
            ["Interview, cadrage, montage, mixage, thumbnails, actualité."])
-ly = placeholder_box(LX, ly, 54)
-ly -= 12
 
 ly -= 2
 ly = section_title(LX, ly, "Formations")
