@@ -26,25 +26,14 @@ from reportlab.pdfbase.ttfonts import TTFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "adam", "cv.pdf")
 
-# Polices du site (adam/style.css) : Schoolbell pour le titre (--font-title,
-# meme main que le "Adam" de l'accueil), Baloo 2 pour les sous-titres
-# (--font-display, meme police que les titres de carte/de section), Homemade
-# Apple pour la bio (--font-script, meme police que la bio de l'accueil).
-FONTS_DIR = os.path.join(ROOT, "tools", "fonts")
-pdfmetrics.registerFont(TTFont("HomemadeApple", os.path.join(FONTS_DIR, "HomemadeApple-Regular.ttf")))
-pdfmetrics.registerFont(TTFont("Schoolbell", os.path.join(FONTS_DIR, "Schoolbell-Regular.ttf")))
-pdfmetrics.registerFont(TTFont("Baloo2-Bold", os.path.join(FONTS_DIR, "Baloo2-Bold.ttf")))
+# Police cursive du site (adam/style.css : --font-script, "Homemade Apple"),
+# pour que la bio du CV soit dans la même main que celle de la page d'accueil.
+pdfmetrics.registerFont(TTFont("HomemadeApple", os.path.join(ROOT, "tools", "fonts", "HomemadeApple-Regular.ttf")))
 
 W, H = A4  # 595 x 842 pt
 
-# ---- palette et texture du site (adam/style.css : --bg-soft, --bg, --bg-deep,
-# --halo, --accent-strong, --accent-sky, --text-dim) ----
-BG_SOFT = np.array([13/255, 20/255, 84/255])   # #0d1454
-BG_MID = np.array([8/255, 11/255, 48/255])     # #080b30
-BG_DEEP = np.array([5/255, 7/255, 31/255])     # #05071f
-HALO = np.array([90/255, 100/255, 255/255])    # halo du hero, rgba(90,100,255,.22)
-TEXTURE_PATH = os.path.join(ROOT, "adam", "images", "bg-vert.webp")  # meme texture que le fond du site
-
+# ---- palette du site (adam/style.css : --bg, --bg-deep, --accent-strong, --accent-sky, --text-dim) ----
+BG_DEEP = np.array([16/255, 17/255, 22/255])      # gris anthracite très sombre, légèrement bleuté
 ACCENT = (91/255, 99/255, 255/255)    # #5b63ff (accentStrong)
 ACCENT_SKY = (127/255, 196/255, 255/255)  # #7fc4ff
 WHITE = (1, 1, 1)
@@ -62,40 +51,19 @@ c = canvas.Canvas(OUT, pagesize=A4)
 
 
 def make_background(w_pt, h_pt, scale=3):
-    """Reproduit le fond du site (.topo-bg dans style.css) : un dégradé bleu
-    nuit (bg-soft -> bg -> bg-deep, ~160deg), un halo au sommet, et par-dessus
-    la même texture topographique (images/bg-vert.webp) à la même opacité —
-    pour que le CV garde un fond sombre mais avec les mêmes traits
-    psychédéliques que le reste du site (et le LinkedIn)."""
+    """Fond gris anthracite avec halos dégradés dans les coins (haut-droit
+    mauve, bas-gauche bleu ciel), comme le halo du hero du site (style.css)."""
     w, h = int(w_pt * scale), int(h_pt * scale)
-    yy, xx = np.mgrid[0:h, 0:w].astype(float)
-    yy /= h
-    xx /= w
+    yy, xx = np.mgrid[0:h, 0:w]
+    arr = np.tile(BG_DEEP, (h, w, 1))
 
-    # degrade lineaire ~160deg (haut un peu a gauche -> bas un peu a droite)
-    ang = np.radians(160 - 90)
-    t = xx * np.cos(ang) + yy * np.sin(ang)
-    t = (t - t.min()) / (t.max() - t.min())
-    t = t[..., None]
-    arr = np.where(t < 0.5,
-                   BG_SOFT + (BG_MID - BG_SOFT) * (t / 0.5),
-                   BG_MID + (BG_DEEP - BG_MID) * ((t - 0.5) / 0.5))
+    def add_glow(arr, cx, cy, radius, color, strength):
+        d = np.sqrt(((xx - cx) / radius) ** 2 + ((yy - cy) / radius) ** 2)
+        factor = (np.clip(1 - d, 0, 1) ** 2 * strength)[..., None]
+        return arr * (1 - factor) + np.array(color) * factor
 
-    # halo en ellipse tout en haut de la page, comme le hero de l'accueil —
-    # discret, pour ne pas trop eclaircir un fond qui doit rester sombre
-    dx = (xx - 0.5) / 0.5
-    dy = (yy + 0.1) / 0.6
-    d = np.sqrt(dx ** 2 + dy ** 2)
-    halo_factor = (np.clip(1 - d, 0, 1) ** 2 * 0.11)[..., None]
-    arr = arr * (1 - halo_factor) + HALO * halo_factor
-
-    # texture topographique du site, en mode "eclaircir" (max) plutot qu'en
-    # fondu : un fondu classique moyenne tout vers un bleu plat et efface les
-    # traits eux-memes — ici seuls les traits plus clairs que le fond
-    # ressortent, sans jamais eclaircir les zones deja sombres
-    tex = Image.open(TEXTURE_PATH).convert("RGB").resize((w, h), Image.LANCZOS)
-    tex_arr = np.asarray(tex).astype(float) / 255.0
-    arr = np.maximum(arr, tex_arr * 0.6)
+    arr = add_glow(arr, w, 0, w * 0.68, ACCENT, 0.28)
+    arr = add_glow(arr, 0, h, w * 0.68, ACCENT_SKY, 0.18)
 
     img = (np.clip(arr, 0, 1) * 255).astype(np.uint8)
     return Image.fromarray(img, mode="RGB")
@@ -115,7 +83,7 @@ def wrap(text, font, size, max_w):
 # ---- en-tête (juste le nom et le rôle — pas de 3e ligne, déjà redit en Formations) ----
 y = H - 56
 c.setFillColorRGB(*WHITE)
-c.setFont("Schoolbell", 32)
+c.setFont("Helvetica-Bold", 27)
 c.drawString(LX, y, "Adam Karroum")
 
 c.setFillColorRGB(*ACCENT_SKY)
@@ -156,7 +124,7 @@ y = ty - 26
 
 def section_title(x, y, title):
     c.setFillColorRGB(*ACCENT_SKY)
-    c.setFont("Baloo2-Bold", 12)
+    c.setFont("Helvetica-Bold", 10.5)
     c.drawString(x, y, title.upper())
     c.setStrokeColorRGB(*LINE)
     c.setLineWidth(0.6)
@@ -170,7 +138,7 @@ def entry(x, y, date, title, place, desc_lines, gap_after=22):
     c.drawString(x, y, date)
     y -= 13
     c.setFillColorRGB(*WHITE)
-    c.setFont("Baloo2-Bold", 11)
+    c.setFont("Helvetica-Bold", 10.5)
     c.drawString(x, y, title)
     y -= 14
     if place:
@@ -190,7 +158,7 @@ def entry(x, y, date, title, place, desc_lines, gap_after=22):
 
 def skill_group(x, y, title, items):
     c.setFillColorRGB(*WHITE)
-    c.setFont("Baloo2-Bold", 11)
+    c.setFont("Helvetica-Bold", 10.5)
     c.drawString(x, y, title)
     y -= 13.5
     c.setFillColorRGB(*TEXT_DIM)
@@ -203,7 +171,7 @@ def skill_group(x, y, title, items):
 
 def project(x, y, title, desc, tags, link_label=None):
     c.setFillColorRGB(*WHITE)
-    c.setFont("Baloo2-Bold", 11)
+    c.setFont("Helvetica-Bold", 10.5)
     c.drawString(x, y, title)
     y -= 13.5
     if desc:
@@ -241,7 +209,7 @@ def insert_card(x, top_y, title, items):
 
     ty = top_y - pad - 9
     c.setFillColorRGB(*ACCENT_SKY)
-    c.setFont("Baloo2-Bold", 12)
+    c.setFont("Helvetica-Bold", 10.5)
     c.drawString(x + pad, ty, title.upper())
     ty -= item_h
     for date, jtitle, place in items:
@@ -249,7 +217,7 @@ def insert_card(x, top_y, title, items):
         c.setFont("Helvetica", 8)
         c.drawString(x + pad, ty + 16, date)
         c.setFillColorRGB(*WHITE)
-        c.setFont("Baloo2-Bold", 10)
+        c.setFont("Helvetica-Bold", 10)
         c.drawString(x + pad, ty + 3, jtitle)
         c.setFillColorRGB(*ACCENT_SKY)
         c.setFont("Helvetica", 9)
