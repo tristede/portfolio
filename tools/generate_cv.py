@@ -74,18 +74,15 @@ def wrap(text, font, size, max_w):
     return simpleSplit(text, font, size, max_w)
 
 
-# ---- en-tête ----
-y = H - 58
+# ---- en-tête (juste le nom et le rôle — pas de 3e ligne, déjà redit en Formations) ----
+y = H - 56
 c.setFillColorRGB(*WHITE)
-c.setFont("Helvetica-Bold", 30)
+c.setFont("Helvetica-Bold", 27)
 c.drawString(LX, y, "Adam Karroum")
 
 c.setFillColorRGB(*ACCENT_SKY)
-c.setFont("Helvetica-Bold", 15)
-c.drawString(LX, y - 22, "Créateur de contenu — graphisme, vidéo, audio")
-c.setFillColorRGB(*TEXT_DIM)
-c.setFont("Helvetica", 11)
-c.drawString(LX, y - 39, "Étudiant en communication — ISFSC, Bruxelles")
+c.setFont("Helvetica-Bold", 14)
+c.drawString(LX, y - 23, "Créateur de contenu — graphisme, vidéo, audio")
 
 # bloc contact, aligné à droite
 contact = [
@@ -103,7 +100,7 @@ for i, line in enumerate(contact):
     cy -= 14
 
 # ---- pitch (bordure gauche façon citation, comme chez Bastien) ----
-y -= 74
+y -= 76
 pitch = ("Depuis petit, je suis passionné par la création de contenu et l'influence sur le web. "
          "Autodidacte, j'ai développé des compétences en graphisme, montage vidéo et mixage audio.")
 lines = wrap(pitch, "Helvetica-Oblique", 11, W - 2 * MARGIN - 16)
@@ -117,40 +114,40 @@ for line in lines:
     c.drawString(LX + 14, ty, line)
     ty -= 15
 
-y = ty - 20
+y = ty - 30
 
 
 def section_title(x, y, title):
     c.setFillColorRGB(*ACCENT_SKY)
-    c.setFont("Helvetica-Bold", 11)
+    c.setFont("Helvetica-Bold", 10.5)
     c.drawString(x, y, title.upper())
     c.setStrokeColorRGB(*LINE)
     c.setLineWidth(0.6)
     c.line(x, y - 7, x + COL_W, y - 7)
-    return y - 21
+    return y - 27
 
 
-def entry(x, y, date, title, place, desc_lines, gap_after=12):
+def entry(x, y, date, title, place, desc_lines, gap_after=22):
     c.setFillColorRGB(*TEXT_FAINT)
     c.setFont("Helvetica", 8.5)
     c.drawString(x, y, date)
-    y -= 12
+    y -= 13
     c.setFillColorRGB(*WHITE)
-    c.setFont("Helvetica-Bold", 11)
+    c.setFont("Helvetica-Bold", 10.5)
     c.drawString(x, y, title)
-    y -= 12.5
+    y -= 14
     if place:
         c.setFillColorRGB(*ACCENT_SKY)
         c.setFont("Helvetica", 9.5)
         c.drawString(x, y, place)
-        y -= 12.5
+        y -= 14
     if desc_lines:
         c.setFillColorRGB(*TEXT_DIM)
         c.setFont("Helvetica", 9)
         for dl in desc_lines:
             for wrapped in wrap(dl, "Helvetica", 9, COL_W):
                 c.drawString(x, y, wrapped)
-                y -= 11.5
+                y -= 12.5
     return y - gap_after
 
 
@@ -158,20 +155,20 @@ def skill_group(x, y, title, items):
     c.setFillColorRGB(*WHITE)
     c.setFont("Helvetica-Bold", 10.5)
     c.drawString(x, y, title)
-    y -= 14
+    y -= 14.5
     c.setFillColorRGB(*TEXT_DIM)
     c.setFont("Helvetica", 9.5)
     for wrapped in wrap(items, "Helvetica", 9.5, COL_W):
         c.drawString(x, y, wrapped)
-        y -= 12.5
-    return y - 13
+        y -= 13
+    return y - 18
 
 
 def project(x, y, title, desc, tags, link_label=None):
     c.setFillColorRGB(*WHITE)
     c.setFont("Helvetica-Bold", 10.5)
     c.drawString(x, y, title)
-    y -= 13
+    y -= 13.5
     if desc:
         c.setFillColorRGB(*TEXT_DIM)
         c.setFont("Helvetica", 9.5)
@@ -187,14 +184,14 @@ def project(x, y, title, desc, tags, link_label=None):
             c.setFont("Helvetica-Bold", 8.5)
             c.drawRightString(x + COL_W, y, link_label)
         y -= 13
-    return y - 12
+    return y - 18
 
 
 def insert_card(x, top_y, title, items):
-    """Encart en pointillés, sans fond — pour un groupe d'xp à part des
-    expériences « com » — ex. jobs étudiants."""
-    pad = 13
-    item_h = 30
+    """Encart en pointillés, sans fond, coins droits — pour un groupe d'xp à
+    part des expériences « com » — ex. jobs étudiants."""
+    pad = 14
+    item_h = 32
     h = pad * 2 + 18 + len(items) * item_h
 
     c.saveState()
@@ -202,7 +199,7 @@ def insert_card(x, top_y, title, items):
     c.setStrokeColorRGB(140/255, 160/255, 255/255)
     c.setStrokeAlpha(0.5)
     c.setLineWidth(0.8)
-    c.roundRect(x, top_y - h, COL_W, h, 8, fill=0, stroke=1)
+    c.rect(x, top_y - h, COL_W, h, fill=0, stroke=1)
     c.restoreState()
 
     ty = top_y - pad - 9
@@ -213,7 +210,7 @@ def insert_card(x, top_y, title, items):
     for date, jtitle, place in items:
         c.setFillColorRGB(*TEXT_FAINT)
         c.setFont("Helvetica", 8)
-        c.drawString(x + pad, ty + 15, date)
+        c.drawString(x + pad, ty + 16, date)
         c.setFillColorRGB(*WHITE)
         c.setFont("Helvetica-Bold", 10)
         c.drawString(x + pad, ty + 3, jtitle)
@@ -234,7 +231,6 @@ ly = entry(LX, ly, "2024 — Aujourd'hui", "Social Media Manager", "Union Oasis 
 ly = entry(LX, ly, "2025 (8 semaines)", "Stage — assistant de production", "Média En Esprit",
            ["Interview, cadrage, montage, mixage, thumbnails, actualité."])
 
-ly -= 2
 ly = section_title(LX, ly, "Formations")
 ly = entry(LX, ly, "2023 — Aujourd'hui", "Bachelier en Communication",
            "ISFSC (HE ICHEC – ECAM – ISFSC)", [])
@@ -251,7 +247,6 @@ ry = skill_group(RX, ry, "Design graphique", "Photoshop, InDesign, Illustrator, 
 ry = skill_group(RX, ry, "Technique", "OBS Studio, Voicemeeter, ATEM, VST/plugins")
 ry = skill_group(RX, ry, "Langues", "Français (natif), Anglais B1, Néerlandais A1")
 
-ry -= 5
 ry = section_title(RX, ry, "Soft skills")
 c.setFillColorRGB(*TEXT_DIM)
 c.setFont("Helvetica", 9.5)
@@ -273,7 +268,7 @@ ry = project(RX, ry, "Écriture d'articles de presse",
              ["Rédaction"], "Portfolio »")
 
 # ---- encart jobs étudiants (hors expériences liées à la com) ----
-ry -= 10
+ry -= 6
 ry = insert_card(RX, ry, "Jobs étudiants", [
     ("2025 — Aujourd'hui", "Agent d'entretien", "ISS – Erasme"),
     ("2022 — Aujourd'hui", "Hôte d'accueil", "Basic-Fit"),
