@@ -87,8 +87,8 @@ c.setFont("Helvetica-Bold", 27)
 c.drawString(LX, y, "Adam Karroum")
 
 c.setFillColorRGB(*ACCENT_SKY)
-c.setFont("Helvetica-Bold", 12)
-c.drawString(LX, y - 21, "Créateur de contenu — graphisme, vidéo, audio")
+c.setFont("Helvetica-Bold", 10.5)
+c.drawString(LX, y - 20, "Création de contenu audiovisuel — graphisme, vidéo, audio")
 
 # bloc contact, aligné à droite
 contact = [
@@ -282,7 +282,7 @@ ry = project(RX, ry, "Union Oasis Forest",
              ["Stratégie digitale", "Création de contenu"], "Portfolio »")
 ry = project(RX, ry, "AdamXBC",
              "Création de contenu et divertissement — Twitch (affilié depuis juillet "
-             "2022), TikTok (2026). Bientôt sur le portfolio.",
+             "2022), TikTok (2026).",
              ["Twitch", "Divertissement"])
 
 c.setFillColorRGB(*ACCENT)
