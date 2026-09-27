@@ -81,18 +81,22 @@ def make_background(w_pt, h_pt, scale=3):
                    BG_SOFT + (BG_MID - BG_SOFT) * (t / 0.5),
                    BG_MID + (BG_DEEP - BG_MID) * ((t - 0.5) / 0.5))
 
-    # halo en ellipse tout en haut de la page, comme le hero de l'accueil
+    # halo en ellipse tout en haut de la page, comme le hero de l'accueil —
+    # discret, pour ne pas trop eclaircir un fond qui doit rester sombre
     dx = (xx - 0.5) / 0.5
     dy = (yy + 0.1) / 0.6
     d = np.sqrt(dx ** 2 + dy ** 2)
-    halo_factor = (np.clip(1 - d, 0, 1) ** 2 * 0.22)[..., None]
+    halo_factor = (np.clip(1 - d, 0, 1) ** 2 * 0.11)[..., None]
     arr = arr * (1 - halo_factor) + HALO * halo_factor
 
-    # texture topographique du site, superposee a la meme opacite (0.55) que
-    # dans style.css — le fichier est deja au format portrait A4
+    # texture topographique du site, superposee mais attenuee (le site l'a a
+    # 0.55, ici on la garde plus discrete pour rester sombre)
     tex = Image.open(TEXTURE_PATH).convert("RGB").resize((w, h), Image.LANCZOS)
     tex_arr = np.asarray(tex).astype(float) / 255.0
-    arr = arr * (1 - 0.55) + tex_arr * 0.55
+    arr = arr * (1 - 0.3) + tex_arr * 0.3
+
+    # assombrit l'ensemble pour retrouver le cote "fond sombre" du CV
+    arr = arr * 0.72
 
     img = (np.clip(arr, 0, 1) * 255).astype(np.uint8)
     return Image.fromarray(img, mode="RGB")
