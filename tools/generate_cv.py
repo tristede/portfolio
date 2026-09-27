@@ -88,7 +88,7 @@ c.drawString(LX, y, "Adam Karroum")
 
 c.setFillColorRGB(*ACCENT_SKY)
 c.setFont("Helvetica-Bold", 10.5)
-c.drawString(LX, y - 20, "Création de contenu audiovisuel — graphisme, vidéo, audio")
+c.drawString(LX, y - 20, "Création de contenu audiovisuel")
 
 # bloc contact, aligné à droite
 contact = [
@@ -108,15 +108,12 @@ for i, line in enumerate(contact):
 y -= 48
 pitch = ("Depuis petit, je suis passionné par la création de contenu et l'influence sur le web. "
          "Autodidacte, j'ai développé des compétences en graphisme, montage vidéo et mixage audio.")
-lines = wrap(pitch, "HomemadeApple", 10.5, W - 2 * MARGIN - 16)
-block_h = 8 + len(lines) * 16
-c.setFillColorRGB(*ACCENT)
-c.rect(LX, y - block_h + 12, 2.4, block_h, fill=1, stroke=0)
+lines = wrap(pitch, "HomemadeApple", 10.5, W - 2 * MARGIN)
 c.setFont("HomemadeApple", 10.5)
 c.setFillColorRGB(*TEXT_DIM)
 ty = y
 for line in lines:
-    c.drawString(LX + 14, ty, line)
+    c.drawString(LX, ty, line)
     ty -= 16
 
 y = ty - 26
@@ -279,7 +276,7 @@ ry = project(RX, ry, "Projet 360° : DEI-Belgique",
 ry = project(RX, ry, "Union Oasis Forest",
              "Stratégie digitale et création de contenu pour un club sportif : "
              "identité visuelle, formats vidéo, community management.",
-             ["Stratégie digitale", "Création de contenu"], "Portfolio »")
+             ["Stratégie digitale", "Création de contenu"], "Voir »")
 ry = project(RX, ry, "AdamXBC",
              "Création de contenu et divertissement — Twitch (affilié depuis juillet "
              "2022), TikTok (2026).",
