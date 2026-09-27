@@ -123,7 +123,122 @@
         "name": "Audio",
         "detail": "Écriture, enregistrement, mixage chant/rap, podcast."
       }
-    ]
+    ],
+    "cv": {
+      "role": {
+        "followSite": false,
+        "main": "Créateur de contenu — graphisme, vidéo, audio",
+        "sub": "Étudiant en communication — ISFSC, Bruxelles"
+      },
+      "pitch": {
+        "followSite": true,
+        "text": ""
+      },
+      "contact": {
+        "phone": "0486 53 37 15",
+        "location": "Bruxelles, Belgique"
+      },
+      "experiences": [
+        {
+          "date": "2024 — Aujourd'hui",
+          "title": "Social Media Manager",
+          "place": "Union Oasis Forest",
+          "desc": "Développement de formats vidéo, direction artistique et management des prestataires GFX/photo/vidéo, gestion Meta Business Suite."
+        },
+        {
+          "date": "2025 (8 semaines)",
+          "title": "Stage — assistant de production",
+          "place": "Média En Esprit",
+          "desc": "Interview, cadrage, montage, mixage, thumbnails, actualité."
+        },
+        {
+          "date": "",
+          "title": "",
+          "place": "",
+          "desc": ""
+        }
+      ],
+      "jobsEtudiants": [
+        {
+          "date": "2025 — Aujourd'hui",
+          "title": "Agent d'entretien",
+          "place": "ISS – Erasme"
+        },
+        {
+          "date": "2022 — Aujourd'hui",
+          "title": "Hôte d'accueil",
+          "place": "Basic-Fit"
+        }
+      ],
+      "formations": {
+        "followSite": false,
+        "items": [
+          {
+            "year": "2023 — Aujourd'hui",
+            "title": "Bachelier en Communication",
+            "desc": "ISFSC (HE ICHEC – ECAM – ISFSC)"
+          },
+          {
+            "year": "2022 — 2023",
+            "title": "Informatique de gestion",
+            "desc": "Haute École Léonard de Vinci"
+          },
+          {
+            "year": "2017 — 2022",
+            "title": "CESS général — option sciences économiques",
+            "desc": "Athénée Joseph Bracops"
+          }
+        ]
+      },
+      "skills": {
+        "followSite": false,
+        "items": [
+          {
+            "name": "Montage vidéo",
+            "detail": "Premiere Pro, After Effects, DaVinci Resolve, CapCut"
+          },
+          {
+            "name": "Design graphique",
+            "detail": "Photoshop, InDesign, Illustrator, Lightroom"
+          },
+          {
+            "name": "Technique",
+            "detail": "OBS Studio, Voicemeeter, ATEM, VST/plugins"
+          },
+          {
+            "name": "Langues",
+            "detail": "Français (natif), Anglais B1, Néerlandais A1"
+          }
+        ]
+      },
+      "softSkills": "Curiosité créative · Autonomie · Sens du client · Travail en équipe pluridisciplinaire",
+      "projects": {
+        "followSite": false,
+        "items": [
+          {
+            "title": "Projet 360° : DEI-Belgique",
+            "desc": "Campagne de sensibilisation aux VEO pour la DEI-Belgique.",
+            "tags": "Vidéo 360°, Stratégie créative",
+            "linkLabel": "Voir",
+            "link": "https://cms2433.commu.isfsc.be/"
+          },
+          {
+            "title": "Production d'un reportage vidéo",
+            "desc": "Réalisation d'un reportage vidéo de bout en bout.",
+            "tags": "Vidéo, Reportage",
+            "linkLabel": "Portfolio",
+            "link": "https://tristede.github.io/portfolio/adam/projet.html?id=reportage-video"
+          },
+          {
+            "title": "Écriture d'articles de presse",
+            "desc": "Rédaction d'articles dans un cadre journalistique.",
+            "tags": "Rédaction",
+            "linkLabel": "Portfolio",
+            "link": "https://tristede.github.io/portfolio/adam/projet.html?id=articles-presse"
+          }
+        ]
+      }
+    }
   },
   "projects": [
     {

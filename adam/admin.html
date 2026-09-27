@@ -3019,6 +3019,136 @@ body.visual-mode .wrap{ max-width: 1400px; }
     ]);
   }
 
+  // ---- CV (cv.html) — chaque bloc peut soit suivre le site (site.bio,
+  // site.timeline, site.skills, les projets "mis en avant"), soit avoir son
+  // propre contenu dans site.cv. Expériences et jobs étudiants n'ont pas
+  // d'équivalent sur le site : toujours propres au CV, pas de bouton "suivre".
+  function wireCvEditing(doc){
+    var cv = state.site.cv || (state.site.cv = {});
+
+    // Bascule affichee sur le bloc lui-meme : l'icone reflete l'etat courant,
+    // comme oeil/oeil-barre pour masquer/afficher.
+    function followToggle(host, obj, label){
+      if (!host) return;
+      edTools(doc, host, [
+        edButton(doc, obj.followSite ? 'globe' : 'file',
+          obj.followSite
+            ? label + ' : suit le site — cliquer pour rendre propre au CV'
+            : label + ' : contenu propre au CV — cliquer pour suivre le site',
+          false, function(){ obj.followSite = !obj.followSite; applyAndRefresh(); })
+      ]);
+    }
+
+    var role = cv.role || (cv.role = {});
+    var roleMainEl = doc.getElementById('cv-role-main');
+    followToggle(roleMainEl && roleMainEl.closest('.cv-head-name'), role, 'Rôle affiché');
+    if (!role.followSite){
+      bindEditable(roleMainEl, function(){ return role.main || ''; }, function(v){ role.main = v; });
+      bindEditable(doc.getElementById('cv-role-sub'), function(){ return role.sub || ''; }, function(v){ role.sub = v; });
+    }
+
+    var pitch = cv.pitch || (cv.pitch = {});
+    var pitchEl = doc.getElementById('cv-pitch');
+    followToggle(pitchEl && pitchEl.closest('.cv-pitch-wrap'), pitch, 'Pitch');
+    if (!pitch.followSite){
+      bindEditable(pitchEl, function(){ return pitch.text || ''; }, function(v){ pitch.text = v; }, true);
+    }
+
+    // Contact : toujours propre au CV (le site n'a pas de telephone/localisation)
+    var contact = cv.contact || (cv.contact = {});
+    bindEditable(doc.getElementById('cv-contact-phone'),
+      function(){ return contact.phone || ''; }, function(v){ contact.phone = v; });
+    bindEditable(doc.getElementById('cv-contact-location'),
+      function(){ return contact.location || ''; }, function(v){ contact.location = v; });
+
+    // Expériences (toujours propres au CV)
+    var exps = cv.experiences || (cv.experiences = []);
+    wireEntryList(doc, doc.getElementById('cv-experiences'), exps, [
+      { sel: '.cv-entry-date', key: 'date', prompt: 'Dates (ex : "2024 — Aujourd\'hui") :' },
+      { sel: '.cv-entry-title', key: 'title', prompt: 'Titre :', required: true },
+      { sel: '.cv-entry-place', key: 'place', prompt: 'Lieu / structure :' },
+      { sel: '.cv-entry-desc', key: 'desc', prompt: 'Description (optionnel) :', multiline: true }
+    ], '+ Expérience');
+
+    // Jobs étudiants (idem, encart à part)
+    var jobs = cv.jobsEtudiants || (cv.jobsEtudiants = []);
+    wireEntryList(doc, doc.getElementById('cv-jobs'), jobs, [
+      { sel: '.cv-entry-date', key: 'date', prompt: 'Dates :' },
+      { sel: '.cv-entry-title', key: 'title', prompt: 'Titre :', required: true },
+      { sel: '.cv-entry-place', key: 'place', prompt: 'Lieu / structure :' }
+    ], '+ Job étudiant');
+
+    var formations = cv.formations || (cv.formations = {});
+    var formHost = doc.getElementById('cv-formations');
+    followToggle(formHost && formHost.previousElementSibling, formations, 'Formations');
+    if (!formations.followSite){
+      var formItems = formations.items || (formations.items = []);
+      wireEntryList(doc, formHost, formItems, [
+        { sel: '.cv-entry-date', key: 'year', prompt: 'Année (ex : "2022 — 2023") :' },
+        { sel: '.cv-entry-title', key: 'title', prompt: 'Titre :', required: true },
+        { sel: '.cv-entry-desc', key: 'desc', prompt: 'École / description :', multiline: true }
+      ], '+ Formation');
+    }
+
+    var skillsBlock = cv.skills || (cv.skills = {});
+    var skillsHost = doc.getElementById('cv-skills');
+    followToggle(skillsHost && skillsHost.previousElementSibling, skillsBlock, 'Compétences');
+    if (!skillsBlock.followSite){
+      var skillItems = skillsBlock.items || (skillsBlock.items = []);
+      wireEntryList(doc, skillsHost, skillItems, [
+        { sel: '.cv-skill-name', key: 'name', prompt: 'Nom (ex : "Montage vidéo") :', required: true },
+        { sel: '.cv-skill-detail', key: 'detail', prompt: 'Détail (outils, etc.) :', multiline: true }
+      ], '+ Compétence');
+    }
+
+    bindEditable(doc.getElementById('cv-softskills'),
+      function(){ return cv.softSkills || ''; }, function(v){ cv.softSkills = v; }, true);
+
+    var projBlock = cv.projects || (cv.projects = {});
+    var projHost = doc.getElementById('cv-projects');
+    followToggle(projHost && projHost.previousElementSibling, projBlock, 'Projets');
+    if (!projBlock.followSite){
+      var projItems = projBlock.items || (projBlock.items = []);
+      Array.prototype.forEach.call(projHost.children, function(card, i){
+        var pr = projItems[i];
+        if (!pr) return;
+        bindEditable(card.querySelector('.cv-project-title'), function(){ return pr.title || ''; }, function(v){ pr.title = v; });
+        bindEditable(card.querySelector('.cv-project-desc'), function(){ return pr.desc || ''; }, function(v){ pr.desc = v; }, true);
+        bindEditable(card.querySelector('.cv-project-tags'), function(){ return pr.tags || ''; }, function(v){ pr.tags = v; });
+        bindEditable(card.querySelector('.cv-project-linklabel'), function(){ return pr.linkLabel || ''; }, function(v){ pr.linkLabel = v; });
+        var extra = [
+          edButton(doc, 'link', 'Modifier le lien', false, function(){
+            var v = prompt('Lien (URL) :', pr.link || '');
+            if (v === null) return;
+            pr.link = v.trim(); applyAndRefresh();
+          }),
+          edButton(doc, 'up', 'Monter', false, function(){
+            if (i === 0) return;
+            var t = projItems[i-1]; projItems[i-1] = projItems[i]; projItems[i] = t; applyAndRefresh();
+          }),
+          edButton(doc, 'down', 'Descendre', false, function(){
+            if (i >= projItems.length - 1) return;
+            var t = projItems[i+1]; projItems[i+1] = projItems[i]; projItems[i] = t; applyAndRefresh();
+          }),
+          edButton(doc, 'close', 'Supprimer ce projet', true, function(){
+            if (!confirm('Supprimer « ' + (pr.title || 'ce projet') + ' » ?')) return;
+            projItems.splice(i, 1); applyAndRefresh();
+          })
+        ];
+        edTools(doc, card, extra);
+      });
+      addBar(doc, projHost, '+ Projet', function(){
+        var title = prompt('Titre du projet :', ''); if (!title) return;
+        var desc = prompt('Description (optionnel) :', '') || '';
+        var tags = prompt('Tags (séparés par des virgules) :', '') || '';
+        var linkLabel = prompt('Texte du lien (ex : "Voir", "Portfolio") :', 'Portfolio') || '';
+        var link = prompt('Lien (URL, optionnel) :', '') || '';
+        projItems.push({ title: title.trim(), desc: desc.trim(), tags: tags.trim(), linkLabel: linkLabel.trim(), link: link.trim() });
+        applyAndRefresh();
+      });
+    }
+  }
+
   // ---- floating controls injected over the rendered site ----
   function edButton(doc, iconName, title, danger, onClick){
     var b = doc.createElement('button');
@@ -3059,6 +3189,62 @@ body.visual-mode .wrap{ max-width: 1400px; }
     s.className = 'ed-badge';
     s.textContent = text;
     host.appendChild(s);
+  }
+
+  // barre "+ Ajouter" generique, posee juste apres `host` — meme chrome que
+  // celle du Parcours/des competences
+  function addBar(doc, host, label, onClick){
+    if (!host) return;
+    var bar = doc.createElement('div');
+    bar.className = 'ed-addbar';
+    var btn = doc.createElement('button');
+    btn.type = 'button'; btn.className = 'ed-add'; btn.textContent = label;
+    btn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); onClick(); });
+    bar.appendChild(btn);
+    host.parentNode.insertBefore(bar, host.nextSibling);
+  }
+
+  // Liste generique d'entrees a champs simples (experiences, jobs etudiants,
+  // formations, competences du CV) : monter/descendre/supprimer + ajout par
+  // prompt() successifs, sur le modele deja eprouve du Parcours. `champs`
+  // decrit les questions posees a l'ajout, dans l'ordre ; `sel` doit designer
+  // l'element a lier dans le gabarit deja rendu par script.js.
+  function wireEntryList(doc, host, list, champs, addLabel){
+    if (!host) return;
+    Array.prototype.forEach.call(host.children, function(card, i){
+      var it = list[i];
+      if (!it) return;
+      champs.forEach(function(c){
+        bindEditable(card.querySelector(c.sel),
+          function(){ return it[c.key] || ''; }, function(v){ it[c.key] = v; }, !!c.multiline);
+      });
+      edTools(doc, card, [
+        edButton(doc, 'up', 'Monter', false, function(){
+          if (i === 0) return;
+          var t = list[i-1]; list[i-1] = list[i]; list[i] = t; applyAndRefresh();
+        }),
+        edButton(doc, 'down', 'Descendre', false, function(){
+          if (i >= list.length - 1) return;
+          var t = list[i+1]; list[i+1] = list[i]; list[i] = t; applyAndRefresh();
+        }),
+        edButton(doc, 'close', 'Supprimer', true, function(){
+          if (!confirm('Supprimer cet élément ?')) return;
+          list.splice(i, 1); applyAndRefresh();
+        })
+      ]);
+    });
+    addBar(doc, host, addLabel, function(){
+      var it = {};
+      for (var k = 0; k < champs.length; k++){
+        var c = champs[k];
+        var v = prompt(c.prompt, '');
+        if (v === null) return;              // annule tout l'ajout
+        it[c.key] = v.trim();
+        if (c.required && !it[c.key]) return; // champ obligatoire vide = annule aussi
+      }
+      list.push(it);
+      applyAndRefresh();
+    });
   }
 
   // any structural change re-renders the frame so the site reflects it at once
@@ -3577,8 +3763,9 @@ body.visual-mode .wrap{ max-width: 1400px; }
       if (href.indexOf('projets-academiques.html') === 0){ e.preventDefault(); openVisual('projets-academiques.html'); return; }
       if (href.indexOf('projets.html') === 0){ e.preventDefault(); openVisual('projets.html'); return; }
       if (href.indexOf('index.html') === 0){ e.preventDefault(); openVisual('index.html'); return; }
+      if (href.indexOf('cv.html') === 0){ e.preventDefault(); openVisual('cv.html'); return; }
       if (href.charAt(0) === '#') return; // in-page anchors are fine
-      e.preventDefault(); // external links / CV / admin: inert while editing
+      e.preventDefault(); // external links / admin: inert while editing
     }, true);
   }
 
@@ -3586,7 +3773,8 @@ body.visual-mode .wrap{ max-width: 1400px; }
     'index.html': 'Accueil',
     'projets-perso.html': 'Projets perso',
     'projets-academiques.html': 'Projets académiques',
-    'projets.html': 'Projets (tous)'
+    'projets.html': 'Projets (tous)',
+    'cv.html': 'CV'
   };
 
   function openVisual(page, id){
@@ -3610,11 +3798,14 @@ body.visual-mode .wrap{ max-width: 1400px; }
         (function waitForRender(){
           var ready = page === 'projet.html'
             ? doc.querySelector('.detail-title, .detail-wrap')
+            : page === 'cv.html'
+            ? doc.querySelector('.cv-sheet')
             : doc.querySelector('#js-bio, .card, .grid');
           if (!ready && tries++ < 60){ setTimeout(waitForRender, 50); return; }
           applyFreshPreviews(doc);
           interceptLinks(doc);
           if (page === 'projet.html') wireDetailEditing(doc, id);
+          else if (page === 'cv.html') wireCvEditing(doc);
           else {
             if (page === 'index.html') wireHomeEditing(doc);
             if (page === 'groupe.html') wireGroupDetailEditing(doc, id);
