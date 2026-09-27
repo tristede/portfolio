@@ -89,8 +89,6 @@ contact = [
     "adam.karroum@student.isfsc.be",
     "0486 53 37 15",
     "Bruxelles, Belgique",
-    "linkedin.com/in/adam-k-3b2352240",
-    "tristede.github.io/portfolio/adam",
 ]
 c.setFont("Helvetica", 10)
 cy = y
@@ -100,7 +98,7 @@ for i, line in enumerate(contact):
     cy -= 14
 
 # ---- pitch (bordure gauche façon citation, comme chez Bastien) ----
-y -= 76
+y -= 52
 pitch = ("Depuis petit, je suis passionné par la création de contenu et l'influence sur le web. "
          "Autodidacte, j'ai développé des compétences en graphisme, montage vidéo et mixage audio.")
 lines = wrap(pitch, "Helvetica-Oblique", 11, W - 2 * MARGIN - 16)
@@ -226,9 +224,10 @@ ly = y
 ly = section_title(LX, ly, "Expériences")
 
 ly = entry(LX, ly, "2024 — Aujourd'hui", "Social Media Manager", "Union Oasis Forest",
-           ["Développement de formats vidéo, direction artistique et management "
-            "des prestataires GFX/photo/vidéo, gestion Meta Business Suite."])
-ly = entry(LX, ly, "2025 (8 semaines)", "Stage — assistant de production", "Média En Esprit",
+           ["Création du site web et de l'espace de travail (Google Workspace), gestion de "
+            "Meta Business Suite, déclaration du statut ASBL, développement de formats vidéo, "
+            "direction artistique et management des prestataires GFX/photo/vidéo."])
+ly = entry(LX, ly, "2025 (8 semaines)", "Stage — Assistant de production", "Média En Esprit",
            ["Interview, cadrage, montage, mixage, thumbnails, actualité."])
 
 ly = section_title(LX, ly, "Formations")
@@ -237,20 +236,29 @@ ly = entry(LX, ly, "2023 — Aujourd'hui", "Bachelier en Communication",
 ly = entry(LX, ly, "2022 — 2023", "Informatique de gestion",
            "Haute École Léonard de Vinci", [])
 ly = entry(LX, ly, "2017 — 2022", "CESS général — option sciences économiques",
-           "Athénée Joseph Bracops", [], gap_after=0)
+           "Athénée Joseph Bracops", [])
+
+# ---- encart jobs étudiants (hors expériences liées à la com) : plus de
+# place en bas de cette colonne qu'à droite, une fois les compétences ajoutées
+ly -= 6
+ly = insert_card(LX, ly, "Jobs étudiants", [
+    ("2025 — Aujourd'hui", "Agent d'entretien", "ISS – Erasme"),
+    ("2022 — Aujourd'hui", "Hôte d'accueil", "Basic-Fit"),
+])
 
 # ============ COLONNE DROITE : Compétences, Soft skills, Projets ============
 ry = y
 ry = section_title(RX, ry, "Compétences")
 ry = skill_group(RX, ry, "Montage vidéo", "Premiere Pro, After Effects, DaVinci Resolve, CapCut")
 ry = skill_group(RX, ry, "Design graphique", "Photoshop, InDesign, Illustrator, Lightroom")
-ry = skill_group(RX, ry, "Technique", "OBS Studio, Voicemeeter, ATEM, VST/plugins")
+ry = skill_group(RX, ry, "Technique", "OBS Studio, Voicemeeter, ATEM, FL Studio")
+ry = skill_group(RX, ry, "IA & outils", "Claude, Gemini, ChatGPT, Vibe coding, Meta Business Suite, Google Workspace")
 ry = skill_group(RX, ry, "Langues", "Français (natif), Anglais B1, Néerlandais A1")
 
 ry = section_title(RX, ry, "Soft skills")
 c.setFillColorRGB(*TEXT_DIM)
 c.setFont("Helvetica", 9.5)
-for wrapped in wrap("Curiosité créative · Autonomie · Sens du client · Travail en équipe pluridisciplinaire",
+for wrapped in wrap("Créativité · Autonomie · Stratégie RS · Montage",
                      "Helvetica", 9.5, COL_W):
     c.drawString(RX, ry, wrapped)
     ry -= 12.5
@@ -266,13 +274,6 @@ ry = project(RX, ry, "Production d'un reportage vidéo",
 ry = project(RX, ry, "Écriture d'articles de presse",
              "Rédaction d'articles dans un cadre journalistique.",
              ["Rédaction"], "Portfolio »")
-
-# ---- encart jobs étudiants (hors expériences liées à la com) ----
-ry -= 6
-ry = insert_card(RX, ry, "Jobs étudiants", [
-    ("2025 — Aujourd'hui", "Agent d'entretien", "ISS – Erasme"),
-    ("2022 — Aujourd'hui", "Hôte d'accueil", "Basic-Fit"),
-])
 
 # ---- pied de page ----
 c.setStrokeColorRGB(*LINE)
