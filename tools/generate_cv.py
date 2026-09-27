@@ -20,9 +20,15 @@ from PIL import Image
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import simpleSplit, ImageReader
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "adam", "cv.pdf")
+
+# Police cursive du site (adam/style.css : --font-script, "Homemade Apple"),
+# pour que la bio du CV soit dans la même main que celle de la page d'accueil.
+pdfmetrics.registerFont(TTFont("HomemadeApple", os.path.join(ROOT, "tools", "fonts", "HomemadeApple-Regular.ttf")))
 
 W, H = A4  # 595 x 842 pt
 
@@ -81,8 +87,8 @@ c.setFont("Helvetica-Bold", 27)
 c.drawString(LX, y, "Adam Karroum")
 
 c.setFillColorRGB(*ACCENT_SKY)
-c.setFont("Helvetica-Bold", 14)
-c.drawString(LX, y - 23, "Créateur de contenu — graphisme, vidéo, audio")
+c.setFont("Helvetica-Bold", 12)
+c.drawString(LX, y - 21, "Créateur de contenu — graphisme, vidéo, audio")
 
 # bloc contact, aligné à droite
 contact = [
@@ -97,22 +103,23 @@ for i, line in enumerate(contact):
     c.drawRightString(W - MARGIN, cy, line)
     cy -= 14
 
-# ---- pitch (bordure gauche façon citation, comme chez Bastien) ----
-y -= 52
+# ---- pitch (bordure gauche façon citation ; police cursive du site, comme
+# la bio de la page d'accueil) ----
+y -= 48
 pitch = ("Depuis petit, je suis passionné par la création de contenu et l'influence sur le web. "
          "Autodidacte, j'ai développé des compétences en graphisme, montage vidéo et mixage audio.")
-lines = wrap(pitch, "Helvetica-Oblique", 11, W - 2 * MARGIN - 16)
-block_h = 10 + len(lines) * 15
+lines = wrap(pitch, "HomemadeApple", 10.5, W - 2 * MARGIN - 16)
+block_h = 8 + len(lines) * 16
 c.setFillColorRGB(*ACCENT)
-c.rect(LX, y - block_h + 11, 2.4, block_h, fill=1, stroke=0)
-c.setFont("Helvetica-Oblique", 11)
+c.rect(LX, y - block_h + 12, 2.4, block_h, fill=1, stroke=0)
+c.setFont("HomemadeApple", 10.5)
 c.setFillColorRGB(*TEXT_DIM)
 ty = y
 for line in lines:
     c.drawString(LX + 14, ty, line)
-    ty -= 15
+    ty -= 16
 
-y = ty - 30
+y = ty - 26
 
 
 def section_title(x, y, title):
@@ -122,7 +129,7 @@ def section_title(x, y, title):
     c.setStrokeColorRGB(*LINE)
     c.setLineWidth(0.6)
     c.line(x, y - 7, x + COL_W, y - 7)
-    return y - 27
+    return y - 24
 
 
 def entry(x, y, date, title, place, desc_lines, gap_after=22):
@@ -153,13 +160,13 @@ def skill_group(x, y, title, items):
     c.setFillColorRGB(*WHITE)
     c.setFont("Helvetica-Bold", 10.5)
     c.drawString(x, y, title)
-    y -= 14.5
+    y -= 13.5
     c.setFillColorRGB(*TEXT_DIM)
     c.setFont("Helvetica", 9.5)
     for wrapped in wrap(items, "Helvetica", 9.5, COL_W):
         c.drawString(x, y, wrapped)
-        y -= 13
-    return y - 18
+        y -= 12
+    return y - 13
 
 
 def project(x, y, title, desc, tags, link_label=None):
@@ -182,7 +189,7 @@ def project(x, y, title, desc, tags, link_label=None):
             c.setFont("Helvetica-Bold", 8.5)
             c.drawRightString(x + COL_W, y, link_label)
         y -= 13
-    return y - 18
+    return y - 13
 
 
 def insert_card(x, top_y, title, items):
@@ -225,9 +232,9 @@ ly = section_title(LX, ly, "Expériences")
 
 ly = entry(LX, ly, "2024 — Aujourd'hui", "Social Media Manager", "Union Oasis Forest",
            ["Création du site web et de l'espace de travail (Google Workspace), gestion de "
-            "Meta Business Suite, déclaration du statut ASBL, développement de formats vidéo, "
-            "direction artistique et management des prestataires GFX/photo/vidéo."])
-ly = entry(LX, ly, "2025 (8 semaines)", "Stage — Assistant de production", "Média En Esprit",
+            "Meta Business Suite, stratégie digitale et communication 360, coordination des "
+            "prestataires GFX/photo/vidéo."])
+ly = entry(LX, ly, "2025 (8 semaines)", "Stage — Assistant de production", "Média En Esprit (Chloé Levy)",
            ["Interview, cadrage, montage, mixage, thumbnails, actualité."])
 
 ly = section_title(LX, ly, "Formations")
@@ -242,7 +249,7 @@ ly = entry(LX, ly, "2017 — 2022", "CESS général — option sciences économi
 # place en bas de cette colonne qu'à droite, une fois les compétences ajoutées
 ly -= 6
 ly = insert_card(LX, ly, "Jobs étudiants", [
-    ("2025 — Aujourd'hui", "Agent d'entretien", "ISS – Erasme"),
+    ("2025 — Aujourd'hui", "Agent d'entretien", "Hôpital Erasme (ISS)"),
     ("2022 — Aujourd'hui", "Hôte d'accueil", "Basic-Fit"),
 ])
 
@@ -252,8 +259,9 @@ ry = section_title(RX, ry, "Compétences")
 ry = skill_group(RX, ry, "Montage vidéo", "Premiere Pro, After Effects, DaVinci Resolve, CapCut")
 ry = skill_group(RX, ry, "Design graphique", "Photoshop, InDesign, Illustrator, Lightroom")
 ry = skill_group(RX, ry, "Technique", "OBS Studio, Voicemeeter, ATEM, FL Studio")
-ry = skill_group(RX, ry, "IA & outils", "Claude, Gemini, ChatGPT, Vibe coding, Meta Business Suite, Google Workspace")
-ry = skill_group(RX, ry, "Langues", "Français (natif), Anglais B1, Néerlandais A1")
+ry = skill_group(RX, ry, "Outils (Administratif)", "Meta Business Suite, Google Workspace")
+ry = skill_group(RX, ry, "IA", "Claude, Gemini, ChatGPT, Vibe coding, Optimisation de tâches")
+ry = skill_group(RX, ry, "Langues", "Français (natif), Anglais B1")
 
 ry = section_title(RX, ry, "Soft skills")
 c.setFillColorRGB(*TEXT_DIM)
@@ -262,18 +270,29 @@ for wrapped in wrap("Créativité · Autonomie · Stratégie RS · Montage",
                      "Helvetica", 9.5, COL_W):
     c.drawString(RX, ry, wrapped)
     ry -= 12.5
-ry -= 20
+ry -= 13
 
-ry = section_title(RX, ry, "Projets")
+ry = section_title(RX, ry, "Projets mis en avant")
 ry = project(RX, ry, "Projet 360° : DEI-Belgique",
              "Campagne de sensibilisation aux VEO pour la DEI-Belgique.",
              ["Vidéo 360°", "Stratégie créative"], "Voir »")
-ry = project(RX, ry, "Production d'un reportage vidéo",
-             "Réalisation d'un reportage vidéo de bout en bout.",
-             ["Vidéo", "Reportage"], "Portfolio »")
-ry = project(RX, ry, "Écriture d'articles de presse",
-             "Rédaction d'articles dans un cadre journalistique.",
-             ["Rédaction"], "Portfolio »")
+ry = project(RX, ry, "Union Oasis Forest",
+             "Stratégie digitale et création de contenu pour un club sportif : "
+             "identité visuelle, formats vidéo, community management.",
+             ["Stratégie digitale", "Création de contenu"], "Portfolio »")
+ry = project(RX, ry, "AdamXBC",
+             "Création de contenu et divertissement — Twitch (affilié depuis juillet "
+             "2022), TikTok (2026). Bientôt sur le portfolio.",
+             ["Twitch", "Divertissement"])
+
+c.setFillColorRGB(*ACCENT)
+c.setFont("Helvetica-Bold", 9)
+voir_plus = "Voir plus →"
+c.drawString(RX, ry, voir_plus)
+voir_plus_w = c.stringWidth(voir_plus, "Helvetica-Bold", 9)
+c.linkURL("https://tristede.github.io/portfolio/adam/projets.html",
+          (RX, ry - 2, RX + voir_plus_w, ry + 9), relative=0)
+ry -= 13
 
 # ---- pied de page ----
 c.setStrokeColorRGB(*LINE)
