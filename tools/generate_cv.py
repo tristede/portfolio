@@ -89,14 +89,13 @@ def make_background(w_pt, h_pt, scale=3):
     halo_factor = (np.clip(1 - d, 0, 1) ** 2 * 0.11)[..., None]
     arr = arr * (1 - halo_factor) + HALO * halo_factor
 
-    # texture topographique du site, superposee mais attenuee (le site l'a a
-    # 0.55, ici on la garde plus discrete pour rester sombre)
+    # texture topographique du site, en mode "eclaircir" (max) plutot qu'en
+    # fondu : un fondu classique moyenne tout vers un bleu plat et efface les
+    # traits eux-memes — ici seuls les traits plus clairs que le fond
+    # ressortent, sans jamais eclaircir les zones deja sombres
     tex = Image.open(TEXTURE_PATH).convert("RGB").resize((w, h), Image.LANCZOS)
     tex_arr = np.asarray(tex).astype(float) / 255.0
-    arr = arr * (1 - 0.3) + tex_arr * 0.3
-
-    # assombrit l'ensemble pour retrouver le cote "fond sombre" du CV
-    arr = arr * 0.72
+    arr = np.maximum(arr, tex_arr * 0.6)
 
     img = (np.clip(arr, 0, 1) * 255).astype(np.uint8)
     return Image.fromarray(img, mode="RGB")
