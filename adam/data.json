@@ -41,24 +41,15 @@
     "sections": [
       {
         "id": "perso",
-        "page": "perso",
         "kicker": "01 — Perso",
         "title": "Projets perso",
         "desc": "Des projets menés en dehors du cadre scolaire, par envie de créer."
       },
       {
         "id": "academique",
-        "page": "academique",
         "kicker": "02 — Académique",
         "title": "Projets académiques",
-        "desc": "Travaux réalisés dans le cadre de ma formation en communication."
-      },
-      {
-        "id": "stage",
-        "page": "academique",
-        "kicker": "Stage de 2e année",
-        "title": "Stage chez En Esprit",
-        "desc": "Réalisations produites durant mon stage chez En Esprit."
+        "desc": "Travaux réalisés dans le cadre de ma formation en communication, stage compris."
       }
     ],
     "groups": [
@@ -90,7 +81,49 @@
       "bgImage": "images/bg-hor.webp",
       "bgImageVertical": "images/bg-vert.webp",
       "bgImageOpacity": 0.55
-    }
+    },
+    "kicker": "Étudiant en communication — Bruxelles",
+    "featuredKicker": "Sélection",
+    "featuredTitle": "Projets mis en avant",
+    "featuredSub": "Trois réalisations représentatives, tous mediums confondus.",
+    "aboutKicker": "À propos",
+    "aboutTitle": "Curieux de nature, touche-à-tout par passion",
+    "parcoursKicker": "Parcours",
+    "parcoursTitle": "Un chemin pas si linéaire",
+    "parcoursSub": "De l'informatique à la communication, jusqu'au terrain.",
+    "stageCta": {
+      "enabled": true,
+      "kicker": "Disponible dès 2026",
+      "title": "Stage de 3e recherché (2026 – 2027)",
+      "text": "Communication, création de contenu ou community management — CV et portfolio sur demande."
+    },
+    "skills": [
+      {
+        "group": "Cœur de métier",
+        "name": "Création de contenu",
+        "detail": "Affiches, miniatures, formats courts, pochettes — de l'idée au fichier livré."
+      },
+      {
+        "group": "Cœur de métier",
+        "name": "Community management",
+        "detail": "Ligne éditoriale, publications, veille et animation de communautés."
+      },
+      {
+        "group": "Également",
+        "name": "Graphisme & identité visuelle",
+        "detail": "Logos, cartes de visite, affiches — Photoshop / Illustrator."
+      },
+      {
+        "group": "Également",
+        "name": "Montage vidéo",
+        "detail": "Formats YouTube, reels/TikTok, reportages — Premiere Pro."
+      },
+      {
+        "group": "Également",
+        "name": "Audio",
+        "detail": "Écriture, enregistrement, mixage chant/rap, podcast."
+      }
+    ]
   },
   "projects": [
     {

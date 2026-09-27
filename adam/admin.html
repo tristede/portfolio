@@ -273,6 +273,16 @@ body.visual-mode .wrap{ max-width: 1400px; }
       <h2>Textes du site</h2>
       <div class="row">
         <div>
+          <label for="f-owner">Prénom affiché</label>
+          <input type="text" id="f-owner">
+        </div>
+        <div>
+          <label for="f-kicker">Sous-titre (au-dessus du prénom)</label>
+          <input type="text" id="f-kicker">
+        </div>
+      </div>
+      <div class="row">
+        <div>
           <label for="f-role-main">Accroche — partie principale</label>
           <input type="text" id="f-role-main">
         </div>
@@ -285,6 +295,10 @@ body.visual-mode .wrap{ max-width: 1400px; }
       <textarea id="f-bio"></textarea>
       <p class="small" style="margin:4px 0 0;">Un retour à la ligne dans le texte devient un vrai saut de ligne affiché.</p>
 
+      <label for="f-about-kicker" style="margin-top:14px;">À propos — kicker</label>
+      <input type="text" id="f-about-kicker">
+      <label for="f-about-title">À propos — titre</label>
+      <input type="text" id="f-about-title">
       <label for="f-about-0">À propos — 1er paragraphe</label>
       <textarea id="f-about-0"></textarea>
       <label for="f-about-1">À propos — 2e paragraphe</label>
@@ -304,6 +318,71 @@ body.visual-mode .wrap{ max-width: 1400px; }
           <input type="url" id="f-instagram">
         </div>
       </div>
+    </div>
+
+    <div class="panel">
+      <h2>Section « Projets mis en avant » (accueil)</h2>
+      <div class="row">
+        <div>
+          <label for="f-featured-kicker">Kicker</label>
+          <input type="text" id="f-featured-kicker">
+        </div>
+        <div>
+          <label for="f-featured-title">Titre</label>
+          <input type="text" id="f-featured-title">
+        </div>
+      </div>
+      <label for="f-featured-sub">Sous-texte</label>
+      <textarea id="f-featured-sub"></textarea>
+    </div>
+
+    <div class="panel">
+      <h2>Pages « Projets perso » / « Projets académiques »</h2>
+      <p class="small" style="margin-top:-6px;">Ce texte alimente aussi les 2 cartes de l'accueil qui mènent à ces pages.</p>
+      <div class="row">
+        <div>
+          <label for="f-section-perso-kicker">Perso — kicker</label>
+          <input type="text" id="f-section-perso-kicker">
+        </div>
+        <div>
+          <label for="f-section-perso-title">Perso — titre</label>
+          <input type="text" id="f-section-perso-title">
+        </div>
+      </div>
+      <label for="f-section-perso-desc">Perso — description</label>
+      <textarea id="f-section-perso-desc"></textarea>
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <label for="f-section-academique-kicker">Académique — kicker</label>
+          <input type="text" id="f-section-academique-kicker">
+        </div>
+        <div>
+          <label for="f-section-academique-title">Académique — titre</label>
+          <input type="text" id="f-section-academique-title">
+        </div>
+      </div>
+      <label for="f-section-academique-desc">Académique — description</label>
+      <textarea id="f-section-academique-desc"></textarea>
+    </div>
+
+    <div class="panel">
+      <h2>Encart « Stage recherché » (sous le parcours)</h2>
+      <label class="row" style="align-items:center; gap:8px; display:flex;">
+        <input type="checkbox" id="f-stagecta-enabled" style="width:auto;">
+        Afficher cet encart sur le site
+      </label>
+      <div class="row">
+        <div>
+          <label for="f-stagecta-kicker">Kicker</label>
+          <input type="text" id="f-stagecta-kicker">
+        </div>
+        <div>
+          <label for="f-stagecta-title">Titre</label>
+          <input type="text" id="f-stagecta-title">
+        </div>
+      </div>
+      <label for="f-stagecta-text">Texte</label>
+      <textarea id="f-stagecta-text"></textarea>
     </div>
 
     <!-- Apparence : les couleurs et la texture vivent dans les données, pas dans
@@ -328,6 +407,10 @@ body.visual-mode .wrap{ max-width: 1400px; }
         <div>
           <label for="th-accentSky">Couleur claire (liens, titres)</label>
           <input type="color" id="th-accentSky" class="color-field">
+        </div>
+        <div>
+          <label for="th-text">Couleur du texte</label>
+          <input type="color" id="th-text" class="color-field">
         </div>
       </div>
 
@@ -368,7 +451,19 @@ body.visual-mode .wrap{ max-width: 1400px; }
         <h2 style="margin:0;">Parcours <span class="small" id="timeline-count"></span></h2>
         <button class="primary" id="add-timeline-btn" type="button">+ Ajouter une étape</button>
       </div>
-      <p class="small" style="margin:0 0 14px;">Affiché dans l'ordre ci-dessous, du plus ancien au plus récent. Une seule étape "en cours" à la fois (affichée avec un point plus vif sur la ligne du temps).</p>
+      <div class="row">
+        <div>
+          <label for="f-parcours-kicker">Kicker</label>
+          <input type="text" id="f-parcours-kicker">
+        </div>
+        <div>
+          <label for="f-parcours-title">Titre</label>
+          <input type="text" id="f-parcours-title">
+        </div>
+      </div>
+      <label for="f-parcours-sub">Sous-texte</label>
+      <textarea id="f-parcours-sub"></textarea>
+      <p class="small" style="margin:14px 0 14px;">Affiché dans l'ordre ci-dessous, du plus ancien au plus récent. Une seule étape "en cours" à la fois (affichée avec un point plus vif sur la ligne du temps).</p>
       <div id="timeline-list"></div>
 
       <div class="form-box hidden" id="timeline-form-box">
@@ -1585,17 +1680,54 @@ body.visual-mode .wrap{ max-width: 1400px; }
     renderProjectList();
   }
 
+  // site.sections : un tableau de {id, kicker, title, desc} — cherche par id,
+  // cree l'entree au vol si elle n'existe pas encore (ancien data.json).
+  function section(id){
+    var sections = state.site.sections || (state.site.sections = []);
+    var sec = sections.filter(function(s){ return s.id === id; })[0];
+    if (!sec){ sec = { id: id, kicker: '', title: '', desc: '' }; sections.push(sec); }
+    return sec;
+  }
+
   function fillFormsFromState(){
     var s = state.site;
+    $('f-owner').value = s.owner || '';
+    $('f-kicker').value = s.kicker || '';
     $('f-role-main').value = s.roleMain || '';
     $('f-role-accent').value = s.roleAccent || '';
     $('f-bio').value = s.bio || '';
+    $('f-about-kicker').value = s.aboutKicker || '';
+    $('f-about-title').value = s.aboutTitle || '';
     $('f-about-0').value = (s.aboutParagraphs && s.aboutParagraphs[0]) || '';
     $('f-about-1').value = (s.aboutParagraphs && s.aboutParagraphs[1]) || '';
     $('f-email').value = s.contactEmail || '';
     $('f-linkedin').value = s.linkedin || '';
     $('f-instagram').value = s.instagram || '';
+
+    $('f-featured-kicker').value = s.featuredKicker || '';
+    $('f-featured-title').value = s.featuredTitle || '';
+    $('f-featured-sub').value = s.featuredSub || '';
+
+    $('f-parcours-kicker').value = s.parcoursKicker || '';
+    $('f-parcours-title').value = s.parcoursTitle || '';
+    $('f-parcours-sub').value = s.parcoursSub || '';
+
+    var secPerso = section('perso'), secAcad = section('academique');
+    $('f-section-perso-kicker').value = secPerso.kicker || '';
+    $('f-section-perso-title').value = secPerso.title || '';
+    $('f-section-perso-desc').value = secPerso.desc || '';
+    $('f-section-academique-kicker').value = secAcad.kicker || '';
+    $('f-section-academique-title').value = secAcad.title || '';
+    $('f-section-academique-desc').value = secAcad.desc || '';
+
+    var cta = s.stageCta || (s.stageCta = {});
+    $('f-stagecta-enabled').checked = cta.enabled !== false;
+    $('f-stagecta-kicker').value = cta.kicker || '';
+    $('f-stagecta-title').value = cta.title || '';
+    $('f-stagecta-text').value = cta.text || '';
+
     if (!Array.isArray(state.site.timeline)) state.site.timeline = [];
+    if (!Array.isArray(state.site.skills)) state.site.skills = [];
     remplirTheme();
     renderTimelineList();
     renderProjectList();
@@ -1623,12 +1755,13 @@ body.visual-mode .wrap{ max-width: 1400px; }
   var THEME_DEFAUT = {
     bg: '#080b30', bgSoft: '#0d1454', bgDeep: '#05071f',
     accent: '#4650ff', accentStrong: '#5b63ff', accentSky: '#7fc4ff',
+    text: '#ffffff',
     halo: 'rgba(90,100,255,0.22)',
     bgImage: 'images/bg-hor.webp', bgImageVertical: 'images/bg-vert.webp',
     bgImageOpacity: 0.55,
     starRgb: '255, 255, 255', starsOpacity: 0
   };
-  var CHAMPS_COULEUR = ['bg', 'bgSoft', 'accent', 'accentSky'];
+  var CHAMPS_COULEUR = ['bg', 'bgSoft', 'accent', 'accentSky', 'text'];
 
   function theme(){
     if (!state.site.theme) state.site.theme = Object.assign({}, THEME_DEFAUT);
@@ -1734,13 +1867,39 @@ body.visual-mode .wrap{ max-width: 1400px; }
   });
 
   function collectStateFromForms(){
+    state.site.owner = $('f-owner').value.trim();
+    state.site.kicker = $('f-kicker').value.trim();
     state.site.roleMain = $('f-role-main').value.trim();
     state.site.roleAccent = $('f-role-accent').value.trim();
     state.site.bio = $('f-bio').value;
+    state.site.aboutKicker = $('f-about-kicker').value.trim();
+    state.site.aboutTitle = $('f-about-title').value.trim();
     state.site.aboutParagraphs = [ $('f-about-0').value, $('f-about-1').value ];
     state.site.contactEmail = $('f-email').value.trim();
     state.site.linkedin = $('f-linkedin').value.trim();
     state.site.instagram = $('f-instagram').value.trim();
+
+    state.site.featuredKicker = $('f-featured-kicker').value.trim();
+    state.site.featuredTitle = $('f-featured-title').value.trim();
+    state.site.featuredSub = $('f-featured-sub').value.trim();
+
+    state.site.parcoursKicker = $('f-parcours-kicker').value.trim();
+    state.site.parcoursTitle = $('f-parcours-title').value.trim();
+    state.site.parcoursSub = $('f-parcours-sub').value.trim();
+
+    var secPerso = section('perso'), secAcad = section('academique');
+    secPerso.kicker = $('f-section-perso-kicker').value.trim();
+    secPerso.title = $('f-section-perso-title').value.trim();
+    secPerso.desc = $('f-section-perso-desc').value.trim();
+    secAcad.kicker = $('f-section-academique-kicker').value.trim();
+    secAcad.title = $('f-section-academique-title').value.trim();
+    secAcad.desc = $('f-section-academique-desc').value.trim();
+
+    var cta = state.site.stageCta || (state.site.stageCta = {});
+    cta.enabled = $('f-stagecta-enabled').checked;
+    cta.kicker = $('f-stagecta-kicker').value.trim();
+    cta.title = $('f-stagecta-title').value.trim();
+    cta.text = $('f-stagecta-text').value.trim();
     var favVal = $('f-favori').value;
     if (favVal.indexOf('group:') === 0){
       state.site.favoriGroupId = favVal.slice(6);
@@ -2289,7 +2448,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
         '.card{ cursor:pointer; position:relative; }' +
         '.card:hover{ outline:2px solid var(--accent-sky); outline-offset:2px; }' +
         // hidden things stay visible in the editor, visibly dimmed
-        '[data-project-hidden], [data-group-hidden], [data-asset-hidden]{ opacity:0.42; }' +
+        '[data-project-hidden], [data-group-hidden], [data-asset-hidden], [data-stage-cta-hidden]{ opacity:0.42; }' +
         '.ed-badge{ position:absolute; top:8px; left:8px; z-index:5; font-size:10px; font-weight:700;' +
           'letter-spacing:0.06em; text-transform:uppercase; background:rgba(4,6,26,0.85); color:#fff;' +
           'border:1px solid rgba(255,255,255,0.25); border-radius:999px; padding:2px 8px; }' +
@@ -2384,6 +2543,58 @@ body.visual-mode .wrap{ max-width: 1400px; }
         }, true);
     });
 
+    bindEditable(doc.getElementById('js-owner'),
+      function(){ return s.owner || ''; }, function(v){ s.owner = v; });
+    bindEditable(doc.getElementById('js-kicker'),
+      function(){ return s.kicker || ''; }, function(v){ s.kicker = v; });
+
+    bindEditable(doc.getElementById('js-featured-kicker'),
+      function(){ return s.featuredKicker || ''; }, function(v){ s.featuredKicker = v; });
+    bindEditable(doc.getElementById('js-featured-title'),
+      function(){ return s.featuredTitle || ''; }, function(v){ s.featuredTitle = v; });
+    bindEditable(doc.getElementById('js-featured-sub'),
+      function(){ return s.featuredSub || ''; }, function(v){ s.featuredSub = v; }, true);
+
+    bindEditable(doc.getElementById('js-parcours-kicker'),
+      function(){ return s.parcoursKicker || ''; }, function(v){ s.parcoursKicker = v; });
+    bindEditable(doc.getElementById('js-parcours-title'),
+      function(){ return s.parcoursTitle || ''; }, function(v){ s.parcoursTitle = v; });
+    bindEditable(doc.getElementById('js-parcours-sub'),
+      function(){ return s.parcoursSub || ''; }, function(v){ s.parcoursSub = v; }, true);
+
+    bindEditable(doc.getElementById('js-about-kicker'),
+      function(){ return s.aboutKicker || ''; }, function(v){ s.aboutKicker = v; });
+    bindEditable(doc.getElementById('js-about-title'),
+      function(){ return s.aboutTitle || ''; }, function(v){ s.aboutTitle = v; });
+
+    // 2 cartes de nav (accueil) : meme donnee que les en-tetes des pages de
+    // listing (site.sections), voir wireProjectsPageEditing.
+    doc.querySelectorAll('[data-section-card]').forEach(function(el){
+      var sec = section(el.getAttribute('data-section-card'));
+      bindEditable(el.querySelector('.nc-title'), function(){ return sec.title || ''; }, function(v){ sec.title = v; });
+      bindEditable(el.querySelector('.nc-sub'), function(){ return sec.desc || ''; }, function(v){ sec.desc = v; }, true);
+    });
+
+    // Encart "stage recherche" : reste visible (dimme) meme desactive, pour
+    // pouvoir le rallumer — memes conventions qu'un projet/groupe masque.
+    var stageCta = doc.getElementById('js-stage-cta');
+    if (stageCta){
+      var cta = s.stageCta || (s.stageCta = {});
+      bindEditable(stageCta.querySelector('#js-stage-cta-kicker'),
+        function(){ return cta.kicker || ''; }, function(v){ cta.kicker = v; });
+      bindEditable(stageCta.querySelector('#js-stage-cta-title'),
+        function(){ return cta.title || ''; }, function(v){ cta.title = v; });
+      bindEditable(stageCta.querySelector('#js-stage-cta-text'),
+        function(){ return cta.text || ''; }, function(v){ cta.text = v; }, true);
+      edTools(doc, stageCta, [
+        edButton(doc, cta.enabled === false ? 'eyeOff' : 'eye',
+          cta.enabled === false ? 'Afficher cet encart sur le site' : 'Masquer cet encart du site', false, function(){
+            cta.enabled = cta.enabled === false;
+            applyAndRefresh();
+          })
+      ]);
+    }
+
     doc.querySelectorAll('.contact-email').forEach(function(el){
       bindEditable(el,
         function(){ return s.contactEmail || ''; },
@@ -2460,6 +2671,61 @@ body.visual-mode .wrap{ max-width: 1400px; }
       tlRoot.parentNode.appendChild(tlBar);
     }
 
+    // Competences ("Coeur de metier" / "Egalement") : groupe libre plutot que
+    // deux blocs figes — modifier le titre d'un groupe renomme d'un coup
+    // toutes les competences qui le partagent.
+    var skills = s.skills || (s.skills = []);
+    doc.querySelectorAll('#js-skills .skill-block').forEach(function(block){
+      var h4 = block.querySelector('h4');
+      if (!h4) return;
+      var groupRef = { name: h4.textContent };
+      bindEditable(h4, function(){ return groupRef.name; }, function(v){
+        skills.forEach(function(sk){ if (sk.group === groupRef.name) sk.group = v; });
+        groupRef.name = v;
+      });
+    });
+    doc.querySelectorAll('#js-skills [data-skill-index]').forEach(function(card){
+      var i = +card.getAttribute('data-skill-index');
+      var sk = skills[i];
+      if (!sk) return;
+      bindEditable(card.querySelector('.name'), function(){ return sk.name || ''; }, function(v){ sk.name = v; });
+      bindEditable(card.querySelector('.detail'), function(){ return sk.detail || ''; }, function(v){ sk.detail = v; }, true);
+      edTools(doc, card, [
+        edButton(doc, 'up', 'Monter', false, function(){
+          if (i === 0) return;
+          var tmp = skills[i-1]; skills[i-1] = skills[i]; skills[i] = tmp; applyAndRefresh();
+        }),
+        edButton(doc, 'down', 'Descendre', false, function(){
+          if (i >= skills.length - 1) return;
+          var tmp = skills[i+1]; skills[i+1] = skills[i]; skills[i] = tmp; applyAndRefresh();
+        }),
+        edButton(doc, 'close', 'Supprimer cette compétence', true, function(){
+          if (!confirm('Supprimer « ' + sk.name + ' » ?')) return;
+          skills.splice(i, 1); applyAndRefresh();
+        })
+      ]);
+    });
+    var skillsRoot = doc.getElementById('js-skills');
+    if (skillsRoot){
+      var skBar = doc.createElement('div');
+      skBar.className = 'ed-addbar';
+      var skAdd = doc.createElement('button');
+      skAdd.type = 'button'; skAdd.className = 'ed-add'; skAdd.textContent = '+ Compétence';
+      skAdd.addEventListener('click', function(e){
+        e.preventDefault(); e.stopPropagation();
+        var dernierGroupe = skills.length ? skills[skills.length - 1].group : '';
+        var group = prompt('Groupe (ex : "Cœur de métier") :', dernierGroupe || '');
+        if (group === null) return;
+        var name = prompt('Nom de la compétence :', '');
+        if (!name) return;
+        var detail = prompt('Détail (optionnel) :', '') || '';
+        skills.push({ group: group.trim(), name: name.trim(), detail: detail.trim() });
+        applyAndRefresh();
+      });
+      skBar.appendChild(skAdd);
+      skillsRoot.parentNode.insertBefore(skBar, skillsRoot.nextSibling);
+    }
+
     // favourite block: un projet OU un groupe entier, meme carte — memes
     // champs bindes au bon objet selon lequel est actif (voir applyFavori()
     // dans script.js : un groupe favori prime sur un projet favori).
@@ -2492,6 +2758,17 @@ body.visual-mode .wrap{ max-width: 1400px; }
     if (!raw) return null;
     var idx = parseInt(raw, 10) - 1;
     return options[idx] || null;
+  }
+
+  // En-tete des pages "Projets perso" / "Projets académiques" — vit dans
+  // site.sections, lu par la meme cle que data-projects-page (voir script.js).
+  function wireProjectsPageEditing(doc){
+    doc.querySelectorAll('[data-section-head]').forEach(function(el){
+      var sec = section(el.getAttribute('data-section-head'));
+      bindEditable(el.querySelector('.kicker'), function(){ return sec.kicker || ''; }, function(v){ sec.kicker = v; });
+      bindEditable(el.querySelector('h1'), function(){ return sec.title || ''; }, function(v){ sec.title = v; });
+      bindEditable(el.querySelector('p'), function(){ return sec.desc || ''; }, function(v){ sec.desc = v; }, true);
+    });
   }
 
   function wireCardEditing(doc){
@@ -3341,6 +3618,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
           else {
             if (page === 'index.html') wireHomeEditing(doc);
             if (page === 'groupe.html') wireGroupDetailEditing(doc, id);
+            wireProjectsPageEditing(doc);
             wireCardEditing(doc);
           }
           // rendre le defilement apres le placement, sinon la page n'est pas

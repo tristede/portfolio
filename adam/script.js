@@ -193,6 +193,20 @@
       }
     });
 
+    // En-tetes de section (accueil) : du texte simple, sauf le titre qui garde
+    // le dernier mot en degrade — meme convention que les titres de projet.
+    [['js-featured-kicker', 'featuredKicker'], ['js-featured-sub', 'featuredSub'],
+     ['js-parcours-kicker', 'parcoursKicker'], ['js-parcours-sub', 'parcoursSub'],
+     ['js-about-kicker', 'aboutKicker']].forEach(function(paire){
+      var el = document.getElementById(paire[0]);
+      if (el && site[paire[1]]) el.textContent = site[paire[1]];
+    });
+    [['js-featured-title', 'featuredTitle'], ['js-parcours-title', 'parcoursTitle'],
+     ['js-about-title', 'aboutTitle']].forEach(function(paire){
+      var el = document.getElementById(paire[0]);
+      if (el && site[paire[1]]) el.innerHTML = titleWithAccent(site[paire[1]]);
+    });
+
     document.querySelectorAll('.js-contact-email-link').forEach(function(a){
       if (!site.contactEmail) return;
       a.href = 'mailto:' + site.contactEmail;
@@ -279,6 +293,70 @@
         '</div>' +
       '</div>';
     }).join('');
+  }
+
+  // site.sections alimente 2 endroits a la fois : les 2 cartes de nav de
+  // l'accueil (data-section-card) et l'en-tete des 2 pages de listing
+  // (data-section-head) — un seul point d'edition pour un contenu qui, avant,
+  // etait duplique en dur a 3 endroits.
+  function applySections(site){
+    var sections = Array.isArray(site.sections) ? site.sections : [];
+    function parId(id){ return sections.filter(function(s){ return s.id === id; })[0]; }
+
+    document.querySelectorAll('[data-section-card]').forEach(function(el){
+      var s = parId(el.getAttribute('data-section-card'));
+      if (!s) return;
+      var t = el.querySelector('.nc-title'); if (t && s.title) t.textContent = s.title;
+      var sub = el.querySelector('.nc-sub'); if (sub && s.desc) sub.textContent = s.desc;
+    });
+
+    document.querySelectorAll('[data-section-head]').forEach(function(el){
+      var s = parId(el.getAttribute('data-section-head'));
+      if (!s) return;
+      var k = el.querySelector('.kicker'); if (k && s.kicker) k.textContent = s.kicker;
+      var h = el.querySelector('h1'); if (h && s.title) h.textContent = s.title;
+      var p = el.querySelector('p'); if (p && s.desc) p.textContent = s.desc;
+    });
+  }
+
+  // "Cœur de métier" / "Également" : groupe libre, pas une paire figee — le
+  // regroupement se fait a l'affichage, dans l'ordre de premiere apparition.
+  function renderSkills(site){
+    var host = document.getElementById('js-skills');
+    var skills = Array.isArray(site.skills) ? site.skills : [];
+    if (!host || !skills.length) return;   // sans donnees, le HTML statique de secours reste affiche
+    var ordre = [], parGroupe = {};
+    skills.forEach(function(s, i){
+      var g = s.group || '';
+      if (!parGroupe[g]){ parGroupe[g] = []; ordre.push(g); }
+      parGroupe[g].push({ s: s, i: i });
+    });
+    host.innerHTML = ordre.map(function(g){
+      return '<div class="skill-block">' +
+        (g ? '<h4>' + g + '</h4>' : '') +
+        parGroupe[g].map(function(entry){
+          var s = entry.s;
+          return '<div class="skill-card" data-skill-index="' + entry.i + '">' +
+            '<div class="name">' + (s.name || '') + '</div>' +
+            '<div class="detail">' + (s.detail || '') + '</div>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    }).join('');
+  }
+
+  // L'encart reste dans le DOM (dimme) en mode edition meme desactive, pour
+  // pouvoir le rallumer — comme un groupe ou un projet masque.
+  function applyStageCta(site){
+    var host = document.getElementById('js-stage-cta');
+    if (!host) return;
+    var cta = site.stageCta || {};
+    var masque = cta.enabled === false;
+    if (masque && !window.__EDIT_MODE__){ host.remove(); return; }
+    host.toggleAttribute('data-stage-cta-hidden', masque);
+    var k = document.getElementById('js-stage-cta-kicker'); if (k) k.textContent = cta.kicker || '';
+    var t = document.getElementById('js-stage-cta-title'); if (t) t.textContent = cta.title || '';
+    var p = document.getElementById('js-stage-cta-text'); if (p) p.textContent = cta.text || '';
   }
 
   // Le lien « retour » ramene au groupe du projet s'il en a un (meme regle que
@@ -1313,6 +1391,9 @@
       favoriId = site.favoriProjectId || null;
       favoriGroupId = site.favoriGroupId || null;
       applySiteTexts(site);
+      applySections(site);
+      renderSkills(site);
+      applyStageCta(site);
       applyFavori(site, projects);
       renderTimeline(site.timeline);
       window.__ALL_PROJECTS__ = projects;   // le filtre par tag re-rend la grille
