@@ -345,123 +345,6 @@
     }).join('');
   }
 
-  // ---- CV (cv.html) : chaque bloc suit soit le site (site.bio, site.timeline,
-  // site.skills, les projets "featured"), soit son propre contenu fige dans
-  // site.cv — selon le drapeau followSite pose depuis l'admin. Experiences et
-  // jobs etudiants n'ont pas d'equivalent sur le site : toujours figes.
-  function cvEntryHTML(date, title, place, desc){
-    if (!title) return '<div class="cv-entry cv-entry-empty">À compléter</div>';
-    return '<div class="cv-entry">' +
-      (date ? '<span class="cv-entry-date">' + date + '</span>' : '') +
-      '<div class="cv-entry-title">' + title + '</div>' +
-      (place ? '<span class="cv-entry-place">' + place + '</span>' : '') +
-      (desc ? '<p class="cv-entry-desc">' + desc + '</p>' : '') +
-    '</div>';
-  }
-
-  function renderCv(site, projects){
-    var root = document.getElementById('cv-page');
-    if (!root) return;
-    var cv = site.cv || {};
-
-    var printBtn = document.getElementById('cv-print-btn');
-    if (printBtn) printBtn.addEventListener('click', function(){ window.print(); });
-
-    var nameEl = document.getElementById('cv-name');
-    if (nameEl && site.owner) nameEl.textContent = site.owner;
-
-    var role = cv.role || {};
-    var roleMainEl = document.getElementById('cv-role-main');
-    if (roleMainEl) roleMainEl.textContent = role.followSite ? (site.roleMain || '') : (role.main || '');
-    var roleSubEl = document.getElementById('cv-role-sub');
-    if (roleSubEl) roleSubEl.textContent = role.followSite ? (site.kicker || '') : (role.sub || '');
-
-    var contact = cv.contact || {};
-    var emailEl = document.getElementById('cv-contact-email');
-    if (emailEl) emailEl.textContent = site.contactEmail || '';
-    var phoneEl = document.getElementById('cv-contact-phone');
-    if (phoneEl) phoneEl.textContent = contact.phone || '';
-    var locEl = document.getElementById('cv-contact-location');
-    if (locEl) locEl.textContent = contact.location || '';
-    var liEl = document.getElementById('cv-contact-linkedin');
-    if (liEl) liEl.textContent = (site.linkedin || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
-    var footLocEl = document.getElementById('cv-foot-location');
-    if (footLocEl && contact.location) footLocEl.textContent = contact.location;
-
-    var pitch = cv.pitch || {};
-    var pitchEl = document.getElementById('cv-pitch');
-    if (pitchEl) pitchEl.textContent = pitch.followSite ? (site.bio || '') : (pitch.text || '');
-
-    var expHost = document.getElementById('cv-experiences');
-    if (expHost){
-      var exps = cv.experiences || [];
-      expHost.innerHTML = exps.map(function(e){ return cvEntryHTML(e.date, e.title, e.place, e.desc); }).join('');
-    }
-
-    var jobs = cv.jobsEtudiants || [];
-    var jobsHost = document.getElementById('cv-jobs');
-    if (jobsHost){
-      jobsHost.innerHTML = jobs.map(function(j){
-        return '<div class="cv-entry">' +
-          '<span class="cv-entry-date">' + (j.date || '') + '</span>' +
-          '<div class="cv-entry-title">' + (j.title || '') + '</div>' +
-          (j.place ? '<span class="cv-entry-place">' + j.place + '</span>' : '') +
-        '</div>';
-      }).join('');
-    }
-    var jobsInsert = document.getElementById('cv-jobs-insert');
-    if (jobsInsert) jobsInsert.style.display = jobs.length ? '' : 'none';
-
-    var formations = cv.formations || {};
-    var formHost = document.getElementById('cv-formations');
-    if (formHost){
-      var formItems = formations.followSite ? (site.timeline || []) : (formations.items || []);
-      formHost.innerHTML = formItems.map(function(t){ return cvEntryHTML(t.year, t.title, '', t.desc); }).join('');
-    }
-
-    var skillsBlock = cv.skills || {};
-    var skillsHost = document.getElementById('cv-skills');
-    if (skillsHost){
-      var skillItems = skillsBlock.followSite ? (site.skills || []) : (skillsBlock.items || []);
-      skillsHost.innerHTML = skillItems.map(function(s){
-        return '<div class="cv-skill">' +
-          '<div class="cv-skill-name">' + (s.name || '') + '</div>' +
-          '<div class="cv-skill-detail">' + (s.detail || '') + '</div>' +
-        '</div>';
-      }).join('');
-    }
-
-    var softEl = document.getElementById('cv-softskills');
-    if (softEl) softEl.textContent = cv.softSkills || '';
-
-    var projBlock = cv.projects || {};
-    var projHost = document.getElementById('cv-projects');
-    if (projHost){
-      var projItems = projBlock.followSite
-        ? (projects || []).filter(function(p){ return p.featured && !p.hidden; }).map(function(p){
-            return {
-              title: p.title, desc: p.desc, tags: (p.tags || []).join(', '),
-              linkLabel: 'Portfolio',
-              link: 'https://tristede.github.io/portfolio/adam/projet.html?id=' + encodeURIComponent(p.id)
-            };
-          })
-        : (projBlock.items || []);
-      projHost.innerHTML = projItems.map(function(pr){
-        return '<div class="cv-project">' +
-          '<div class="cv-project-head">' +
-            '<div class="cv-project-title">' + (pr.title || '') + '</div>' +
-            (pr.link && pr.linkLabel
-              ? '<a class="cv-project-link" href="' + pr.link + '" target="_blank" rel="noopener">' +
-                  '<span class="cv-project-linklabel">' + pr.linkLabel + '</span> »</a>'
-              : '') +
-          '</div>' +
-          (pr.desc ? '<p class="cv-project-desc">' + pr.desc + '</p>' : '') +
-          (pr.tags ? '<div class="cv-project-tags">' + pr.tags + '</div>' : '') +
-        '</div>';
-      }).join('');
-    }
-  }
-
   // L'encart reste dans le DOM (dimme) en mode edition meme desactive, pour
   // pouvoir le rallumer — comme un groupe ou un projet masque.
   function applyStageCta(site){
@@ -1513,7 +1396,6 @@
       applyStageCta(site);
       applyFavori(site, projects);
       renderTimeline(site.timeline);
-      renderCv(site, projects);
       window.__ALL_PROJECTS__ = projects;   // le filtre par tag re-rend la grille
       renderProjectsPage(site, projects);
       renderGroupDetail(site, projects);
