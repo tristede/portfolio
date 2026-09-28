@@ -218,9 +218,9 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
 .nav-card:nth-child(2){ --tilt: 1.2deg; }
 .nav-card::before{
   content:""; position:absolute; inset:-14px; z-index:-1; border-radius: inherit;
-  background: radial-gradient(circle at 22% 18%, rgba(70,90,255,0.38), rgba(70,90,255,0) 70%);
+  background: radial-gradient(circle at 22% 18%, rgba(70,90,255,0.28), rgba(70,90,255,0) 70%);
   filter: blur(20px);
-  opacity: 0.5;
+  opacity: 0.3;
   transition: opacity .3s ease;
 }
 .nav-card .nc-icon{
@@ -230,7 +230,7 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
 }
 .nav-card .nc-icon svg{ width: 24px; height: 24px; }
 .nav-card:hover{ transform: rotate(0deg) scale(1.04) translateY(var(--py, 0px)); border-color: rgba(140,160,255,0.45); }
-.nav-card:hover::before{ opacity: 0.75; }
+.nav-card:hover::before{ opacity: 0.5; }
 .nav-card .nc-title{
   font-family: var(--font-display); font-weight:700; font-size: 17px;
   text-transform: uppercase; letter-spacing: 0.05em; color: #fff;
