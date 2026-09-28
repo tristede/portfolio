@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
-"""Génère adam/cv.pdf — un CV d'une page, au format du portfolio (fond gris
-anthracite, halos dégradés dans les coins), avec la structure du CV de
-Bastien Okonski (deux colonnes, pitch en intro, compétences groupées,
-expériences datées, projets avec tags et liens) mais les vraies données
-d'Adam.
+"""Génère adam/cv.pdf — un CV d'une page, au format du portfolio (le vrai
+fond du site, adam/images/bg-vert.webp), avec la structure du CV de Bastien
+Okonski (deux colonnes, pitch en intro, compétences groupées, expériences
+datées, projets avec tags et liens) mais les vraies données d'Adam.
 
 Contenu et coordonnées : à jour manuellement ici, pas encore piloté par
 l'admin (data.json) — voir CONTEXTE.md si ça change.
 
-    pip3 install --user reportlab numpy pillow
+    pip3 install --user reportlab pillow
     python3 tools/generate_cv.py
 
 Écrit adam/cv.pdf. Le bouton "CV" du site (cv.pdf, avec `download`) le sert
 déjà sur toutes les pages — rien d'autre à brancher.
 """
 import os, io
-import numpy as np
 from PIL import Image
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
@@ -32,8 +30,7 @@ pdfmetrics.registerFont(TTFont("HomemadeApple", os.path.join(ROOT, "tools", "fon
 
 W, H = A4  # 595 x 842 pt
 
-# ---- palette du site (adam/style.css : --bg, --bg-deep, --accent-strong, --accent-sky, --text-dim) ----
-BG_DEEP = np.array([16/255, 17/255, 22/255])      # gris anthracite très sombre, légèrement bleuté
+# ---- palette du site (adam/style.css : --accent-strong, --accent-sky, --text-dim) ----
 ACCENT = (91/255, 99/255, 255/255)    # #5b63ff (accentStrong)
 ACCENT_SKY = (127/255, 196/255, 255/255)  # #7fc4ff
 WHITE = (1, 1, 1)
@@ -50,23 +47,27 @@ RX = MARGIN + COL_W + COL_GAP
 c = canvas.Canvas(OUT, pagesize=A4)
 
 
-def make_background(w_pt, h_pt, scale=3):
-    """Fond gris anthracite avec halos dégradés dans les coins (haut-droit
-    mauve, bas-gauche bleu ciel), comme le halo du hero du site (style.css)."""
-    w, h = int(w_pt * scale), int(h_pt * scale)
-    yy, xx = np.mgrid[0:h, 0:w]
-    arr = np.tile(BG_DEEP, (h, w, 1))
+BG_IMAGE_PATH = os.path.join(ROOT, "adam", "images", "bg-vert.webp")  # meme fond que le site
 
-    def add_glow(arr, cx, cy, radius, color, strength):
-        d = np.sqrt(((xx - cx) / radius) ** 2 + ((yy - cy) / radius) ** 2)
-        factor = (np.clip(1 - d, 0, 1) ** 2 * strength)[..., None]
-        return arr * (1 - factor) + np.array(color) * factor
 
-    arr = add_glow(arr, w, 0, w * 0.68, ACCENT, 0.28)
-    arr = add_glow(arr, 0, h, w * 0.68, ACCENT_SKY, 0.18)
-
-    img = (np.clip(arr, 0, 1) * 255).astype(np.uint8)
-    return Image.fromarray(img, mode="RGB")
+def make_background(w_pt, h_pt):
+    """Le vrai fond du site (adam/images/bg-vert.webp) : degrade bleu nuit +
+    traits topographiques, exporte depuis le PSD d'origine — plus net que les
+    versions recomposees a la main, et identique a ce que le site affiche."""
+    img = Image.open(BG_IMAGE_PATH).convert("RGB")
+    target_ratio = w_pt / h_pt
+    iw, ih = img.size
+    img_ratio = iw / ih
+    # recadrage "cover" : on remplit tout le format A4 sans deformer l'image
+    if img_ratio > target_ratio:
+        new_w = int(ih * target_ratio)
+        x0 = (iw - new_w) // 2
+        img = img.crop((x0, 0, x0 + new_w, ih))
+    else:
+        new_h = int(iw / target_ratio)
+        y0 = (ih - new_h) // 2
+        img = img.crop((0, y0, iw, y0 + new_h))
+    return img.resize((int(w_pt * 3), int(h_pt * 3)), Image.LANCZOS)
 
 
 # ---- fond ----
