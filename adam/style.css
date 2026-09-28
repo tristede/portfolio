@@ -161,7 +161,7 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
 }
 .btn-primary:hover{ filter: brightness(1.08); }
 .btn-ghost{ border-color: var(--line-strong); background: transparent; }
-.btn-ghost:hover{ border-color: var(--accent-sky); color: var(--accent-sky); }
+.btn-ghost:hover{ color: var(--accent-sky); }
 .pill-btn{
   display:inline-flex; align-items:center; gap:7px;
   font-family: var(--font-display);
@@ -169,7 +169,7 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
   border: 1px solid var(--accent-border); color: var(--text); white-space:nowrap;
   transition: border-color .15s ease, background .15s ease;
 }
-.pill-btn:hover{ background: var(--accent-soft); border-color: var(--accent-sky); }
+.pill-btn:hover{ background: var(--accent-soft); }
 /* le menu du header garde son style pilule, seul endroit du site qui la conserve */
 .site-nav .pill-btn{ border-radius: 100px; }
 
@@ -193,7 +193,7 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
   display:flex; align-items:center; justify-content:center; color: var(--text-dim);
   transition: all .15s ease;
 }
-.social-row a:hover{ border-color: var(--accent-sky); color: var(--accent-sky); }
+.social-row a:hover{ color: var(--accent-sky); }
 
 /* solid blue CTA buttons (matches Adobe Portfolio), Bastien's rounded/lift interaction */
 .nav-cards{
@@ -273,7 +273,6 @@ section.projects-section{
   transition: border-color .15s ease, background .15s ease;
 }
 .filter-toggle svg{ width:15px; height:15px; }
-.filter-toggle:hover{ border-color: var(--accent-sky); }
 .filter-toggle.is-active{ border-color: var(--accent-sky); background: var(--accent-soft); }
 .filter-chosen{
   font-size:12px; font-weight:700; color:#fff;
@@ -290,7 +289,7 @@ section.projects-section{
   background: transparent; border:1px solid var(--line-strong);
   transition: color .15s ease, border-color .15s ease, background .15s ease;
 }
-.tag-filter:hover{ color: var(--text); border-color: var(--accent-sky); }
+.tag-filter:hover{ color: var(--text); }
 .tag-filter.is-on{
   color: #fff; border-color: transparent;
   background: linear-gradient(180deg, var(--accent-strong), var(--accent));
@@ -768,7 +767,7 @@ section.projects-section{
   transform: translateY(-3px);
   box-shadow: 0 22px 44px -22px rgba(0,0,10,0.9);
 }
-.favori-card:hover .pill-btn{ background: var(--accent-soft); border-color: var(--accent-sky); }
+.favori-card:hover .pill-btn{ background: var(--accent-soft); }
 .favori-card .thumb{
   position:relative; min-height:280px;
   background: repeating-linear-gradient(90deg, #10164a 0 11%, #0c1140 11% 22%, #10164a 22% 33%, #161d5c 33% 44%, #10164a 44% 55%, #0c1140 55% 66%, #10164a 66% 77%, #161d5c 77% 88%, #10164a 88% 100%);
