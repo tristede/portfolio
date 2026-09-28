@@ -34,7 +34,7 @@ W, H = A4  # 595 x 842 pt
 
 # ---- palette du site (adam/style.css : --accent-strong, --accent-sky, --text-dim) ----
 ACCENT = (91/255, 99/255, 255/255)    # #5b63ff (accentStrong)
-ACCENT_SKY = (127/255, 196/255, 255/255)  # #7fc4ff
+ACCENT_SKY = (163/255, 174/255, 255/255)  # #a3aeff
 WHITE = (1, 1, 1)
 TEXT_DIM = (0.72, 0.74, 0.85)
 TEXT_FAINT = (0.55, 0.57, 0.7)
