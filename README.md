@@ -3,10 +3,10 @@
 Ce dépôt sert deux sites, tous deux en HTML/CSS/JS pur (aucune dépendance,
 aucun build), via GitHub Pages sur la branche `main`.
 
-## À la racine — la vitrine [Starx](https://tristede.github.io/portfolio/)
+## À la racine — la vitrine [Nocturnz](https://tristede.github.io/portfolio/)
 
-Une page produit : Starx fabrique des portfolios que chacun remplit lui-même,
-sans abonnement ni code. `index.html` + `starx.css`, plus `ciel.css` (ciel
+Une page produit : Nocturnz fabrique des portfolios que chacun remplit lui-même,
+sans abonnement ni code. `index.html` + `nocturnz.css`, plus `ciel.css` (ciel
 étoilé animé, partagé avec `/adam`) et `config.json` (identité du service).
 
 ## `/adam` — [le portfolio d'Adam](https://tristede.github.io/portfolio/adam/)

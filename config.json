@@ -1,8 +1,8 @@
 {
   "_comment": "Identité du service. Le nom et le domaine vivent ici pour qu'un changement ne demande pas de relire la page.",
-  "nom": "Starx",
-  "domaine": "starx.be",
-  "email": "bonjour@starx.be",
+  "nom": "Nocturnz",
+  "domaine": "nocturnz.dev",
+  "email": "bonjour@nocturnz.dev",
   "formulaire": "",
   "_formulaire": "Adresse qui reçoit le formulaire (Worker Cloudflare). Vide = le bouton bascule sur un mail préparé, qui marche sans rien installer."
 }

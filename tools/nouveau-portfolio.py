@@ -20,7 +20,7 @@ import shutil
 import sys
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
-# La racine du depot sert la vitrine Starx ; le portfolio-exemple qui a servi
+# La racine du depot sert la vitrine Nocturnz ; le portfolio-exemple qui a servi
 # de modele vit dans /adam a cote d'elle. ciel.css est partage par les deux,
 # donc reste a la racine.
 ADAM = RACINE / "adam"

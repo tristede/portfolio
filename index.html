@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Starx — un portfolio qui vous appartient</title>
+<title>Nocturnz — un portfolio qui vous appartient</title>
 <meta name="description" content="Un portfolio à votre image, que vous remplissez vous-même. Gratuit, sans abonnement, sans code.">
 <meta name="theme-color" content="#0a0713">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,7 +12,7 @@
 <!-- Le ciel d'abord : il est eteint par defaut, et c'est la feuille de la
      vitrine qui l'allume — a specificite egale, la derniere chargee gagne. -->
 <link rel="stylesheet" href="ciel.css">
-<link rel="stylesheet" href="starx.css">
+<link rel="stylesheet" href="nocturnz.css">
 </head>
 <body>
 
@@ -22,7 +22,7 @@
 <!-- Une page de cette longueur n'a pas besoin d'une navigation : le nom suffit,
      et le seul lien utile est le bouton de l'accroche. -->
 <header class="bar">
-  <a class="mark" href="#top" id="js-nom">Starx</a>
+  <a class="mark" href="#top" id="js-nom">Nocturnz</a>
 </header>
 
 <main id="top">
@@ -44,7 +44,7 @@
            ornement — et le domaine vient de config.json, comme le reste. -->
       <div class="adresse" id="js-adresse">
         <p class="url">
-          <span class="pseudo">votrepseudo</span><wbr><span class="fin"><span class="tld" id="js-tld">.starx.be</span><span class="curseur" aria-hidden="true"></span></span>
+          <span class="pseudo">votrepseudo</span><wbr><span class="fin"><span class="tld" id="js-tld">.nocturnz.dev</span><span class="curseur" aria-hidden="true"></span></span>
         </p>
         <p class="glose">ou votre propre nom de domaine,<br>si vous en avez déjà un</p>
       </div>
@@ -86,7 +86,7 @@
       <div class="arguments">
         <div class="argument">
           <h3>Le contenu est à vous</h3>
-          <p>Textes, images et documents vivent dans un dépôt qui vous appartient. Si Starx s'arrête demain, votre site continue de fonctionner.</p>
+          <p>Textes, images et documents vivent dans un dépôt qui vous appartient. Si Nocturnz s'arrête demain, votre site continue de fonctionner.</p>
         </div>
         <div class="argument">
           <h3>Pas d'abonnement</h3>
@@ -94,7 +94,7 @@
         </div>
         <div class="argument">
           <h3>Aucune marque imposée</h3>
-          <p>Pas de bandeau en bas de page. C'est votre site, pas une vitrine pour Starx.</p>
+          <p>Pas de bandeau en bas de page. C'est votre site, pas une vitrine pour Nocturnz.</p>
         </div>
       </div>
     </div>
@@ -133,7 +133,7 @@
 
 <footer>
   <div class="wrap">
-    <span id="js-nom-pied">Starx</span>
+    <span id="js-nom-pied">Nocturnz</span>
     <span><a href="adam/index.html">Voir un portfolio en entier</a></span>
   </div>
 </footer>
@@ -142,7 +142,7 @@
 (function(){
   // Le nom du service n'est pas arrêté : il vient de la configuration, pour
   // qu'un changement de domaine ne demande pas de relire cette page.
-  var cfg = { nom: 'Starx', domaine: '', email: '', formulaire: '' };
+  var cfg = { nom: 'Nocturnz', domaine: '', email: '', formulaire: '' };
 
   fetch('config.json', { cache: 'no-cache' })
     .then(function(r){ return r.ok ? r.json() : null; })
@@ -152,7 +152,7 @@
       document.getElementById('js-nom').textContent = cfg.nom;
       document.getElementById('js-nom-pied').textContent = cfg.nom;
       if (cfg.domaine) document.getElementById('js-tld').textContent = '.' + cfg.domaine;
-      document.title = document.title.replace(/^Starx/, cfg.nom);
+      document.title = document.title.replace(/^Nocturnz/, cfg.nom);
     });
 
   // Parallaxe : l'adresse remonte un peu moins vite que la page. Le calcul se

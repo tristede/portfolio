@@ -1,6 +1,6 @@
 # Contexte du projet — à lire en début de session
 
-Le dépôt sert deux choses : la vitrine du produit **Starx** à la racine, et le
+Le dépôt sert deux choses : la vitrine du produit **Nocturnz** à la racine, et le
 portfolio personnel d'Adam (étudiant en communication, Bruxelles — remplace son
 ancien Adobe Portfolio) dans `/adam`. Site statique + panneau d'édition maison,
 partagé par les deux.
@@ -11,10 +11,10 @@ partagé par les deux.
 |---|---|
 | Dossier local | `/Users/adam/Documents/PROJETS/WEB/portfolio-adam` |
 | Dépôt | `github.com/tristede/portfolio` — branche `main` |
-| Vitrine Starx | https://tristede.github.io/portfolio/ |
+| Vitrine Nocturnz | https://tristede.github.io/portfolio/ |
 | Portfolio d'Adam | https://tristede.github.io/portfolio/adam/ |
 | Panneau d'édition (portfolio d'Adam) | https://tristede.github.io/portfolio/adam/admin.html |
-| Bac à sable (démo Starx) | https://tristede.github.io/portfolio/demo/admin.html |
+| Bac à sable (démo Nocturnz) | https://tristede.github.io/portfolio/demo/admin.html |
 | Aperçu Artifact | https://claude.ai/code/artifact/5f753f39-a2b1-4ff5-a5d7-87bedd5b4543 |
 | Sauvegarde propre | tag git `backup-clean-v1` |
 | Serveur local | `python3 -m http.server 8000` dans le dossier du projet |
@@ -30,8 +30,8 @@ partagé par les deux.
 ## Structure
 
 ```
-index.html                 vitrine Starx (page produit, formulaire de contact)
-starx.css                  design de la vitrine
+index.html                 vitrine Nocturnz (page produit, formulaire de contact)
+nocturnz.css               design de la vitrine
 ciel.css                   ciel étoilé animé — partagé par la vitrine et /adam
 demo/                      bac à sable : admin + portfolio-jouet autonomes, rien n'est publié
 tools/nouveau-portfolio.py fabrique un nouveau portfolio (le moteur vit dans /adam)
@@ -59,7 +59,7 @@ Header et footer sont copiés-collés dans chaque page (choix assumé : pas de b
 
 **`basePath`** : un portfolio créé par `tools/nouveau-portfolio.py` vit seul à la
 racine de son propre dépôt (`basePath` vide, comportement par défaut). Celui
-d'Adam partage ce dépôt-ci avec la vitrine Starx, d'où `basePath: "adam/"` dans
+d'Adam partage ce dépôt-ci avec la vitrine Nocturnz, d'où `basePath: "adam/"` dans
 `adam/config.json` — c'est ce qui préfixe les chemins écrits sur GitHub
 (`data.json`, `images/…`) sans changer les chemins que les pages publiques
 résolvent depuis leur propre dossier.

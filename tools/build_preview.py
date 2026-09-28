@@ -16,7 +16,7 @@ import sys
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 # Le portfolio-exemple qui a servi de modele vit dans /adam, a cote de la
-# vitrine Starx qui occupe maintenant la racine du depot.
+# vitrine Nocturnz qui occupe maintenant la racine du depot.
 ROOT = RACINE / "adam"
 LINK = '<link rel="stylesheet" href="style.css">'
 SCRIPT = '<script src="script.js"></script>'
