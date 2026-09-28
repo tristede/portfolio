@@ -1,7 +1,7 @@
 :root{
   color-scheme: dark;
-  --bg: #080b30;
-  --bg-soft: #0d1454;
+  --bg: #05071f;
+  --bg-soft: #080d37;
   --card-bg: rgba(22,28,92,0.45);
   --card-border: rgba(140,160,255,0.16);
   --text: #ffffff;
@@ -107,8 +107,8 @@ h1,h2,h3{ font-family: var(--font-title); font-weight: 400; letter-spacing:0; ma
 .topo-bg{
   position: fixed; inset:0; z-index:0; pointer-events:none;
   background-image:
-    radial-gradient(ellipse 100% 60% at 50% -10%, var(--halo, rgba(90,100,255,0.22)), rgba(0,0,0,0) 60%),
-    linear-gradient(160deg, var(--bg-soft) 0%, var(--bg) 50%, var(--bg-deep, #05071f) 100%);
+    radial-gradient(ellipse 100% 60% at 50% -10%, var(--halo, rgba(90,100,255,0.16)), rgba(0,0,0,0) 60%),
+    linear-gradient(160deg, var(--bg-soft) 0%, var(--bg) 50%, var(--bg-deep, #030514) 100%);
   background-repeat: no-repeat;
   background-size: cover;
 }
