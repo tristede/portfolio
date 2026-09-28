@@ -317,8 +317,6 @@ section.projects-section{
 .card-deck:has(.card.in) .deck-sheet-2{ opacity:.45; }
 .deck-sheet-1{ transform: translate(7px, 7px) rotate(1.1deg); }
 .deck-sheet-2{ transform: translate(14px, 14px) rotate(2.3deg); }
-.card-deck:hover .deck-sheet-1{ transform: translate(11px, 10px) rotate(1.8deg); }
-.card-deck:hover .deck-sheet-2{ transform: translate(22px, 20px) rotate(3.4deg); }
 
 /* et le badge le nomme, avec le compte a la place de l'annee */
 .card-group .medium-label{ color: var(--accent-favori); font-weight:700; }
