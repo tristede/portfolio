@@ -1,23 +1,22 @@
 #!/usr/bin/env python3
-"""Génère adam/cv.pdf — un CV d'une page, fond "dark" (quasi noir, plutôt que
-le bleu du site) avec le vrai trait topographique du PSD d'origine
-(tools/assets/topo-trait.webp) superposé en mode éclaircir, et la structure
-du CV de Bastien Okonski (deux colonnes, pitch en intro, compétences
-groupées, expériences datées, projets avec tags et liens) mais les vraies
-données d'Adam.
+"""Génère adam/cv.pdf — un CV d'une page, fond = l'image fournie par Adam
+(tools/assets/cv-bg.webp, son propre montage Photoshop : quasi noir, halo
+bleu au coin haut-gauche), utilisée telle quelle. Structure du CV inspirée
+de celui de Bastien Okonski (deux colonnes, pitch en intro, compétences
+groupées, expériences datées, projets avec tags et liens) mais avec les
+vraies données d'Adam.
 
 Contenu et coordonnées : à jour manuellement ici, pas encore piloté par
 l'admin (data.json) — voir CONTEXTE.md si ça change.
 
-    pip3 install --user reportlab pillow numpy
+    pip3 install --user reportlab pillow
     python3 tools/generate_cv.py
 
 Écrit adam/cv.pdf. Le bouton "CV" du site (cv.pdf, avec `download`) le sert
 déjà sur toutes les pages — rien d'autre à brancher.
 """
 import os, io
-import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import simpleSplit, ImageReader
@@ -50,64 +49,27 @@ RX = MARGIN + COL_W + COL_GAP
 c = canvas.Canvas(OUT, pagesize=A4)
 
 
-# Trait topographique "propre" (extrait du calque smart object du PSD
-# d'origine, sans le bruit de compression qu'un export web laisse) : lignes
-# bleues sur fond quasi blanc, a recomposer nous-memes sur un fond sombre.
-TRAIT_PATH = os.path.join(ROOT, "tools", "assets", "topo-trait.webp")
-
-# ---- palette "dark" : quasi noir partout, avec juste un halo bleu au
-# coin haut-gauche (comme la reference envoyee) — pas un degrade sur toute
-# la page ----
-BG_BASE = np.array([5/255, 6/255, 10/255])       # quasi noir, uniforme
-CORNER_GLOW = np.array([60/255, 90/255, 230/255])  # bleu vif, seulement au coin
-
-
-def _cover_crop(img, target_ratio):
-    iw, ih = img.size
-    img_ratio = iw / ih
-    if img_ratio > target_ratio:
-        new_w = int(ih * target_ratio)
-        x0 = (iw - new_w) // 2
-        return img.crop((x0, 0, x0 + new_w, ih))
-    new_h = int(iw / target_ratio)
-    y0 = (ih - new_h) // 2
-    return img.crop((0, y0, iw, y0 + new_h))
+# Fond exact fourni par Adam (capture de son propre montage Photoshop) —
+# pas une recomposition : l'image telle quelle, juste mise a l'echelle A4.
+BG_IMAGE_PATH = os.path.join(ROOT, "tools", "assets", "cv-bg.webp")
 
 
 def make_background(w_pt, h_pt, scale=3):
-    """Version "dark" : quasi noir uniforme, un halo bleu seulement au coin
-    haut-gauche (comme la reference), et le trait topographique du PSD
-    d'origine en surimpression tres discrete (a peine visible, pas un motif
-    qui domine)."""
-    w, h = int(w_pt * scale), int(h_pt * scale)
-    yy, xx = np.mgrid[0:h, 0:w].astype(float)
-    yy /= h
-    xx /= w
-
-    base = np.tile(BG_BASE, (h, w, 1))
-
-    # halo concentre au coin haut-gauche (pas une ellipse pleine largeur) —
-    # rayon serre pour qu'il retombe a peu pres noir des le premier tiers
-    d = np.sqrt(xx ** 2 + yy ** 2)
-    glow = (np.clip(1 - d / 0.4, 0, 1) ** 2)[..., None]
-    base = base + (CORNER_GLOW - base) * (glow * 0.45)
-
-    trait = Image.open(TRAIT_PATH).convert("RGB")
-    trait = _cover_crop(trait, w / h).resize((w, h), Image.LANCZOS)
-    # le trait source est un dessin vectoriel a bords nets ; un flou leger le
-    # rapproche de la texture douce du site (jamais des lignes graphiques dures)
-    trait = trait.filter(ImageFilter.GaussianBlur(radius=6))
-    trait_arr = np.asarray(trait).astype(float) / 255.0
-    # blanc de fond -> 0 (n'affecte rien), lignes bleues -> luminance faible,
-    # donc (1 - lum) donne une force forte la ou il y a un trait
-    lum = trait_arr.mean(axis=2, keepdims=True)
-    line_strength = np.clip(1 - lum, 0, 1)
-    line_tint = np.array([45/255, 55/255, 130/255])  # meme bleu que le site, attenue
-    # tres discret : a peine perceptible, comme sur la reference envoyee
-    arr = base + (line_tint - base) * (line_strength * 0.12)
-
-    img = (np.clip(arr, 0, 1) * 255).astype(np.uint8)
-    return Image.fromarray(img, mode="RGB")
+    img = Image.open(BG_IMAGE_PATH).convert("RGB")
+    iw, ih = img.size
+    target_ratio = w_pt / h_pt
+    img_ratio = iw / ih
+    # recadrage "cover" (au cas ou le ratio ne collerait pas exactement)
+    if abs(img_ratio - target_ratio) > 0.005:
+        if img_ratio > target_ratio:
+            new_w = int(ih * target_ratio)
+            x0 = (iw - new_w) // 2
+            img = img.crop((x0, 0, x0 + new_w, ih))
+        else:
+            new_h = int(iw / target_ratio)
+            y0 = (ih - new_h) // 2
+            img = img.crop((0, y0, iw, y0 + new_h))
+    return img.resize((int(w_pt * scale), int(h_pt * scale)), Image.LANCZOS)
 
 
 # ---- fond ----
