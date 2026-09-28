@@ -7,7 +7,7 @@
 <title>Admin — Portfolio Adam</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme: dark;
@@ -25,7 +25,7 @@
   --ok: #6bffa0;
   --line: rgba(210,180,240,0.16);
   --radius: 12px;
-  --font: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 *,*::before,*::after{ box-sizing:border-box; }
@@ -43,14 +43,14 @@ h1{ font-family: var(--font-display); font-size: clamp(24px,4vw,32px); margin:0 
 h2{ font-family: var(--font-display); font-size: 18px; margin: 0 0 14px; }
 .subtitle{ color: var(--text-dim); margin: 0 0 32px; }
 .panel{
-  background: var(--panel); border: 1px solid var(--panel-border); border-radius: 16px;
+  background: var(--panel); border: 1px solid var(--panel-border); border-radius: 0;
   padding: 24px; margin-bottom: 20px;
   backdrop-filter: blur(20px) saturate(1.6); -webkit-backdrop-filter: blur(20px) saturate(1.6);
 }
 label{ display:block; font-size:12.5px; font-weight:600; color: var(--text-dim); margin: 14px 0 5px; letter-spacing:0.02em; }
 label:first-child{ margin-top:0; }
 input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="password"], textarea, select{
-  width:100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line);
+  width:100%; padding: 9px 12px; border-radius: 0; border: 1px solid var(--line);
   background: rgba(20,12,35,0.5); color: var(--text); font-family: var(--font); font-size:14px;
 }
 textarea{ min-height: 70px; resize: vertical; line-height:1.45; }
@@ -63,7 +63,7 @@ input:focus, textarea:focus, select:focus{ outline: 2px solid var(--accent-sky);
 
 button{
   font-family: var(--font-display); font-weight:600; font-size:14px; cursor:pointer;
-  border-radius: 10px; padding: 10px 18px; border: 1px solid var(--line); color: var(--text);
+  border-radius: 0; padding: 10px 18px; border: 1px solid var(--line); color: var(--text);
   background: rgba(255,255,255,0.04); transition: filter .15s ease, transform .1s ease;
 }
 button:hover{ filter: brightness(1.15); }
@@ -85,7 +85,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
 
 .project-item{
   display:flex; justify-content:space-between; align-items:center; gap:12px;
-  padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; margin-bottom:8px;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: 0; margin-bottom:8px;
   background: rgba(20,12,35,0.35);
 }
 .project-item .meta{ font-size:12.5px; color: var(--text-faint); margin-top:2px; }
@@ -93,7 +93,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
 .project-item .tags-inline{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
 .project-item .tags-inline span{
   font-size:11px; color: var(--accent-sky); background: rgba(60,35,95,0.6);
-  border:1px solid rgba(203,179,236,0.35); padding:1px 8px; border-radius:999px;
+  border:1px solid rgba(203,179,236,0.35); padding:1px 8px; border-radius: 0;
 }
 .project-item .btns{ display:flex; gap:8px; flex-shrink:0; }
 .star{ color: #ffd479; margin-right:6px; }
@@ -104,12 +104,12 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
 }
 .sticky-save-inner{
   display:flex; align-items:center; gap:14px; background: rgba(28,16,48,0.85);
-  border:1px solid var(--panel-border); border-radius: 999px; padding: 10px 12px 10px 22px;
+  border:1px solid var(--panel-border); border-radius: 0; padding: 10px 12px 10px 22px;
   backdrop-filter: blur(20px); box-shadow: 0 20px 50px -20px rgba(0,0,10,0.7);
 }
 /* the button inside this pill needs to be a pill itself, not the standard
    10px-radius rectangle — a square button in an oval capsule looked wrong */
-.sticky-save-inner button{ border-radius: 999px; }
+.sticky-save-inner button{ border-radius: 0; }
 /* l'etat est dans la pastille : il doit rester lisible sans l'etirer sans fin */
 .sticky-save-inner .status{ margin:0; max-width: 46ch; text-align:right; }
 .hidden{ display:none !important; }
@@ -117,7 +117,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
 
 .hidden-badge{
   font-size:10.5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
-  color: var(--text-faint); border:1px solid var(--line); border-radius:999px;
+  color: var(--text-faint); border:1px solid var(--line); border-radius: 0;
   padding:1px 8px; margin-left:6px; vertical-align:middle;
 }
 .is-hidden-asset{ opacity:0.5; }
@@ -130,7 +130,7 @@ button{ display:inline-flex; align-items:center; justify-content:center; gap:7px
 .star svg{ width:13px; height:13px; }
 .asset-badge svg{ width:18px; height:18px; }
 .asset-badge{
-  width:64px; height:44px; flex:none; border-radius:6px; border:1px solid var(--line);
+  width:64px; height:44px; flex:none; border-radius: 0; border:1px solid var(--line);
   background: rgba(20,12,35,0.6); color: var(--accent-sky);
   display:flex; align-items:center; justify-content:center; font-size:17px;
 }
@@ -140,7 +140,7 @@ button{ display:inline-flex; align-items:center; justify-content:center; gap:7px
 }
 .carousel-strip{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; max-width:340px; }
 .carousel-cell{
-  position:relative; width:54px; height:54px; border-radius:6px; overflow:hidden;
+  position:relative; width:54px; height:54px; border-radius: 0; overflow:hidden;
   border:1px solid var(--line); flex:none;
 }
 .carousel-cell img{ width:100%; height:100%; object-fit:cover; display:block; }
@@ -153,13 +153,13 @@ button{ display:inline-flex; align-items:center; justify-content:center; gap:7px
   background:rgba(20,10,35,0.72); opacity:0; transition:opacity .15s ease;
 }
 .carousel-cell:hover .carousel-cell-btns{ opacity:1; }
-.carousel-cell-btns button{ padding:2px; width:16px; height:16px; border-radius:4px; }
+.carousel-cell-btns button{ padding:2px; width:16px; height:16px; border-radius: 0; }
 .carousel-cell-btns button svg{ width:11px; height:11px; }
 
 .stale-admin{
   position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:999;
   max-width:min(680px, calc(100vw - 32px));
-  padding:11px 18px; border-radius:999px;
+  padding:11px 18px; border-radius: 0;
   background:rgba(255,178,127,0.16); border:1px solid rgba(255,178,127,0.55);
   color:#ffd9bd; font-size:13.5px; font-weight:600; text-align:center;
   backdrop-filter:blur(12px);
@@ -167,24 +167,24 @@ button{ display:inline-flex; align-items:center; justify-content:center; gap:7px
 .color-field{
   width:100%; height:40px; padding:3px; cursor:pointer;
   background: rgba(255,255,255,0.04);
-  border:1px solid var(--panel-border); border-radius:8px;
+  border:1px solid var(--panel-border); border-radius: 0;
 }
 .asset-caption-input{
   margin-top:5px; width:100%; max-width:340px;
   padding:5px 8px; font:inherit; font-size:12.5px;
   color: var(--text); background: rgba(255,255,255,0.04);
-  border:1px solid var(--line); border-radius:6px;
+  border:1px solid var(--line); border-radius: 0;
 }
 .asset-caption-input::placeholder{ color: var(--text-faint); font-style:italic; }
 .asset-caption-input:focus{ outline:none; border-color: var(--accent-sky); }
 
 /* ---------- Visual (WYSIWYG) editing view ---------- */
 .view-switch{
-  display:inline-flex; padding:3px; border-radius:999px;
+  display:inline-flex; padding:3px; border-radius: 0;
   border:1px solid var(--line); background: rgba(20,12,35,0.5);
 }
 .view-tab{
-  border:none; background:transparent; border-radius:999px;
+  border:none; background:transparent; border-radius: 0;
   padding:7px 16px; font-size:13.5px;
 }
 .view-tab.is-active{
@@ -194,13 +194,13 @@ button{ display:inline-flex; align-items:center; justify-content:center; gap:7px
 .visual-bar{
   display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
   padding:12px 16px; margin-bottom:12px;
-  border:1px solid var(--panel-border); border-radius:12px; background: var(--panel);
+  border:1px solid var(--panel-border); border-radius: 0; background: var(--panel);
 }
 .visual-bar-left{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .visual-bar button{ padding:7px 14px; font-size:13px; }
 .visual-hint{ text-align:right; }
 .visual-frame-wrap{
-  border:1px solid var(--panel-border); border-radius:16px; overflow:hidden;
+  border:1px solid var(--panel-border); border-radius: 0; overflow:hidden;
   background: var(--bg); height: calc(100vh - 250px); min-height: 480px;
 }
 #visual-frame{ width:100%; height:100%; border:none; display:block; }
@@ -212,7 +212,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
     #demo-bandeau{
       display:flex; align-items:center; gap:16px; flex-wrap:wrap;
       background: rgba(120,80,220,0.16); border:1px solid rgba(170,140,255,0.34);
-      border-radius:12px; padding:12px 16px; margin-bottom:18px; font-size:14px;
+      border-radius: 0; padding:12px 16px; margin-bottom:18px; font-size:14px;
     }
     #demo-bandeau span{ flex:1; min-width:260px; }
 </style>
