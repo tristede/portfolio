@@ -7,33 +7,33 @@
 <title>Admin — Portfolio Adam</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme: dark;
-  --bg: #05071f;
-  --bg-soft: #080d37;
-  --panel: rgba(22,28,92,0.55);
-  --panel-border: rgba(140,160,255,0.18);
+  --bg: #0a0713;
+  --bg-soft: #1a1030;
+  --panel: rgba(45,30,75,0.55);
+  --panel-border: rgba(210,180,240,0.18);
   --text: #ffffff;
   --text-dim: rgba(255,255,255,0.72);
   --text-faint: rgba(255,255,255,0.5);
-  --accent: #4650ff;
-  --accent-strong: #5b63ff;
-  --accent-sky: #a3aeff;
+  --accent: #8659c9;
+  --accent-strong: #9a6ad9;
+  --accent-sky: #cbb3ec;
   --danger: #ff6b6b;
   --ok: #6bffa0;
-  --line: rgba(140,160,255,0.16);
+  --line: rgba(210,180,240,0.16);
   --radius: 12px;
   --font: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Baloo 2", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 *,*::before,*::after{ box-sizing:border-box; }
 body{
   margin:0; min-height:100vh;
   background:
-    radial-gradient(ellipse 100% 50% at 50% -10%, rgba(90,100,255,0.2), rgba(0,0,0,0) 60%),
-    linear-gradient(160deg, var(--bg-soft) 0%, var(--bg) 60%, #030514 100%);
+    radial-gradient(ellipse 100% 50% at 50% -10%, rgba(110,80,220,0.24), rgba(0,0,0,0) 60%),
+    linear-gradient(160deg, var(--bg-soft) 0%, var(--bg) 60%, #060409 100%);
   color: var(--text); font-family: var(--font); font-size:15px; line-height:1.5;
   -webkit-font-smoothing:antialiased;
 }
@@ -51,7 +51,7 @@ label{ display:block; font-size:12.5px; font-weight:600; color: var(--text-dim);
 label:first-child{ margin-top:0; }
 input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="password"], textarea, select{
   width:100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line);
-  background: rgba(5,8,30,0.5); color: var(--text); font-family: var(--font); font-size:14px;
+  background: rgba(20,12,35,0.5); color: var(--text); font-family: var(--font); font-size:14px;
 }
 textarea{ min-height: 70px; resize: vertical; line-height:1.45; }
 input:focus, textarea:focus, select:focus{ outline: 2px solid var(--accent-sky); outline-offset:1px; }
@@ -70,7 +70,7 @@ button:hover{ filter: brightness(1.15); }
 button:active{ transform: scale(0.98); }
 button.primary{
   background: linear-gradient(180deg, var(--accent-strong), var(--accent));
-  border-color: rgba(120,140,255,0.5); box-shadow: 0 8px 20px -10px rgba(70,80,255,0.6);
+  border-color: rgba(190,150,225,0.5); box-shadow: 0 8px 20px -10px rgba(134,89,201,0.6);
 }
 button.danger{ border-color: rgba(255,107,107,0.4); color: var(--danger); background: rgba(255,107,107,0.08); }
 button.ghost{ background: transparent; }
@@ -86,14 +86,14 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
 .project-item{
   display:flex; justify-content:space-between; align-items:center; gap:12px;
   padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; margin-bottom:8px;
-  background: rgba(5,8,30,0.35);
+  background: rgba(20,12,35,0.35);
 }
 .project-item .meta{ font-size:12.5px; color: var(--text-faint); margin-top:2px; }
 .project-item .title{ font-weight:600; }
 .project-item .tags-inline{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
 .project-item .tags-inline span{
-  font-size:11px; color: var(--accent-sky); background: rgba(18,22,80,0.6);
-  border:1px solid rgba(127,196,255,0.35); padding:1px 8px; border-radius:999px;
+  font-size:11px; color: var(--accent-sky); background: rgba(60,35,95,0.6);
+  border:1px solid rgba(203,179,236,0.35); padding:1px 8px; border-radius:999px;
 }
 .project-item .btns{ display:flex; gap:8px; flex-shrink:0; }
 .star{ color: #ffd479; margin-right:6px; }
@@ -103,7 +103,7 @@ button:disabled{ opacity:0.5; cursor:not-allowed; }
   position: sticky; bottom: 16px; display:flex; justify-content:center; margin-top: 24px; z-index: 10;
 }
 .sticky-save-inner{
-  display:flex; align-items:center; gap:14px; background: rgba(10,14,50,0.85);
+  display:flex; align-items:center; gap:14px; background: rgba(28,16,48,0.85);
   border:1px solid var(--panel-border); border-radius: 999px; padding: 10px 12px 10px 22px;
   backdrop-filter: blur(20px); box-shadow: 0 20px 50px -20px rgba(0,0,10,0.7);
 }
@@ -131,7 +131,7 @@ button{ display:inline-flex; align-items:center; justify-content:center; gap:7px
 .asset-badge svg{ width:18px; height:18px; }
 .asset-badge{
   width:64px; height:44px; flex:none; border-radius:6px; border:1px solid var(--line);
-  background: rgba(5,8,30,0.6); color: var(--accent-sky);
+  background: rgba(20,12,35,0.6); color: var(--accent-sky);
   display:flex; align-items:center; justify-content:center; font-size:17px;
 }
 .asset-url{
@@ -150,7 +150,7 @@ button{ display:inline-flex; align-items:center; justify-content:center; gap:7px
 }
 .carousel-cell-btns{
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:2px;
-  background:rgba(6,9,32,0.72); opacity:0; transition:opacity .15s ease;
+  background:rgba(20,10,35,0.72); opacity:0; transition:opacity .15s ease;
 }
 .carousel-cell:hover .carousel-cell-btns{ opacity:1; }
 .carousel-cell-btns button{ padding:2px; width:16px; height:16px; border-radius:4px; }
@@ -181,7 +181,7 @@ button{ display:inline-flex; align-items:center; justify-content:center; gap:7px
 /* ---------- Visual (WYSIWYG) editing view ---------- */
 .view-switch{
   display:inline-flex; padding:3px; border-radius:999px;
-  border:1px solid var(--line); background: rgba(5,8,30,0.5);
+  border:1px solid var(--line); background: rgba(20,12,35,0.5);
 }
 .view-tab{
   border:none; background:transparent; border-radius:999px;
@@ -189,7 +189,7 @@ button{ display:inline-flex; align-items:center; justify-content:center; gap:7px
 }
 .view-tab.is-active{
   background: linear-gradient(180deg, var(--accent-strong), var(--accent));
-  box-shadow: 0 6px 16px -8px rgba(70,80,255,0.7);
+  box-shadow: 0 6px 16px -8px rgba(134,89,201,0.7);
 }
 .visual-bar{
   display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
