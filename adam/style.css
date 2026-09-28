@@ -16,8 +16,8 @@
   --accent-soft: rgba(70,80,255,0.16);
   --line: rgba(140,160,255,0.14);
   --line-strong: rgba(140,160,255,0.28);
-  --radius-lg: 16px;
-  --radius-md: 12px;
+  --radius-lg: 0px;
+  --radius-md: 0px;
   --maxw: 1120px;
   --font: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-title: "Schoolbell", cursive;
@@ -165,16 +165,18 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
 .pill-btn{
   display:inline-flex; align-items:center; gap:7px;
   font-family: var(--font-display);
-  font-weight:600; font-size: 13.5px; padding: 7px 16px; border-radius: 100px;
+  font-weight:600; font-size: 13.5px; padding: 7px 16px; border-radius: 0;
   border: 1px solid var(--accent-border); color: var(--text); white-space:nowrap;
   transition: border-color .15s ease, background .15s ease;
 }
 .pill-btn:hover{ background: var(--accent-soft); border-color: var(--accent-sky); }
+/* le menu du header garde son style pilule, seul endroit du site qui la conserve */
+.site-nav .pill-btn{ border-radius: 100px; }
 
 .tag{
   font-size: 12px; font-weight:500; color: var(--accent-sky);
   background: rgba(18,22,80,0.5); border: 1px solid rgba(127,196,255,0.4);
-  padding: 2px 10px; border-radius: 999px; user-select:none;
+  padding: 2px 10px; border-radius: 0; user-select:none;
 }
 
 /* ---------- Hero / Accueil ---------- */
@@ -222,7 +224,7 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
   transition: opacity .3s ease;
 }
 .nav-card .nc-icon{
-  width: 46px; height: 46px; border-radius: 10px;
+  width: 46px; height: 46px; border-radius: 0;
   background: var(--accent-soft); color: var(--accent-sky);
   display:flex; align-items:center; justify-content:center;
 }
@@ -265,7 +267,7 @@ section.projects-section{
 .filter-toggle{
   font-family: var(--font); font-size:13.5px; font-weight:600;
   display:inline-flex; align-items:center; gap:8px;
-  padding:8px 16px; border-radius:999px; cursor:pointer;
+  padding:8px 16px; border-radius:0; cursor:pointer;
   color: var(--text); background: transparent;
   border:1px solid var(--line-strong);
   transition: border-color .15s ease, background .15s ease;
@@ -276,14 +278,14 @@ section.projects-section{
 .filter-chosen{
   font-size:12px; font-weight:700; color:#fff;
   background: linear-gradient(180deg, var(--accent-strong), var(--accent));
-  padding:2px 9px; border-radius:999px;
+  padding:2px 9px; border-radius:0;
 }
 .tag-filters.is-closed{ display:none; }
 .tag-filters{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
 .tag-filter{
   font-family: var(--font); font-size:13px; font-weight:600;
   display:inline-flex; align-items:center; gap:7px;
-  padding:6px 14px; border-radius:999px; cursor:pointer;
+  padding:6px 14px; border-radius:0; cursor:pointer;
   color: var(--text-dim);
   background: transparent; border:1px solid var(--line-strong);
   transition: color .15s ease, border-color .15s ease, background .15s ease;
@@ -357,7 +359,7 @@ section.projects-section{
 .card .year{
   position:absolute; top:10px; right:12px; z-index:2;
   font-size: 11px; font-weight:600; color: rgba(255,255,255,0.85);
-  background: rgba(8,11,48,0.7); padding: 3px 8px; border-radius: 999px;
+  background: rgba(8,11,48,0.7); padding: 3px 8px; border-radius: 0;
   border: 1px solid rgba(255,255,255,0.18);
 }
 .card-body{ padding: 18px 18px 20px; display:flex; flex-direction:column; gap:10px; flex:1; }
@@ -483,7 +485,7 @@ section.projects-section{
 
 .photo img{
   width:100%; height:auto; object-fit:contain;
-  border-radius: 2px;
+  border-radius: 0;
   box-shadow: 0 18px 34px -14px rgba(0,0,6,0.8), 0 2px 6px rgba(0,0,6,0.4);
   display:block;
 }
@@ -526,7 +528,7 @@ section.projects-section{
    straighten (an iframe you're about to click shouldn't move under the mouse) */
 .detail-embed{ margin-top: 46px; }
 .detail-embed iframe, .detail-embed video{
-  width:100%; aspect-ratio: 16/9; border-radius: 2px;
+  width:100%; aspect-ratio: 16/9; border-radius: 0;
   border: none; background: #000;
   box-shadow: 0 18px 34px -14px rgba(0,0,6,0.8), 0 2px 6px rgba(0,0,6,0.4);
   display:block;
@@ -541,7 +543,7 @@ section.projects-section{
   position: relative; width: 100%;
   aspect-ratio: 325 / 578;
   overflow: hidden;
-  border-radius: 2px;
+  border-radius: 0;
   background: #000;
   box-shadow: 0 18px 34px -14px rgba(0,0,6,0.8), 0 2px 6px rgba(0,0,6,0.4);
 }
@@ -617,7 +619,7 @@ section.projects-section{
 }
 .doc-stage img{
   max-width: 100%; max-height: 66vh; width: auto; height: auto;
-  border-radius: 3px; box-shadow: 0 12px 26px -14px rgba(0,0,6,0.9);
+  border-radius: 0; box-shadow: 0 12px 26px -14px rgba(0,0,6,0.9);
 }
 /* seul l'indicateur de page reste sous le document */
 .doc-bar{
@@ -783,7 +785,7 @@ section.projects-section{
 .favori-card .thumb .year{
   position:absolute; top:14px; right:14px; z-index:2;
   font-size: 11px; font-weight:600; color: rgba(255,255,255,0.85);
-  background: rgba(8,11,48,0.7); padding: 3px 8px; border-radius: 999px;
+  background: rgba(8,11,48,0.7); padding: 3px 8px; border-radius: 0;
   border: 1px solid rgba(255,255,255,0.18);
 }
 .favori-card .body{ padding: 36px; display:flex; flex-direction:column; gap:14px; justify-content:center; }
