@@ -39,7 +39,7 @@ body{
 }
 a{ color: var(--accent-sky); }
 .wrap{ max-width: 880px; margin:0 auto; padding: 40px 24px 100px; }
-h1{ font-family: var(--font-display); font-size: clamp(24px,4vw,32px); margin:0 0 6px; }
+h1{ font-family: var(--font-display); font-size: clamp(22px,3.6vw,28px); margin:0 0 6px; text-transform: uppercase; letter-spacing: 0.02em; }
 h2{ font-family: var(--font-display); font-size: 18px; margin: 0 0 14px; }
 .subtitle{ color: var(--text-dim); margin: 0 0 32px; }
 .panel{
@@ -210,11 +210,12 @@ body.visual-mode .wrap{ max-width: 1400px; }
     /* Bandeau du bac a sable. Il doit se voir sans discuter : quelqu'un qui
        croirait modifier un vrai site serait mal traite. */
     #demo-bandeau{
-      display:flex; align-items:center; gap:16px; flex-wrap:wrap;
-      background: rgba(120,80,220,0.16); border:1px solid rgba(170,140,255,0.34);
-      border-radius: 0; padding:12px 16px; margin-bottom:18px; font-size:14px;
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+      background: rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1);
+      border-radius: 0; padding:8px 14px; margin-bottom:18px; font-size:12.5px;
     }
     #demo-bandeau span{ flex:1; min-width:260px; }
+    #demo-bandeau button{ padding: 6px 12px; font-size:12.5px; }
 </style>
 </head>
 <body>
