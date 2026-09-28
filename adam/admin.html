@@ -2580,8 +2580,6 @@ body.visual-mode .wrap{ max-width: 1400px; }
     var stageCta = doc.getElementById('js-stage-cta');
     if (stageCta){
       var cta = s.stageCta || (s.stageCta = {});
-      bindEditable(stageCta.querySelector('#js-stage-cta-kicker'),
-        function(){ return cta.kicker || ''; }, function(v){ cta.kicker = v; });
       bindEditable(stageCta.querySelector('#js-stage-cta-title'),
         function(){ return cta.title || ''; }, function(v){ cta.title = v; });
       bindEditable(stageCta.querySelector('#js-stage-cta-text'),

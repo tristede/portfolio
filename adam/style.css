@@ -838,15 +838,12 @@ section.projects-section{
 .timeline-content p{ font-size: 14px; color: var(--text-dim); line-height:1.5; margin:0; }
 
 .stage-cta{
-  max-width: 420px; aspect-ratio: 1 / 1; margin: 48px 0 0; padding: 34px 40px;
-  background: var(--card-bg); border: 1px solid var(--card-border);
-  border-radius: 0; text-align:center;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  clip-path: polygon(50.00% 0.00%, 55.74% 6.38%, 62.94% 1.70%, 66.84% 9.35%, 75.00% 6.70%, 76.79% 15.09%, 85.36% 14.64%, 84.91% 23.21%, 93.30% 25.00%, 90.65% 33.16%, 98.30% 37.06%, 93.62% 44.26%, 100.00% 50.00%, 93.62% 55.74%, 98.30% 62.94%, 90.65% 66.84%, 93.30% 75.00%, 84.91% 76.79%, 85.36% 85.36%, 76.79% 84.91%, 75.00% 93.30%, 66.84% 90.65%, 62.94% 98.30%, 55.74% 93.62%, 50.00% 100.00%, 44.26% 93.62%, 37.06% 98.30%, 33.16% 90.65%, 25.00% 93.30%, 23.21% 84.91%, 14.64% 85.36%, 15.09% 76.79%, 6.70% 75.00%, 9.35% 66.84%, 1.70% 62.94%, 6.38% 55.74%, 0.00% 50.00%, 6.38% 44.26%, 1.70% 37.06%, 9.35% 33.16%, 6.70% 25.00%, 15.09% 23.21%, 14.64% 14.64%, 23.21% 15.09%, 25.00% 6.70%, 33.16% 9.35%, 37.06% 1.70%, 44.26% 6.38%);
+  max-width: 420px; margin: 48px 0 0;
+  text-align:left;
 }
 .stage-cta h3{ font-size: clamp(19px, 2.4vw, 23px); margin: 10px 0 10px; }
 .stage-cta p{ color: var(--text-dim); font-size:14.5px; margin: 0 0 20px; }
-.stage-cta-actions{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.stage-cta-actions{ display:flex; gap:12px; justify-content:flex-start; flex-wrap:wrap; }
 
 /* ---------- Footer / contact ---------- */
 footer{ border-top: 1px solid var(--line); padding: 92px 0 40px; position:relative; z-index:1; }
