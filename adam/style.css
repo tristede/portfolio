@@ -229,7 +229,8 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
   display:flex; align-items:center; justify-content:center;
 }
 .nav-card .nc-icon svg{ width: 24px; height: 24px; }
-.nav-card:hover{ border-color: rgba(140,160,255,0.45); }
+.nav-card:hover{ transform: rotate(0deg) scale(1.04) translateY(var(--py, 0px)); }
+.nav-card:hover::before{ opacity: 0.75; }
 .nav-card .nc-title{
   font-family: var(--font-display); font-weight:700; font-size: 17px;
   text-transform: uppercase; letter-spacing: 0.05em; color: #fff;
@@ -764,7 +765,8 @@ section.projects-section{
   transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
 }
 .favori-card:hover{
-  border-color: var(--accent-sky);
+  transform: translateY(-3px);
+  box-shadow: 0 22px 44px -22px rgba(0,0,10,0.9);
 }
 .favori-card:hover .pill-btn{ background: var(--accent-soft); border-color: var(--accent-sky); }
 .favori-card .thumb{
