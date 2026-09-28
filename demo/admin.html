@@ -2238,7 +2238,7 @@ body.visual-mode .wrap{ max-width: 1400px; }
     if (projectId){
       inject += '<script>window.__PROJECT_ID__ = ' + JSON.stringify(projectId) + ';<\/script>';
     }
-    return html.replace('<script src="script.js"><\/script>', inject + '<script src="script.js"><\/script>');
+    return html.replace('<script src="script.js?v=2"><\/script>', inject + '<script src="script.js?v=2"><\/script>');
   }
 
   function bindEditable(el, getFn, setFn, multiline){
