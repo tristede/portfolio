@@ -55,9 +55,11 @@ c = canvas.Canvas(OUT, pagesize=A4)
 # bleues sur fond quasi blanc, a recomposer nous-memes sur un fond sombre.
 TRAIT_PATH = os.path.join(ROOT, "tools", "assets", "topo-trait.webp")
 
-# ---- palette "dark" (fond noir plutot que bleu, comme demande) ----
-BG_TOP = np.array([13/255, 15/255, 26/255])    # tres sombre, a peine bleute
-BG_BOTTOM = np.array([4/255, 5/255, 9/255])    # quasi noir
+# ---- palette "dark" : quasi noir partout, avec juste un halo bleu au
+# coin haut-gauche (comme la reference envoyee) — pas un degrade sur toute
+# la page ----
+BG_BASE = np.array([5/255, 6/255, 10/255])       # quasi noir, uniforme
+CORNER_GLOW = np.array([60/255, 90/255, 230/255])  # bleu vif, seulement au coin
 
 
 def _cover_crop(img, target_ratio):
@@ -73,14 +75,22 @@ def _cover_crop(img, target_ratio):
 
 
 def make_background(w_pt, h_pt, scale=3):
-    """Version "dark" : un degrade quasi noir (au lieu du bleu du site) avec
-    le trait topographique du PSD d'origine superpose en mode "eclaircir" —
-    seules les lignes, plus claires que le fond, ressortent."""
+    """Version "dark" : quasi noir uniforme, un halo bleu seulement au coin
+    haut-gauche (comme la reference), et le trait topographique du PSD
+    d'origine en surimpression tres discrete (a peine visible, pas un motif
+    qui domine)."""
     w, h = int(w_pt * scale), int(h_pt * scale)
+    yy, xx = np.mgrid[0:h, 0:w].astype(float)
+    yy /= h
+    xx /= w
 
-    yy = np.linspace(0, 1, h)[:, None, None]
-    base = BG_TOP + (BG_BOTTOM - BG_TOP) * yy
-    base = np.tile(base, (1, w, 1))
+    base = np.tile(BG_BASE, (h, w, 1))
+
+    # halo concentre au coin haut-gauche (pas une ellipse pleine largeur) —
+    # rayon serre pour qu'il retombe a peu pres noir des le premier tiers
+    d = np.sqrt(xx ** 2 + yy ** 2)
+    glow = (np.clip(1 - d / 0.4, 0, 1) ** 2)[..., None]
+    base = base + (CORNER_GLOW - base) * (glow * 0.45)
 
     trait = Image.open(TRAIT_PATH).convert("RGB")
     trait = _cover_crop(trait, w / h).resize((w, h), Image.LANCZOS)
@@ -93,7 +103,8 @@ def make_background(w_pt, h_pt, scale=3):
     lum = trait_arr.mean(axis=2, keepdims=True)
     line_strength = np.clip(1 - lum, 0, 1)
     line_tint = np.array([45/255, 55/255, 130/255])  # meme bleu que le site, attenue
-    arr = base + (line_tint - base) * (line_strength * 0.35)
+    # tres discret : a peine perceptible, comme sur la reference envoyee
+    arr = base + (line_tint - base) * (line_strength * 0.12)
 
     img = (np.clip(arr, 0, 1) * 255).astype(np.uint8)
     return Image.fromarray(img, mode="RGB")
