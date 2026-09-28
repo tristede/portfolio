@@ -1345,12 +1345,20 @@
 
       var fx = new TextScramble(el);
       if (hoverCapable){
+        // laisse un delai avant de repasser en cursive : sortir/rentrer vite
+        // de l'element (survol de la souris qui tremble, geste hesitant) ne
+        // doit pas relancer l'animation a chaque fois.
+        var leaveTimer = null;
         el.addEventListener('mouseenter', function(){
+          clearTimeout(leaveTimer);
           el.classList.add('decrypted');
           fx.setText(original, true);
         });
         el.addEventListener('mouseleave', function(){
-          fx.setText(original, false).then(function(){ el.classList.remove('decrypted'); });
+          clearTimeout(leaveTimer);
+          leaveTimer = setTimeout(function(){
+            fx.setText(original, false).then(function(){ el.classList.remove('decrypted'); });
+          }, 2500);
         });
       } else {
         var obs = new IntersectionObserver(function(entries){
