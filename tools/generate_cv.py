@@ -91,7 +91,7 @@ c.drawString(LX, y, "Adam Karroum")
 
 c.setFillColorRGB(*ACCENT_SKY)
 c.setFont("Helvetica-Bold", 10.5)
-c.drawString(LX, y - 20, "Création de contenu audiovisuel")
+c.drawString(LX, y - 20, "Création de contenu · Audiovisuel")
 
 # bloc contact, aligné à droite
 contact = [
