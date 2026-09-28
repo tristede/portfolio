@@ -222,7 +222,6 @@ nav.links a:hover, nav.links a.current{ color: var(--text); }
   display:flex; align-items:center; justify-content:center;
 }
 .nav-card .nc-icon svg{ width: 24px; height: 24px; }
-.nav-card:hover{ background: rgba(30,36,92,0.92); }
 .nav-card .nc-title{
   font-family: var(--font-display); font-weight:700; font-size: 17px;
   text-transform: uppercase; letter-spacing: 0.05em; color: #fff;
