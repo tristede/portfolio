@@ -320,7 +320,7 @@ section.projects-section{
   transition: opacity .5s ease, transform .5s ease, border-color .2s ease, box-shadow .2s ease;
 }
 .card.in{ opacity:1; transform:none; }
-.card:hover{ transform: translateY(-3px); box-shadow: 0 22px 44px -22px rgba(0,0,10,0.9); }
+.card:hover{ transform: translateY(-3px); box-shadow: 0 22px 44px -22px rgba(0,0,10,0.9); border-color: transparent; }
 .card .thumb{
   aspect-ratio: 16/10; position:relative;
   background: repeating-linear-gradient(90deg, #10164a 0 11%, #0c1140 11% 22%, #10164a 22% 33%, #161d5c 33% 44%, #10164a 44% 55%, #0c1140 55% 66%, #10164a 66% 77%, #161d5c 77% 88%, #10164a 88% 100%);
