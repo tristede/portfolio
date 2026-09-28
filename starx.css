@@ -15,15 +15,15 @@
   --fond:       #0a0713;
   --fond-haut:  #1a1030;
   --fond-bas:   #060409;
-  --halo:       rgba(150, 92, 255, 0.24);
+  --halo:       rgba(110, 80, 220, 0.26);
   --texte:      #efe7f5;
   --texte-doux: #a99fb8;
   --texte-faible:#7d7389;
-  /* Mauve orchidee, pas violet-600 : la teinte est poussee vers le magenta pour
-     sortir du bleu-violet sature que porte tout produit logiciel. */
-  --vif:        #c063e0;
-  --vif-fonce:  #9a3fb8;
-  --clair:      #e7c6f5;
+  /* Mauve nocturne, plus profond/froid que l'orchidee d'origine : la teinte
+     garde assez de magenta pour ne pas retomber dans le violet-600 generique. */
+  --vif:        #8659c9;
+  --vif-fonce:  #5f3a94;
+  --clair:      #cbb3ec;
   --trait:      rgba(210,180,240,0.15);
   --trait-fort: rgba(210,180,240,0.34);
   /* Le mot manuscrit est du vrai papier scotche, pas une carte d'interface :
