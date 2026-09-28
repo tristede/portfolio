@@ -12,6 +12,11 @@
    ============================================================= */
 
 :root{
+  /* Sans ca, certains navigateurs appliquent leurs propres heuristiques de
+     theme (mode sombre force, ajustement auto des couleurs) avant de peindre
+     la page une premiere fois — d'ou le flash gris/desature puis colore au
+     chargement. Le site d'Adam l'a deja ; il ne presente pas ce souci. */
+  color-scheme: dark;
   --fond:       #0a0713;
   --fond-haut:  #1a1030;
   --fond-bas:   #060409;
