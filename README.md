@@ -1,19 +1,22 @@
 # portfolio (dépôt tristede/portfolio)
 
-Ce dépôt sert deux sites, tous deux en HTML/CSS/JS pur (aucune dépendance,
-aucun build), via GitHub Pages sur la branche `main`.
+Ce dépôt sert la vitrine du produit **Nocturnz**, en HTML/CSS/JS pur (aucune
+dépendance, aucun build), via GitHub Pages sur la branche `main`.
 
-## À la racine — la vitrine [Nocturnz](https://tristede.github.io/portfolio/)
+## À la racine — la vitrine [Nocturnz](https://nocturnz.xyz/)
 
 Une page produit : Nocturnz fabrique des portfolios que chacun remplit lui-même,
 sans abonnement ni code. `index.html` + `nocturnz.css`, plus `ciel.css` (ciel
-étoilé animé, partagé avec `/adam`) et `config.json` (identité du service).
+étoilé animé) et `config.json` (identité du service).
 
-## `/adam` — [le portfolio d'Adam](https://tristede.github.io/portfolio/adam/)
+## Le moteur et l'exemple vivant
 
-Le premier portfolio construit avec ce moteur, et celui qui a servi de modèle
-pour en faire un produit générique. Voir [`adam/README.md`](adam/README.md)
-pour le détail des pages et l'édition du contenu.
+Le premier portfolio construit avec ce moteur — celui d'Adam — a son propre
+dépôt depuis septembre 2026, sur [`adam.nocturnz.xyz`](https://adam.nocturnz.xyz/)
+([`tristede/adam`](https://github.com/tristede/adam)). C'est là que vivent le
+code du moteur à jour, son modèle de données et sa documentation — ce dépôt-ci
+n'en garde qu'une copie figée dans `/tools` pour fabriquer de nouveaux
+portfolios.
 
 ## `/demo` — bac à sable
 
@@ -26,7 +29,8 @@ n'est publié (voir `demo/admin.html`).
 python3 tools/nouveau-portfolio.py ../portfolio-neuf --github pseudo --repo mon-portfolio
 ```
 
-Copie le moteur (les pages, `script.js`, `style.css`, `admin.html`, `ciel.css`,
-les décors) sans le contenu : le nouveau `data.json` est un squelette vide,
-prêt à être rempli depuis `/admin.html`. Voir le contexte complet dans
-[`CONTEXTE.md`](CONTEXTE.md).
+Copie le moteur depuis un clone local de `tristede/adam` (les pages,
+`script.js`, `style.css`, `admin.html`, `ciel.css`, les décors) sans le
+contenu : le nouveau `data.json` est un squelette vide, prêt à être rempli
+depuis `/admin.html`. Check-list complète (domaine, Worker OAuth, transfert
+du dépôt au client) dans [`CONTEXTE.md`](CONTEXTE.md).

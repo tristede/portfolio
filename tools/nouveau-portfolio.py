@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fabrique un portfolio vierge à partir de celui-ci.
+"""Fabrique un portfolio vierge à partir du moteur d'Adam.
 
     python3 tools/nouveau-portfolio.py ../portfolio-neuf --github pseudo --repo mon-portfolio
 
@@ -11,7 +11,12 @@ d'édition, les décors (scotch, fond), les outils.
 Ce qui ne l'est pas — le CONTENU : les projets, les images, les documents. Le
 nouveau data.json est un squelette vide, prêt à être rempli depuis /admin.html.
 
-Rien n'est lu ni modifié dans le dépôt d'origine : la copie est écrite ailleurs.
+Rien n'est lu ni modifié dans le dépôt source : la copie est écrite ailleurs.
+
+Le moteur réel vit dans le dépôt `tristede/adam` (extrait de cette vitrine
+en septembre 2026 pour avoir son propre domaine `adam.nocturnz.xyz`) — pas
+dans ce dépôt-ci. Par défaut on suppose un clone local juste à côté de celui-ci
+(`--source` pour pointer ailleurs).
 """
 import argparse
 import json
@@ -20,10 +25,6 @@ import shutil
 import sys
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
-# La racine du depot sert la vitrine Nocturnz ; le portfolio-exemple qui a servi
-# de modele vit dans /adam a cote d'elle. ciel.css est partage par les deux,
-# donc reste a la racine.
-ADAM = RACINE / "adam"
 
 # Le moteur. Tout le reste appartient à la personne qui l'utilise.
 PAGES = [
@@ -44,7 +45,8 @@ def squelette(owner):
             "owner": owner,
             "roleMain": "", "roleAccent": "",
             "bio": "", "aboutParagraphs": ["", ""],
-            "contactEmail": "", "linkedin": "", "instagram": "",
+            "contactEmail": "",
+            "socialLinks": [{"platform": "email"}],
             "favoriProjectId": "",
             "timeline": [],
             "sections": [
@@ -54,6 +56,7 @@ def squelette(owner):
                  "title": "Projets académiques", "desc": ""},
             ],
             "groups": [],
+            "skills": [],
         },
         "projects": [],
     }
@@ -69,7 +72,19 @@ def main():
     ap.add_argument("--repo", required=True, help="nom du dépôt")
     ap.add_argument("--branch", default="main")
     ap.add_argument("--oauth", default="", help="relais d'authentification (Worker)")
+    ap.add_argument("--source", default=None,
+                     help="dossier du moteur (clone de tristede/adam) — "
+                          "défaut : ../adam-standalone à côté de ce dépôt")
     a = ap.parse_args()
+
+    source = pathlib.Path(a.source).expanduser().resolve() if a.source \
+        else (RACINE.parent / "adam-standalone")
+    if not source.exists():
+        sys.exit(
+            "Moteur introuvable : %s\n"
+            "Clone https://github.com/tristede/adam à cet endroit, ou indique "
+            "le bon dossier avec --source." % source
+        )
 
     dest = pathlib.Path(a.destination).expanduser().resolve()
     if dest.exists() and any(dest.iterdir()):
@@ -77,9 +92,9 @@ def main():
     dest.mkdir(parents=True, exist_ok=True)
 
     for rel in PAGES:
-        src = ADAM / rel
+        src = source / rel
         if not src.exists():
-            sys.exit("fichier du moteur introuvable : %s" % (ADAM / rel))
+            sys.exit("fichier du moteur introuvable : %s" % src)
         (dest / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dest / rel)
 
@@ -91,7 +106,7 @@ def main():
         shutil.copy2(src, dest / rel)
 
     for rel in DECORS:
-        src = ADAM / rel
+        src = source / rel
         if not src.exists():
             continue
         cible = dest / rel
@@ -131,7 +146,7 @@ def main():
 
     fichiers = sum(1 for _ in dest.rglob("*") if _.is_file())
     print("Portfolio vierge créé : %s" % dest)
-    print("  %d fichiers — moteur, décors et configuration" % fichiers)
+    print("  %d fichiers — moteur (depuis %s), décors et configuration" % (fichiers, source))
     print("  dépôt visé : %s/%s (branche %s)" % (a.github, a.repo, a.branch))
     if not a.oauth:
         print("  ATTENTION : oauthWorker vide — le panneau ne pourra pas se connecter.")

@@ -12,14 +12,13 @@ Le fichier produit est gitignoré.
 """
 import json
 import pathlib
+import re
 import sys
 
-RACINE = pathlib.Path(__file__).resolve().parent.parent
-# Le portfolio-exemple qui a servi de modele vit dans /adam, a cote de la
-# vitrine Nocturnz qui occupe maintenant la racine du depot.
-ROOT = RACINE / "adam"
-LINK = '<link rel="stylesheet" href="style.css">'
-SCRIPT = '<script src="script.js"></script>'
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+# `?v=N` casse-cache optionnel après style.css/script.js (bump manuel côté site).
+LINK_RE = re.compile(r'<link rel="stylesheet" href="style\.css(?:\?[^"]*)?">')
+SCRIPT_RE = re.compile(r'<script src="script\.js(?:\?[^"]*)?"></script>')
 
 
 def read(name):
@@ -38,17 +37,17 @@ def main():
         if needle in haystack:
             sys.exit("%s contient un %s> littéral : échapper en <\\/ avant d'inliner" % (where, needle))
 
-    for marker, name in ((LINK, "le lien vers style.css"), (SCRIPT, "la balise script.js")):
-        if html.count(marker) != 1:
+    for pattern, name in ((LINK_RE, "le lien vers style.css"), (SCRIPT_RE, "la balise script.js")):
+        if len(pattern.findall(html)) != 1:
             sys.exit("index.html : %s est introuvable ou en double" % name)
 
     # json.dumps échappe déjà `<` ? Non — on le fait à la main pour la même raison.
     blob = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
 
-    html = html.replace(LINK, "<style>\n%s\n</style>" % css)
-    html = html.replace(
-        SCRIPT,
-        "<script>window.__SITE_DATA__ = %s;</script>\n<script>\n%s\n</script>" % (blob, js),
+    html = LINK_RE.sub(lambda m: "<style>\n%s\n</style>" % css, html)
+    html = SCRIPT_RE.sub(
+        lambda m: "<script>window.__SITE_DATA__ = %s;</script>\n<script>\n%s\n</script>" % (blob, js),
+        html,
     )
 
     out = ROOT / "_artifact_preview.html"

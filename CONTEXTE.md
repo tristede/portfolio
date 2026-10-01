@@ -1,30 +1,37 @@
 # Contexte du projet — à lire en début de session
 
-Le dépôt sert deux choses : la vitrine du produit **Nocturnz** à la racine, et le
-portfolio personnel d'Adam (étudiant en communication, Bruxelles — remplace son
-ancien Adobe Portfolio) dans `/adam`. Site statique + panneau d'édition maison,
-partagé par les deux.
+Ce dépôt sert **uniquement la vitrine du produit Nocturnz** (page marketing +
+formulaire de contact). Le portfolio personnel d'Adam, qui servait longtemps
+d'exemple vivant dans `/adam`, a été extrait dans son propre dépôt en
+septembre 2026 pour avoir son propre domaine — voir plus bas.
+
+**Le moteur du produit (le vrai code : pages, `script.js`, `style.css`,
+`admin.html`, modèle de données, comportements, pièges connus) vit maintenant
+dans [`tristede/adam`](https://github.com/tristede/adam), documenté dans son
+propre `README.md`.** Ce dépôt-ci n'en garde qu'une copie figée dans
+`tools/` (voir "Onboarder un nouveau client" plus bas) pour fabriquer de
+nouveaux portfolios — il ne le maintient pas.
 
 ## Coordonnées techniques
 
 | | |
 |---|---|
-| Dossier local | `/Users/adam/Documents/PROJETS/WEB/portfolio-adam` |
+| Dossier local | `.../PROJETS/WEB/portfolio-adam` |
 | Dépôt | `github.com/tristede/portfolio` — branche `main` |
-| Vitrine Nocturnz | https://tristede.github.io/portfolio/ |
-| Portfolio d'Adam | https://tristede.github.io/portfolio/adam/ |
-| Panneau d'édition (portfolio d'Adam) | https://tristede.github.io/portfolio/adam/admin.html |
-| Bac à sable (démo Nocturnz) | https://tristede.github.io/portfolio/demo/admin.html |
-| Aperçu Artifact | https://claude.ai/code/artifact/5f753f39-a2b1-4ff5-a5d7-87bedd5b4543 |
-| Sauvegarde propre | tag git `backup-clean-v1` |
+| Vitrine Nocturnz | https://nocturnz.xyz/ |
+| Portfolio d'Adam (dépôt séparé, `tristede/adam`) | https://adam.nocturnz.xyz/ |
+| Bac à sable (démo Nocturnz) | `/demo/admin.html` |
 | Serveur local | `python3 -m http.server 8000` dans le dossier du projet |
 
-**Connexion OAuth de l'admin** (déjà configurée, ne pas y toucher sans raison) :
+**Connexion OAuth de l'admin** (partagée par tous les portfolios générés,
+déjà configurée, ne pas y toucher sans raison) :
 - Relais : Cloudflare Worker [sveltia-cms-auth](https://github.com/sveltia/sveltia-cms-auth)
   à `https://portfolioadamxbc.tristederk.workers.dev`
 - OAuth App GitHub, Client ID `Ov23liDVjc8AUievRU7X`
 - Variables du Worker : `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (chiffré),
-  `ALLOWED_DOMAINS=tristede.github.io`
+  `ALLOWED_DOMAINS` — **doit lister chaque domaine qui a un `/admin.html`**
+  (au minimum `tristede.github.io` et `adam.nocturnz.xyz` ; un domaine oublié
+  = connexion impossible sur le portfolio concerné).
 - Le Client Secret n'est **que** dans le Worker. Ne jamais le demander.
 
 ## Structure
@@ -32,201 +39,74 @@ partagé par les deux.
 ```
 index.html                 vitrine Nocturnz (page produit, formulaire de contact)
 nocturnz.css               design de la vitrine
-ciel.css                   ciel étoilé animé — partagé par la vitrine et /adam
+ciel.css                   ciel étoilé animé
 demo/                      bac à sable : admin + portfolio-jouet autonomes, rien n'est publié
-tools/nouveau-portfolio.py fabrique un nouveau portfolio (le moteur vit dans /adam)
-tools/build_preview.py     génère adam/_artifact_preview.html
-tools/pdfpages.swift       convertit un PDF en images, hors navigateur
-
-adam/                      LE portfolio d'Adam — l'exemple qui a servi de modèle au moteur
-  index.html                 accueil (hero, favori, mis en avant, à propos, parcours, contact)
-  projets-perso.html         projets perso (groupes + projets libres de cette catégorie), filtrables par tag
-  projets-academiques.html   idem, projets académiques — le stage y est un groupe, pas une sous-section figée
-  projets.html               tous les projets sans distinction (repli, plus lié depuis l'accueil)
-  projet.html?id=...         page détail d'un projet
-  groupe.html?id=...         page d'un groupe de projets (ex. Union Oasis Forest, Stage chez En Esprit)
-  admin.html                 panneau d'édition (vue visuelle + vue liste)
-  data.json                  TOUT le contenu du portfolio d'Adam
-  config.json                identité du dépôt + `basePath: "adam/"` (ce portfolio ne vit pas à la racine)
-  script.js                  rendu partagé par toutes les pages publiques
-  style.css                  design partagé
-  images/                    visuels (WebP) + images/tape/ (4 rubans de masking tape)
-  docs/                      PDF envoyés depuis l'admin
-  _artifact_preview.html     généré, gitignoré — sert uniquement à publier l'Artifact
+tools/nouveau-portfolio.py fabrique un nouveau portfolio vierge (copie le moteur depuis tristede/adam)
+tools/build_preview.py     génère _artifact_preview.html dans un portfolio déjà scaffoldé
+tools/pdfpages.swift       convertit un PDF en images, hors navigateur — copié dans chaque nouveau portfolio
 ```
 
 Header et footer sont copiés-collés dans chaque page (choix assumé : pas de build).
 
-**`basePath`** : un portfolio créé par `tools/nouveau-portfolio.py` vit seul à la
-racine de son propre dépôt (`basePath` vide, comportement par défaut). Celui
-d'Adam partage ce dépôt-ci avec la vitrine Nocturnz, d'où `basePath: "adam/"` dans
-`adam/config.json` — c'est ce qui préfixe les chemins écrits sur GitHub
-(`data.json`, `images/…`) sans changer les chemins que les pages publiques
-résolvent depuis leur propre dossier.
+Un portfolio créé par `tools/nouveau-portfolio.py` vit seul à la racine de son
+propre dépôt (`basePath` vide) — plus de cas particulier à gérer depuis que
+celui d'Adam a aussi son propre dépôt.
 
-## Modèle de données (`data.json`)
+## Onboarder un nouveau client
 
-```jsonc
-{
-  "site": {
-    "roleMain": "...", "roleAccent": "...",
-    "bio": "ligne 1\nligne 2",              // \n = saut de ligne affiché
-    "aboutParagraphs": ["...", "..."],
-    "contactEmail": "...", "linkedin": "...", "instagram": "...",
-    "favoriProjectId": "id-du-projet",
-    "timeline": [{ "year": "2025", "title": "...", "desc": "...", "current": false }]
-  },
-  "projects": [{
-    "id": "slug-unique", "title": "...", "year": 2025,
-    "ctx": "perso" | "academique" | "stage",
-    "medium": "graphisme|video|audio|web|social|event|ecrit",
-    "tags": [], "desc": "...", "longDesc": "...",
-    "featured": false,        // section « Projets mis en avant » de l'accueil
-    "hidden": false,          // retiré du site, conservé dans l'admin
-    "thumb": "images/x.webp", // miniature ; sinon 1re image visible
-    "link": "https://...",    // bouton + aperçu intégré du site
-    "assets": [ /* voir ci-dessous */ ],
-    "subProjects": [{ "title": "...", "medium": "", "desc": "", "assets": [], "link": "" }]
-  }]
-}
-```
+Pas de client payant pour l'instant (produit pas encore lancé) — cette
+procédure sert surtout à vérifier que le chemin marche, et à le suivre le
+jour où quelqu'un dit oui.
 
-**Assets** — modèle unifié, utilisé pour les projets et les sections :
+1. **Cloner le moteur à jour** s'il ne l'est pas déjà : `tristede/adam` doit
+   être cloné juste à côté de ce dépôt (`.../PROJETS/WEB/adam-standalone`
+   localement), `tools/nouveau-portfolio.py` va le lire par défaut (`--source`
+   pour pointer ailleurs).
+2. **Générer le portfolio vierge** :
+   ```
+   python3 tools/nouveau-portfolio.py ../portfolio-<client> \
+     --owner "Nom du client" --github <compte-github-du-client> \
+     --repo <nom-du-repo> --oauth https://portfolioadamxbc.tristederk.workers.dev
+   ```
+3. **Créer le dépôt GitHub** (`<compte-github-du-client>/<nom-du-repo>`) et y
+   pousser le dossier généré.
+4. **Activer GitHub Pages** (branche `main`, racine) dans les settings du
+   nouveau dépôt.
+5. **Ajouter le domaine au Worker** : dashboard Cloudflare → Worker
+   `portfolioadamxbc` → variables → ajouter le nouveau domaine (sous-domaine
+   GitHub Pages ou domaine personnalisé) à `ALLOWED_DOMAINS`. Sans cette
+   étape, `/admin.html` du client refuse la connexion GitHub.
+6. **Domaine personnalisé** (optionnel) : DNS chez le registrar du client
+   (CNAME vers `<compte>.github.io`) + champ "Custom domain" dans GitHub
+   Pages. Vérifier `Enforce HTTPS` une fois le certificat émis (peut prendre
+   du temps — si ça bloque, retirer/remettre le domaine force GitHub à
+   relancer le check, voir l'historique de ce repo pour un exemple).
+7. **Vérifier avant de rendre la main** : le site charge, `/admin.html` se
+   connecte en OAuth et sauvegarde un test, les favicons `favicon.svg/.ico`
+   ne sont **pas** ceux d'Adam (le script ne les copie pas — à fournir par le
+   client ou à retirer des `<link>` dans le `<head>` de chaque page).
+8. **Une fois le contenu rempli et validé par le client** : transférer la
+   propriété du dépôt vers son propre compte GitHub (Settings → General →
+   Danger Zone → Transfer) plutôt que le laisser en simple collaborateur sur
+   un dépôt que tu possèdes — ça correspond à l'argument de vente de la
+   vitrine ("le contenu est à vous") et ça évite de rester responsable à vie
+   de dépôts appartenant à d'autres.
 
-```jsonc
-{
-  "type": "image" | "video" | "audio" | "web" | "doc",
-  "url": "images/x.webp",
-  "hidden": false,
-  "size": "sm" | "md" | "lg",   // md par défaut
-  "pages": ["images/p1.webp"]   // uniquement pour les PDF convertis
-}
-```
+## Pièges connus (vitrine)
 
-⚠️ **Rétrocompatibilité** : d'anciens projets peuvent encore avoir
-`images[]` / `videoUrl` / `audioUrl` au lieu de `assets[]`. La fonction
-`assetsOf()` (présente dans `script.js` *et* `admin.html`) fusionne les deux
-formes — ne pas supprimer ce repli.
-
-Vocabulaire : `subProjects` s'appelle **« sections »** dans l'interface.
-
-## Comportements notables
-
-- **Effet de décryptage** sur la bio et les paragraphes « à propos » : la police
-  manuscrite se transforme en police lisible. Au survol sur desktop, **au
-  défilement sur mobile** (pas de survol tactile). ~800 ms, réglé par
-  `perCharDelay = 16 / length` dans `script.js`.
-- **Photos scotchées** : images et vidéos affichées comme des tirages collés au
-  mur (masking tape en `::before`, légère rotation, ombre). Taille **fixe**
-  (200/300/460 px selon S/M/L) — elles ne s'étirent jamais pour remplir.
-  La galerie sort de la colonne de texte (`margin-left: calc(50% - 50vw + var(--sbw)/2)`).
-- **Ne jamais utiliser `columns` CSS pour la galerie** : ça crée un contexte de
-  fragmentation qui rogne le scotch sur Safari et casse l'affichage sur Firefox.
-  C'est un bug déjà rencontré et corrigé.
-- **Visionneuse plein écran** au clic sur une image (flèches, `Échap`).
-  Clic droit et glisser désactivés — dissuasion, **pas** une protection réelle.
-- **PDF** : convertis en images page par page à l'envoi (pdf.js chargé
-  uniquement dans l'admin), affichés dans un lecteur maison paginé. Raison :
-  chaque navigateur impose sa propre barre d'outils PDF, impossible à styler —
-  et son fond gris entoure la page sans qu'aucune règle CSS ne puisse l'atteindre.
-  Un bouton « PDF » permet de convertir les documents envoyés avant cette
-  fonctionnalité.
-  Le lecteur est **borderless** : ni bordure, ni fond, ni marge intérieure — la
-  page repose directement sur le fond du site. Les commandes sont **en
-  surimpression sur la page** : flèches sur les bords gauche et droite, plein
-  écran en bas à droite ; seul l'indicateur de page reste sous le document.
-  Elles vivent dans `.doc-stage`, qui épouse la page (`width: fit-content`) —
-  s'en remettre à `.doc-viewer` les collerait aux bords du lecteur, bien plus
-  large que le document. Elles restent masquées jusqu'à la classe `is-ready`,
-  posée au chargement de la page : avant, la scène ne fait aucune largeur.
-  Un document qui affiche encore un cadre gris n'est donc **pas** converti :
-  vérifier que son asset a bien un tableau `pages`.
-  Le lecteur porte un ruban de masking tape, comme les photos : il se cale sur
-  le haut du lecteur, et `.doc-stage` aligne son image en `flex-start` pour que
-  le haut de la page coïncide toujours avec lui.
-  Les pages s'ouvrent en plein écran comme les photos (clic sur la page ou
-  bouton dédié), et la pagination faite dans la visionneuse est reportée dans
-  le lecteur. **Aucun lien ne sort du portfolio** : Adam ne veut pas que le
-  visiteur quitte le site, donc le PDF d'origine n'est plus proposé au
-  téléchargement — le fichier reste dans `docs/` mais n'est plus atteignable
-  depuis les pages.
-- **Fond** : texture topographique (`images/bg-hor.webp` / `bg-vert.webp` selon
-  l'orientation) à 55 % par-dessus le dégradé. **Pas de parallax** — testé puis
-  retiré, ça donnait mal à la tête.
-- **Aucun emoji** dans l'interface : tout est en SVG (`ICON` dans `admin.html`,
-  `UI_ICON` dans `script.js`). Adam y tient.
-
-## Panneau d'édition
-
-Deux vues, **la vue visuelle est celle par défaut** :
-
-- **Vue visuelle** — le vrai site dans un iframe, alimenté par l'état non
-  enregistré via `window.__SITE_DATA__`. Les contrôles sont injectés depuis
-  `admin.html` : rien de spécifique à l'édition n'existe dans le code public.
-  Textes éditables au clic, boutons au survol (taille S/M/L, masquer, miniature,
-  supprimer, réordonner), boutons « + » en bas de chaque projet et section.
-- **Vue liste** — formulaires classiques, filtres et recherche.
-
-Envois d'images/PDF : conversion WebP côté navigateur, puis **un seul commit**
-via l'API Git Data (blobs en parallèle par 4). Reprise automatique si la branche
-a bougé entre-temps (erreur 422 « not a fast forward »).
-
-## Méthode de travail attendue
-
-1. **Toujours tester en local avant de déployer** (`python3 -m http.server 8000`).
-2. Vérifier via `javascript_tool` (DOM, styles calculés) plutôt que par capture
-   d'écran : **l'outil de screenshot est peu fiable ici** (images noires,
-   figées, ou onglet à taille nulle). Redimensionner le viewport quand
-   `innerWidth` vaut 0.
-3. Régénérer `_artifact_preview.html` avec `python3 tools/build_preview.py`
-   (inline CSS/JS/données dans `index.html`), publier l'Artifact, puis
-   `git add/commit/push`. L'aperçu ne couvre que l'accueil et ses images ne se
-   chargent pas (requêtes externes bloquées) : inutile d'y chercher une page
-   projet.
-4. `git pull --rebase` avant de pousser : **Adam édite en parallèle depuis
-   l'admin**, qui commite directement sur `main`. Ne jamais écraser ses commits.
-5. Confirmer le déploiement (Monitor + `curl` sur un marqueur du fichier).
-
-## Pièges connus
-
-- **Cache** : GitHub Pages sert tout avec `max-age=600`. Un changement
-  invisible côté Adam est presque toujours du cache → `Cmd+Shift+R`.
-  `data.json` est l'exception : il est chargé en `fetch(..., { cache: 'no-cache' })`
-  pour être revalidé à chaque visite, sinon un contenu enregistré depuis l'admin
-  peut rester invisible jusqu'à 10 minutes. Firefox et ses dérivés (Zen) sont les
-  plus tenaces là-dessus ; le symptôme typique est un navigateur qui montre
-  l'ancienne version quand un autre montre déjà la nouvelle.
-- **`prefers-reduced-motion`** dans le navigateur de test reflète le réglage
-  macOS réel d'Adam. Des animations « invisibles » ont déjà été causées par ça.
-- **`confirm()` avant `input.click()`** empêche l'ouverture du sélecteur de
-  fichiers (la modale consomme l'activation utilisateur). Déjà corrigé, ne pas
-  réintroduire.
-- **Filet clair d'1 px** en haut d'une page de PDF rastérisée : le convertisseur
-  remplit le bitmap en blanc avant de dessiner la page, et un arrondi d'un
-  demi-pixel laisse ce fond affleurer sur une rangée — invisible sur une page
-  blanche, très visible sur un fond sombre. `tools/pdfpages.swift` déborde donc
-  le dessin d'1 px sur les quatre bords. Se vérifie en mesurant, pas à l'œil :
-  dessiner l'image dans un `<canvas>` et comparer la moyenne de la rangée 0 à
-  celle de la rangée 1.
-- **`</script>` littéral** dans une chaîne JS coupe le bloc `<script>` de
-  `admin.html` : toujours écrire `<\/script>`.
-- **Interception des liens** dans l'iframe de l'éditeur : ignorer les clics sur
-  `.ed-btn`, `.ed-add` et `[contenteditable]`, sinon les boutons et l'édition de
-  texte déclenchent une navigation.
+- **Cache** : GitHub Pages sert tout avec `max-age=600` — un changement
+  invisible est presque toujours du cache (`Cmd+Shift+R`).
+- Pour les pièges spécifiques au moteur (panneau d'édition, rendu PDF,
+  effet de décryptage, etc.), voir le `README.md` de `tristede/adam`.
 
 ## Règles posées par Adam
 
-- Ne **jamais** extraire de secret du trousseau macOS ni d'ailleurs. L'auth git
-  passe par le gestionnaire d'identifiants déjà configuré.
-- Ne pas afficher son nom de famille sur le site : uniquement « Adam ».
-- Pas d'emoji dans l'interface.
+- Ne **jamais** extraire de secret du trousseau macOS ni d'ailleurs. L'auth
+  git passe par le gestionnaire d'identifiants déjà configuré.
 - Déployer automatiquement après chaque changement validé.
 
 ## Reste à faire
 
-- [ ] `contactEmail` est encore `PLACEHOLDER@email.com` (dans `data.json`).
-- [ ] `cv.pdf` absent à la racine → le bouton CV mène à une 404.
-- [ ] Descriptions des projets à réécrire (ce sont des reformulations de titres).
-- [ ] Filigrane automatique sur les images à l'envoi : proposé, jamais tranché.
-- [ ] Domaine personnalisé : si Adam en prend un, mettre à jour
-      `ALLOWED_DOMAINS` sur le Worker Cloudflare.
+- [ ] Produit pas encore lancé publiquement — aucun client réel à ce jour.
+- [ ] Filigrane automatique sur les images à l'envoi : proposé côté moteur,
+      jamais tranché.
